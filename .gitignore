@@ -1,0 +1,10 @@
+# Rust
+/target
+**/*.rs.bk
+Cargo.lock        # binary crate: keep? decide at M1. Ignored for now (pre-code).
+
+# Editor / OS
+.DS_Store
+*.swp
+.idea/
+.vscode/
