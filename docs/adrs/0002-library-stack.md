@@ -6,10 +6,12 @@ updated: 2026-06-26
 tags: [rust, dependencies, okf, ripgrep, search, graph, cli]
 supersedes: null
 superseded-by: null
-related: ["0001-documentation-first-okf-shaped.md", "../../PLAN.md"]
+related: ["0001-documentation-first-okf-shaped.md", "0003-search-index-in-xdg-cache.md", "../../PLAN.md"]
 ---
 
 # ADR-0002: Library stack (stand on the shoulders of giants)
+
+> **Amended by [ADR-0003](0003-search-index-in-xdg-cache.md): the search index lives in a per-bundle XDG cache directory, not in-bundle `.okq/index/`.** Every reference to `.okq/index/` below is superseded by that location; the rest of this ADR (Tantivy as the backend, the index-as-derived-cache rule, the whole stack) stands.
 
 ## Context
 

@@ -79,7 +79,7 @@ okq (bin)
  └─ okf (dep)  — parse, model, validate, link-graph  ← upstream crate
 ```
 
-`search` backend is **decided: a persisted Tantivy BM25 index** ([ADR-0002](docs/adrs/0002-library-stack.md)), built from the same parse pass that feeds `query` and `graph` — one load of the bundle, three views over it. The index is a derived, git-ignored cache under `.okq/index/` (rebuilt from the concept docs, never source of truth); what remains open is its lifecycle (staleness/invalidation, format-version pinning, writer-lock) — see §8. The full library stack lives in [ADR-0002](docs/adrs/0002-library-stack.md).
+`search` backend is **decided: a persisted Tantivy BM25 index** ([ADR-0002](docs/adrs/0002-library-stack.md)), built from the same parse pass that feeds `query` and `graph` — one load of the bundle, three views over it. The index is a derived cache in a **per-bundle XDG cache directory** (`~/.cache/okq/<bundle-key>/`, *not* inside the bundle — [ADR-0003](docs/adrs/0003-search-index-in-xdg-cache.md)), rebuilt from the concept docs, never source of truth; what remains open is its lifecycle (staleness/invalidation, format-version pinning, writer-lock, cache cleanup) — see §8. The full library stack lives in [ADR-0002](docs/adrs/0002-library-stack.md).
 
 Open question: how much of `okf`'s graph is reusable vs. what `okq` must build. First milestone validates that.
 
@@ -101,7 +101,7 @@ Open question: how much of `okf`'s graph is reusable vs. what `okq` must build. 
 - Concept identity: file path (OKF) vs. a frontmatter `id` — support both?
 - How strict on conformance — query a non-conformant/OKF-shaped bundle anyway, with warnings?
 - JSON schema versioning (agents will depend on output stability — treat it like a contract from day one).
-- ~~`search` backend: in-memory BM25 vs. SQLite FTS5 vs. Tantivy~~ — **decided: persisted Tantivy** ([ADR-0002](docs/adrs/0002-library-stack.md)). What's still open is the *index lifecycle*: staleness/invalidation policy (mtime vs. content hash; partial vs. full reindex), index-format version pinning, and writer-lock behavior when two `okq` processes share an index.
+- ~~`search` backend: in-memory BM25 vs. SQLite FTS5 vs. Tantivy~~ — **decided: persisted Tantivy** ([ADR-0002](docs/adrs/0002-library-stack.md)), in a **per-bundle XDG cache dir** ([ADR-0003](docs/adrs/0003-search-index-in-xdg-cache.md)). What's still open is the *index lifecycle*: bundle-key derivation + cache cleanup, staleness/invalidation policy (mtime vs. content hash; partial vs. full reindex), index-format version pinning, and writer-lock behavior when two `okq` processes share an index.
 - Edge-type taxonomy: which relations are first-class (`supersedes`, `related`, `depends-on`, generic `link`)? Derive from frontmatter conventions, or define a fixed set and map onto it?
 - Vector deferral: what concrete signal (a query miss-rate threshold? a corpus size?) flips the decision to add semantic retrieval — so it stays evidence-gated, not vibes-gated.
 - Templates: embedded-in-binary defaults vs. a bundle-local `.okq/templates/` override — and how `okq new`'s templates stay in lockstep with the OKF version `init` scaffolds.
