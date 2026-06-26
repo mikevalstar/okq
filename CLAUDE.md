@@ -48,7 +48,9 @@ For any new command or user-visible feature:
    (`status: draft`). Get it accepted (`status: accepted`) before building. Use
    an **ADR** (`docs/adrs/NNNN-*.md`) for any decision that's expensive to
    reverse (a dependency, a format, a location). See the doc conventions in
-   [docs/README.md](docs/README.md).
+   [docs/README.md](docs/README.md). **Use okq to find related specs/ADRs first**
+   (e.g. `okq --bundle docs search "<topic>"`, `okq find --tag …`) so you cross-link
+   them — don't grep (see Dogfooding below).
 2. **Implement**, reusing okf for data and okq's shared pieces: the concept
    envelope (`model.rs` / `get`), the collection envelope (`find`), the section
    model (`sections.rs`), and the exit-code taxonomy (`error.rs`).
@@ -69,9 +71,22 @@ For any new command or user-visible feature:
 8. **Update the README** if the user-facing surface changed (it's the crates.io
    front page; keep the commands table + examples current).
 9. **Flip the feature spec to `status: active`.**
-10. **Commit** (see commit conventions) and push when asked.
+10. **Check doc health** before committing docs: once `deadlinks`/`orphans` exist,
+    run `okq --bundle docs deadlinks` and `okq --bundle docs orphans` so new
+    cross-links resolve and no spec is left dangling.
+11. **Commit** (see commit conventions) and push when asked.
 
 ## Conventions
+
+**Dogfood okq for our own docs** (ADR-0005). For doc/spec/feature work in this
+repo, reach for okq before `grep`/`rg`/`fd`:
+- Find/read: `okq --bundle docs search "<topic>"`, `okq --bundle docs find --tag …`,
+  `okq --bundle docs get <id> --section <heading>`.
+- Navigate (once M2 lands): `okq --bundle docs neighbors <id>` / `backlinks <id>` /
+  `path <a> <b>`; check health with `deadlinks` / `orphans`.
+- Keep `docs/` OKF-shaped and cross-linked so these keep working. If okq can't yet
+  do what you need, that gap is the next feature — fix the tool, don't route around
+  it. (okq is read/query only; editing stays a normal editor job until `init`/`new`.)
 
 **Output discipline (agent-runnable contract).**
 - stdout carries the data; with `--json`, exactly one JSON document on stdout.
