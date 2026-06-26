@@ -30,26 +30,34 @@ No other OKF tool does this, and it maps directly onto how both humans and agent
 
 ## 4. Design principles
 
-1. **Deterministic & local-first.** Pure frontmatter + graph queries. No embeddings, no vector store, no network calls. Same bundle → same answer, every time.
+1. **Deterministic & local-first.** Pure frontmatter + lexical + graph queries. No embeddings, no vector store, no network calls in v1. Same bundle → same answer, every time. (Vectors are a deliberately deferred, evidence-gated option — see §7 and §8 — not a permanent "never.")
 2. **Agent-runnable.** Every command has a fully non-interactive path and `--json` output, so it's a clean tool-call for an LLM. (Mirrors the bidirectional human/agent contract OKF itself sets.)
-3. **Fast & dependency-light.** Rust. Lean on the upstream [`okf`](https://crates.io/crates/okf) crate for parsing, the data model, validation, and the link graph; `okq` adds the *query* surface on top rather than reimplementing the parser.
-4. **Format-tolerant.** Targets OKF v0.1, but should degrade gracefully on OKF-*shaped* bundles (any Markdown-with-frontmatter tree, e.g. an existing `docs/adrs` folder) so it's useful before a repo formally adopts OKF.
-5. **Composable.** Plays well with `jq`/`fzf`/`fd`; output is a stream of paths or JSON records, not a walled UI.
+3. **Token-frugal output by default.** The token win for agents comes from *precision + locations*, not content dumps. Results default to a ranked shortlist of `path:line` + frontmatter (id/type/title) + a 1–2 line snippet — never full bodies. The caller expands what it chooses via `get`. Graph traversal returns nodes as `id + title + edge-type + path:line`, not doc contents. A tool that pre-dumps matched files is *less* efficient than `rg`; the whole design fights that.
+4. **Fast & dependency-light.** Rust. Lean on the upstream [`okf`](https://crates.io/crates/okf) crate for parsing, the data model, validation, and the link graph; `okq` adds the *query* surface on top rather than reimplementing the parser.
+5. **Format-tolerant.** Targets OKF v0.1, but should degrade gracefully on OKF-*shaped* bundles (any Markdown-with-frontmatter tree, e.g. an existing `docs/adrs` folder) so it's useful before a repo formally adopts OKF.
+6. **Composable.** Plays well with `jq`/`fzf`/`fd`; output is a stream of paths or JSON records, not a walled UI.
 
 ## 5. Command surface (draft)
 
 | Command | Purpose |
 |---|---|
-| `okq find` | Filter concepts by frontmatter — `--tag`, `--type`, `--where field=value`, `--match` (substring/regex on title/body). |
-| `okq neighbors <concept>` | Adjacent concepts via links; `--depth N`, `--direction in\|out\|both`. |
-| `okq backlinks <concept>` | Concepts that link *to* this one. |
+| `okq search <query>` | **Ranked** full-text retrieval over titles/headings/body. Returns a scored shortlist of section-level hits with `path:line` + snippet — the backbone for "find the doc(s) about X" at scale. Distinct from `find`: `search` *ranks by relevance*, `find` *filters by exact predicate*. |
+| `okq find` | Filter concepts by frontmatter — `--tag`, `--type`, `--where field=value`, `--match` (substring/regex on title/body). Set-membership, not ranking. |
+| `okq neighbors <concept>` | Adjacent concepts via links; `--depth N` (default **1**), `--direction in\|out\|both`, `--edge <type>` (filter by link relation, e.g. `supersedes`, `related`, `depends-on`). |
+| `okq backlinks <concept>` | Concepts that link *to* this one (the inbound view you can't get by reading the doc itself). |
 | `okq path <a> <b>` | Shortest link path between two concepts. |
 | `okq orphans` | Concepts with no inbound links (stale-doc candidates). |
 | `okq deadlinks` | Links pointing to missing/renamed concepts. |
-| `okq stats` | Bundle overview: counts by type/tag, link density, hub concepts. |
-| `okq get <concept>` | Print one concept's frontmatter and/or body (`--frontmatter`, `--body`, `--json`). |
+| `okq stats` | Bundle overview: counts by type/tag, link density, hub concepts, edge-type distribution. |
+| `okq get <concept>` | Print one concept's frontmatter and/or body (`--frontmatter`, `--body`, `--section <heading>`, `--json`). The expand-on-demand counterpart to `search`/`neighbors` shortlists. |
 
 Global flags: `--json`, `--bundle <dir>` (default: cwd), `--no-color`, exit codes that are script-friendly.
+
+**Search vs. graph — the two retrieval modes.** `search`/`find` answer *"where do I start?"*; `neighbors`/`backlinks`/`path` answer *"what's connected to here?"*. The expensive agent loop — find one doc, then grep-and-read outward to map an area — collapses into `search → neighbors → get`. That composition is the core ergonomic.
+
+**Chunking.** Index and return at **section granularity** (heading-delimited), not whole-file. OKF docs have clean headings + frontmatter; exploiting that keeps snippets tight and lets `get --section` expand precisely.
+
+**Edge types.** Graph edges are *typed*, sourced from (a) frontmatter relations (`supersedes`, `related`, `depends-on`, …) and (b) inline links, with backlinks derived. Typed traversal ("what *supersedes* this?") beats an untyped blob of 30 connected docs. The taxonomy is an open question (§8) — start with whatever the bundle's frontmatter actually uses, plus a generic `link` for inline references.
 
 ## 6. Architecture sketch
 
@@ -57,20 +65,24 @@ Global flags: `--json`, `--bundle <dir>` (default: cwd), `--no-color`, exit code
 okq (bin)
  ├─ cli        — arg parsing, output formatting (human table + --json)
  ├─ query      — frontmatter predicates, tag/type/where filters
- ├─ graph      — neighbors / backlinks / path / orphans / deadlinks
+ ├─ search     — ranked lexical retrieval over sections (FTS index or in-memory BM25)
+ ├─ graph      — neighbors / backlinks / path / orphans / deadlinks; typed edges
  └─ okf (dep)  — parse, model, validate, link-graph  ← upstream crate
 ```
+
+`search` index backend is an open question (§8): in-memory BM25 over sections is the dependency-light default and likely sufficient at bundle scale; SQLite FTS5 / Tantivy only if cold-start indexing of large bundles proves too slow. Whichever — it's built from the same parse pass that feeds `query` and `graph`, so there's one load of the bundle, three views over it.
 
 Open question: how much of `okf`'s graph is reusable vs. what `okq` must build. First milestone validates that.
 
 ## 7. Milestones
 
 - **M0 — Spike (this).** Repo, plan, README. Evaluate the `okf` crate: does its parser + link graph give us the primitives, or do we vendor/fork? Decide MSRV, error model, output schema.
-- **M1 — Read & find.** Load a bundle via `okf`; implement `find` (tag/type/where/match) + `get`, with `--json`. Dogfood against a real `docs/` tree.
-- **M2 — Graph.** `neighbors`, `backlinks`, `path`, `orphans`, `deadlinks` over the link graph.
+- **M1 — Read, find & search.** Load a bundle via `okf`; implement `find` (tag/type/where/match), section-level ranked `search`, and `get` (incl. `--section`), all with `--json` and `path:line` output. Dogfood against a real `docs/` tree.
+- **M2 — Graph.** `neighbors`, `backlinks`, `path`, `orphans`, `deadlinks` over the link graph, with typed edges and a default depth of 1.
 - **M3 — Health & stats.** `stats`, CI-friendly checks (orphans/deadlinks as non-zero exit), stable JSON schemas documented.
 - **M4 — Release.** Publish `okq` to crates.io; prebuilt binaries; install docs. (Name confirmed free as of 2026-06-26.)
-- **Later — Agent ergonomics.** Optional MCP server (`okq mcp`) exposing find/neighbors/path as tools; `--watch` for incremental reindex.
+- **Later — Agent ergonomics.** Optional MCP server (`okq mcp`) exposing search/neighbors/path as tools; `--watch` / incremental reindex on changed files (hash/mtime) to keep any index from going stale.
+- **Later, evidence-gated — semantic retrieval.** *Only if* observed real queries miss on vocabulary mismatch (query terms that never appear literally in the relevant doc) does vector search earn its cost. Even then: add it as a **second retriever fused with the lexical one (RRF)**, not a replacement — pure-vector blurs exactly the exact-token queries (IDs, API names, error codes) that dominate technical bundles. Local embedding model only, to preserve the local-first/no-network principle. This is explicitly *not* a v1 concern.
 
 ## 8. Open questions
 
@@ -78,6 +90,9 @@ Open question: how much of `okf`'s graph is reusable vs. what `okq` must build. 
 - Concept identity: file path (OKF) vs. a frontmatter `id` — support both?
 - How strict on conformance — query a non-conformant/OKF-shaped bundle anyway, with warnings?
 - JSON schema versioning (agents will depend on output stability — treat it like a contract from day one).
+- `search` backend: in-memory BM25 vs. SQLite FTS5 vs. Tantivy — where's the bundle-size crossover that justifies a persisted index over a cold rebuild each run?
+- Edge-type taxonomy: which relations are first-class (`supersedes`, `related`, `depends-on`, generic `link`)? Derive from frontmatter conventions, or define a fixed set and map onto it?
+- Vector deferral: what concrete signal (a query miss-rate threshold? a corpus size?) flips the decision to add semantic retrieval — so it stays evidence-gated, not vibes-gated.
 
 ## 9. Prior art / references
 
