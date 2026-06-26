@@ -74,12 +74,12 @@ Global flags: `--json`, `--bundle <dir>` (default: cwd), `--no-color`, exit code
 okq (bin)
  ├─ cli        — arg parsing, output formatting (human table + --json)
  ├─ query      — frontmatter predicates, tag/type/where filters
- ├─ search     — ranked lexical retrieval over sections (FTS index or in-memory BM25)
+ ├─ search     — ranked lexical retrieval over sections (persisted Tantivy BM25 index)
  ├─ graph      — neighbors / backlinks / path / orphans / deadlinks; typed edges
  └─ okf (dep)  — parse, model, validate, link-graph  ← upstream crate
 ```
 
-`search` index backend is an open question (§8): in-memory BM25 over sections is the dependency-light default and likely sufficient at bundle scale; SQLite FTS5 / Tantivy only if cold-start indexing of large bundles proves too slow. Whichever — it's built from the same parse pass that feeds `query` and `graph`, so there's one load of the bundle, three views over it.
+`search` backend is **decided: a persisted Tantivy BM25 index** ([ADR-0002](docs/adrs/0002-library-stack.md)), built from the same parse pass that feeds `query` and `graph` — one load of the bundle, three views over it. The index is a derived, git-ignored cache under `.okq/index/` (rebuilt from the concept docs, never source of truth); what remains open is its lifecycle (staleness/invalidation, format-version pinning, writer-lock) — see §8. The full library stack lives in [ADR-0002](docs/adrs/0002-library-stack.md).
 
 Open question: how much of `okf`'s graph is reusable vs. what `okq` must build. First milestone validates that.
 
@@ -101,7 +101,7 @@ Open question: how much of `okf`'s graph is reusable vs. what `okq` must build. 
 - Concept identity: file path (OKF) vs. a frontmatter `id` — support both?
 - How strict on conformance — query a non-conformant/OKF-shaped bundle anyway, with warnings?
 - JSON schema versioning (agents will depend on output stability — treat it like a contract from day one).
-- `search` backend: in-memory BM25 vs. SQLite FTS5 vs. Tantivy — where's the bundle-size crossover that justifies a persisted index over a cold rebuild each run?
+- ~~`search` backend: in-memory BM25 vs. SQLite FTS5 vs. Tantivy~~ — **decided: persisted Tantivy** ([ADR-0002](docs/adrs/0002-library-stack.md)). What's still open is the *index lifecycle*: staleness/invalidation policy (mtime vs. content hash; partial vs. full reindex), index-format version pinning, and writer-lock behavior when two `okq` processes share an index.
 - Edge-type taxonomy: which relations are first-class (`supersedes`, `related`, `depends-on`, generic `link`)? Derive from frontmatter conventions, or define a fixed set and map onto it?
 - Vector deferral: what concrete signal (a query miss-rate threshold? a corpus size?) flips the decision to add semantic retrieval — so it stays evidence-gated, not vibes-gated.
 - Templates: embedded-in-binary defaults vs. a bundle-local `.okq/templates/` override — and how `okq new`'s templates stay in lockstep with the OKF version `init` scaffolds.
