@@ -1,0 +1,21 @@
+---
+source: tests/get.rs
+expression: out
+---
+{
+  "schema": "okq.get/v1",
+  "id": "tables/users",
+  "path": "tables/users.md",
+  "line": 1,
+  "type": "table",
+  "title": "Users",
+  "sections": [
+    {
+      "heading": "Schema",
+      "slug": "schema",
+      "level": 2,
+      "line": 12,
+      "body": "## Schema\n\n- id: int\n- email: text"
+    }
+  ]
+}

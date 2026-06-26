@@ -1,0 +1,22 @@
+---
+source: tests/get.rs
+expression: out
+---
+{
+  "schema": "okq.get/v1",
+  "id": "tables/users",
+  "path": "tables/users.md",
+  "line": 1,
+  "type": "table",
+  "title": "Users",
+  "frontmatter": {
+    "description": "The users table.",
+    "tags": [
+      "pii",
+      "core"
+    ],
+    "title": "Users",
+    "type": "table"
+  },
+  "body": "# Users\n\nThe users table.\n\n## Schema\n\n- id: int\n- email: text\n\n## Notes\n\nPII lives here."
+}
