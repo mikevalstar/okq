@@ -47,6 +47,8 @@ fn dispatch(cli: &Cli) -> Result<(), AppError> {
             let found = commands::find::run(&cli.bundle, args)?;
             if cli.json {
                 println!("{}", commands::find::to_json(&found));
+            } else if found.results.is_empty() {
+                eprintln!("No concepts match.");
             } else {
                 let mut out = anstream::stdout().lock();
                 commands::find::render_human(&mut out, &found, cli.no_color)?;
@@ -57,6 +59,8 @@ fn dispatch(cli: &Cli) -> Result<(), AppError> {
             let found = commands::search::run(&cli.bundle, args)?;
             if cli.json {
                 println!("{}", commands::search::to_json(&found));
+            } else if found.results.is_empty() {
+                eprintln!("No matches for {:?}.", found.query);
             } else {
                 let mut out = anstream::stdout().lock();
                 commands::search::render_human(&mut out, &found, cli.no_color)?;
