@@ -1,0 +1,32 @@
+---
+source: tests/find.rs
+expression: out
+---
+{
+  "schema": "okq.find/v1",
+  "count": 2,
+  "results": [
+    {
+      "id": "adrs/0001-pick-rust",
+      "type": "adr",
+      "title": "Pick Rust",
+      "path": "adrs/0001-pick-rust.md",
+      "line": 1,
+      "tags": [
+        "rust",
+        "lang"
+      ]
+    },
+    {
+      "id": "adrs/0002-pick-tantivy",
+      "type": "adr",
+      "title": "Pick Tantivy",
+      "path": "adrs/0002-pick-tantivy.md",
+      "line": 1,
+      "tags": [
+        "rust",
+        "search"
+      ]
+    }
+  ]
+}

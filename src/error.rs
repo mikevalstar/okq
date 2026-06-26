@@ -10,6 +10,9 @@ use std::fmt;
 /// A top-level okq error.
 #[derive(Debug)]
 pub enum AppError {
+    /// A predicate or argument was invalid at runtime (bad `--where`, invalid
+    /// `--regex`). Maps to the same exit code clap uses for usage errors.
+    Usage(String),
     /// The bundle could not be loaded (bad `--bundle` directory, I/O failure).
     Bundle(okf::BundleError),
     /// The concept identity was syntactically invalid.
@@ -46,6 +49,7 @@ impl AppError {
     /// The process exit code this error maps to.
     pub fn exit_code(&self) -> i32 {
         match self {
+            AppError::Usage(_) => 2,
             AppError::Bundle(_) => 1,
             AppError::InvalidConcept { .. } | AppError::ConceptNotFound { .. } => 4,
             AppError::SectionNotFound { .. } | AppError::SectionAmbiguous { .. } => 5,
@@ -56,6 +60,7 @@ impl AppError {
 impl fmt::Display for AppError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            AppError::Usage(msg) => write!(f, "{msg}"),
             AppError::Bundle(e) => write!(f, "{e}"),
             AppError::InvalidConcept { input, reason } => {
                 write!(f, "invalid concept id {input:?}: {reason}")

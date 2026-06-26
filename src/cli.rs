@@ -31,6 +31,9 @@ pub struct Cli {
 pub enum Command {
     /// Print one concept's frontmatter and/or body (optionally a single section).
     Get(GetArgs),
+
+    /// Filter concepts by frontmatter/content predicates (set membership, not ranking).
+    Find(FindArgs),
 }
 
 /// Arguments for `okq get`.
@@ -52,4 +55,28 @@ pub struct GetArgs {
     /// Print only the named section (matched by heading text or slug).
     #[arg(long, value_name = "HEADING")]
     pub section: Option<String>,
+}
+
+/// Arguments for `okq find`.
+#[derive(Args, Debug)]
+pub struct FindArgs {
+    /// Require this tag (repeatable; all required — AND).
+    #[arg(long, value_name = "TAG")]
+    pub tag: Vec<String>,
+
+    /// Require this `type` (repeatable; any matches — OR).
+    #[arg(long = "type", value_name = "TYPE")]
+    pub type_: Vec<String>,
+
+    /// Require a frontmatter predicate `field=value` (repeatable; all required — AND).
+    #[arg(long = "where", value_name = "FIELD=VALUE")]
+    pub where_: Vec<String>,
+
+    /// Require the title or body to contain this pattern.
+    #[arg(long = "match", value_name = "PATTERN")]
+    pub match_: Option<String>,
+
+    /// Treat `--match` as a regular expression instead of a literal substring.
+    #[arg(long, requires = "match_")]
+    pub regex: bool,
 }

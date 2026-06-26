@@ -1,6 +1,6 @@
 ---
 title: okq find — filter concepts by predicate
-status: accepted # draft | accepted | active | deprecated
+status: active # draft | accepted | active | deprecated
 created: 2026-06-26
 updated: 2026-06-26
 tags: [cli, find, query, frontmatter, json, filter]
