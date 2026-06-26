@@ -2,63 +2,96 @@
 
 **A fast, deterministic CLI for searching and navigating [Open Knowledge Format](https://github.com/GoogleCloudPlatform/knowledge-catalog/tree/main/okf) (OKF) document bundles — for humans *and* AI agents.**
 
-> Status: 🌱 **planning / pre-alpha.** This repo currently holds the vision and design ([PLAN.md](PLAN.md)). No code yet. Names, commands, and scope may still change.
+> Status: 🌱 **alpha.** The retrieval core — `get`, `find`, `search` — works today. The graph commands (`neighbors`, `backlinks`, `path`, …) are next. See [PLAN.md](PLAN.md) for the full roadmap.
 
 ---
 
 ## The problem
 
-Modern engineering knowledge lives as large collections of Markdown files with YAML frontmatter — ADRs, decision logs, runbooks, design docs, internal wikis. Google's **Open Knowledge Format (OKF)** standardizes exactly this shape: Markdown + frontmatter, one concept per file, cross-linked into a knowledge graph.
+Engineering knowledge lives as large collections of Markdown files with YAML frontmatter — ADRs, decision logs, runbooks, design docs, wikis. Google's **Open Knowledge Format (OKF)** standardizes exactly this: Markdown + frontmatter, one concept per file, cross-linked into a knowledge graph.
 
-The format is great. The *navigation* is not — for either audience:
+The format is great; the *navigation* is not — for either audience:
 
-- **Humans** can't easily ask "which decisions are security-related?", "what links to this doc?", or "what's orphaned and unmaintained?" without hand-rolling `grep`/`yq`/`fd` pipelines.
-- **AI agents** hit a well-documented wall: past ~100 docs an `index.md` no longer fits in a context window, and an agent forced to read files sequentially "gets lost in the middle." The repeated recommendation is *programmatic* multi-stage retrieval — search across files, then follow the links — but no OKF tool ships that today. Existing OKF tooling only **validates**, **visualizes**, or **authors** bundles. None of them lets you *query* one.
+- **Humans** can't easily ask "which decisions are security-related?" or "what's orphaned?" without hand-rolling `grep`/`yq`/`fd` pipelines.
+- **AI agents** hit a wall: past ~100 docs an `index.md` no longer fits in context, and an agent reading files sequentially "gets lost in the middle." The fix is *programmatic* multi-stage retrieval — search, then follow links — but no OKF tool shipped that. Existing tooling only **validates**, **visualizes**, or **authors** bundles.
 
-`okq` fills that gap.
-
-## What okq does (planned)
-
-A single, scriptable command for asking questions of an OKF bundle:
-
-```sh
-okq find --tag security              # frontmatter filter across the whole bundle
-okq find --where status=accepted     # arbitrary frontmatter predicates
-okq neighbors orders.md --depth 2    # adjacent concepts via the link graph
-okq backlinks customers.md           # what points *to* this concept
-okq path orders.md revenue.md        # shortest link path between two concepts
-okq orphans                          # concepts with no inbound links (likely stale)
-okq stats                            # bundle overview: types, tags, link density
-```
-
-Everything supports `--json` so it doubles as a **retrieval primitive for an LLM agent** — no embeddings, no vector DB, no API key, fully deterministic and reproducible.
-
-## Why it benefits humans *and* AI
-
-OKF's whole premise is that the *same* Markdown serves people and agents. `okq` keeps that contract on the query side:
-
-- **For people** — instant answers over a doc repo ("find the security ADRs", "what's downstream of this table?") instead of bespoke shell incantations.
-- **For agents** — a fast, structured tool call that returns *just* the relevant nodes and their neighborhood, so the model spends its context on the right pages instead of scrolling an index.
-- **For teams** — a healthier documentation flow: `okq` surfaces orphans, broken links, and untagged docs, turning "is our knowledge base any good?" into a command you can run in CI.
-
-## Design principles
-
-- **Deterministic & local-first** — graph + frontmatter queries, no ML, no network. Same inputs → same output.
-- **Agent-runnable** — every command has a non-interactive path with `--json`.
-- **Fast** — built in Rust, on top of the [`okf`](https://crates.io/crates/okf) crate's parser / model / link-graph.
-- **Format, not platform** — works on any OKF (or OKF-shaped) bundle in any git repo or filesystem. No lock-in.
+`okq` fills that gap: a single, scriptable, **local, deterministic** tool that both a person and an agent can use to *query* a bundle.
 
 ## Install
 
-_Not yet published._ When it lands:
-
 ```sh
-cargo install okq        # planned
+cargo install okq
 ```
 
-## Status & roadmap
+## Quickstart
 
-See [PLAN.md](PLAN.md) for the full design, command surface, and milestones.
+Point `okq` at any OKF (or OKF-*shaped*) Markdown tree with `--bundle` (default: the current directory).
+
+```sh
+# Rank sections across the bundle by relevance (BM25)
+okq search "retrieval latency"
+
+# Filter concepts by exact predicate — tags, type, frontmatter, text
+okq find --type adr --tag security
+okq find --where status=accepted
+
+# Expand one concept — or just one section of it
+okq get adrs/0006-agent-runnable-commands
+okq get adrs/0006-agent-runnable-commands --section Decision
+```
+
+The core ergonomic is **locate, then expand** — `search`/`find` return locations-only shortlists; `get` expands what you choose:
+
+```sh
+# Find the most relevant section, then print it
+path=$(okq search "xdg cache" --json | jq -r '.results[0].path')
+okq get "${path%.md}" --section "The index lifecycle"
+```
+
+## Built for agents, too
+
+Every command has a `--json` mode (one document on stdout, logs on stderr) and script-friendly exit codes, so each invocation is a clean tool-call for an LLM — no embeddings, no vector DB, no API key, fully reproducible.
+
+```sh
+okq search "auth" --json | jq -r '.results[].path'
+okq find --tag security --json | jq '.count'
+```
+
+Output is **token-frugal by design**: results are ranked `path:line` + frontmatter + a short snippet — never full document dumps. The caller expands precisely what it needs with `get`.
+
+## Commands
+
+| Command | What it does |
+|---------|--------------|
+| `okq search <query>` | Ranked, section-level full-text retrieval (BM25). The "find the doc(s) about X" backbone. |
+| `okq find` | Filter concepts by exact predicate: `--tag`, `--type`, `--where field=value`, `--match` (`--regex`). |
+| `okq get <concept>` | Expand one concept: frontmatter and/or body, or a single `--section`. |
+
+Run `okq <command> --help` for details and examples. Coming next: `neighbors`, `backlinks`, `path`, `orphans`, `deadlinks`, `stats` (graph navigation).
+
+## How it works
+
+- **Deterministic & local-first** — pure frontmatter + lexical + (soon) graph queries. Same bundle → same answer, every time. No ML, no network.
+- **Section-level** — documents are chunked by heading, so `search` ranks and `get --section` expands at the right granularity.
+- **Ranked search** is a persisted [Tantivy](https://github.com/quickwit-oss/tantivy) BM25 index, cached per-bundle in your XDG cache directory (never written into the bundle). It auto-builds and refreshes when files change; `--reindex` forces a rebuild and `--ephemeral` runs fully in-memory.
+- **Format-tolerant** — targets OKF v0.1 but degrades gracefully on any Markdown-with-frontmatter tree, and skips malformed docs instead of failing.
+- **Built on the [`okf`](https://crates.io/crates/okf) crate** for parsing, the data model, and the link graph; `okq` adds the query surface.
+
+## Exit codes
+
+Scripts and CI can branch on `$?` without parsing output:
+
+| Code | Meaning |
+|------|---------|
+| `0` | Success (including zero results — an empty query is not an error) |
+| `2` | Usage error (bad flags, malformed `--where`, invalid query/regex) |
+| `4` | Concept not found |
+| `5` | Section not found / ambiguous |
+| `1` | Other error (bad bundle, I/O, index failure) |
+
+## Design & roadmap
+
+`okq` is documentation-first. The full design, command surface, and decisions live in [PLAN.md](PLAN.md) and [docs/](docs/) (architecture decision records and feature specs).
 
 ## License
 

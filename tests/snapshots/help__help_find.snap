@@ -1,0 +1,45 @@
+---
+source: tests/help.rs
+expression: "help(&[\"find\", \"--help\"])"
+---
+Filter concepts by exact predicate (tags, type, frontmatter, text match)
+
+Usage: okq find [OPTIONS]
+
+Options:
+      --bundle <DIR>
+          Bundle directory to query [default: current directory]
+
+      --tag <TAG>
+          Require this tag (repeatable; all required — AND)
+
+      --json
+          Emit machine-readable JSON on stdout instead of human-readable text
+
+      --type <TYPE>
+          Require this `type` (repeatable; any matches — OR)
+
+      --no-color
+          Disable colored output (also honors NO_COLOR)
+
+      --where <FIELD=VALUE>
+          Require a frontmatter predicate `field=value` (repeatable; all required — AND)
+
+      --match <PATTERN>
+          Require the title or body to contain this pattern
+
+      --regex
+          Treat `--match` as a regular expression instead of a literal substring
+
+  -h, --help
+          Print help (see a summary with '-h')
+
+Examples:
+  # Concepts carrying a tag
+  okq find --tag security
+
+  # ADRs that are accepted (predicates AND together)
+  okq find --type adr --where status=accepted
+
+  # Regex over title/body, as JSON
+  okq find --match 'BM[0-9]+' --regex --json

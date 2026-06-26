@@ -1,6 +1,6 @@
 [package]
 name = "okq"
-version = "0.0.6"
+version = "0.0.7"
 edition = "2024"
 rust-version = "1.85"
 description = "A fast, deterministic CLI for searching and navigating Open Knowledge Format (OKF) document bundles — for humans and AI agents."
@@ -11,6 +11,8 @@ homepage = "https://github.com/mikevalstar/okq"
 readme = "README.md"
 keywords = ["okf", "knowledge", "search", "markdown", "cli"]
 categories = ["command-line-utilities", "text-processing"]
+# Ship a lean crate: source + design docs, but not the test corpus or suites.
+exclude = ["/docs/tests", "/tests"]
 
 [lib]
 name = "okq"

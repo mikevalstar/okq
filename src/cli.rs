@@ -1,24 +1,110 @@
 //! Command-line surface for okq, parsed with clap.
 //!
 //! Global flags (`--bundle`, `--json`, `--no-color`) are shared across every
-//! command. Today the only subcommand is `get`; more land in later milestones.
+//! command. Help is treated as a feature: each command carries a one-line
+//! summary, a longer explanation, and runnable examples.
 
+use clap::builder::styling::{AnsiColor, Styles};
 use clap::{Args, Parser, Subcommand};
 use std::path::PathBuf;
 
+/// Colored help, in the spirit of `gh`: bold green headers/usage, cyan literals.
+const STYLES: Styles = Styles::styled()
+    .header(AnsiColor::Green.on_default().bold())
+    .usage(AnsiColor::Green.on_default().bold())
+    .literal(AnsiColor::Cyan.on_default().bold())
+    .placeholder(AnsiColor::Cyan.on_default());
+
+const ABOUT: &str =
+    "Query and navigate Open Knowledge Format (OKF) bundles — for humans and agents.";
+
+const LONG_ABOUT: &str = "\
+okq is a fast, deterministic, local-first CLI for querying collections of
+Markdown-with-frontmatter documents (Open Knowledge Format bundles): ADRs,
+design docs, runbooks, wikis.
+
+The same tool serves a person at a terminal and an AI agent assembling context:
+every command has a --json mode and script-friendly exit codes. No embeddings,
+no network, no API key — same bundle, same answer, every time.";
+
+const MAIN_EXAMPLES: &str = "\
+Examples:
+  # Rank sections across the bundle by relevance
+  okq search \"retrieval latency\"
+
+  # Filter concepts by frontmatter predicate
+  okq find --type adr --tag security
+
+  # Expand one concept, or just one section of it
+  okq get adrs/0006-agent-runnable-commands --section Decision
+
+  # Everything speaks JSON, for agents and scripts
+  okq search \"auth\" --json | jq -r '.results[].path'
+
+Learn more:
+  Design & docs:  https://github.com/mikevalstar/okq
+  Run 'okq <command> --help' for details and examples on a command.";
+
+const GET_EXAMPLES: &str = "\
+Examples:
+  # Whole concept (frontmatter + body) — pipe to a pager or glow
+  okq get adrs/0002-library-stack
+
+  # Just one section, addressed by heading or slug
+  okq get adrs/0002-library-stack --section Decision
+
+  # Only the frontmatter, as JSON
+  okq get features/get --frontmatter --json";
+
+const FIND_EXAMPLES: &str = "\
+Examples:
+  # Concepts carrying a tag
+  okq find --tag security
+
+  # ADRs that are accepted (predicates AND together)
+  okq find --type adr --where status=accepted
+
+  # Regex over title/body, as JSON
+  okq find --match 'BM[0-9]+' --regex --json";
+
+const SEARCH_EXAMPLES: &str = "\
+Examples:
+  # Rank sections by relevance (terms OR together, BM25)
+  okq search \"tantivy index lifecycle\"
+
+  # Exact phrase, top 5 hits
+  okq search '\"search backend\"' --limit 5
+
+  # Feed the best hit's location into get, as JSON
+  okq search retrieval --json | jq -r '.results[0].path'";
+
 /// okq — query and navigation for Open Knowledge Format (OKF) bundles.
 #[derive(Parser, Debug)]
-#[command(name = "okq", version, about, long_about = None)]
+#[command(
+    name = "okq",
+    version,
+    about = ABOUT,
+    long_about = LONG_ABOUT,
+    after_help = MAIN_EXAMPLES,
+    after_long_help = MAIN_EXAMPLES,
+    styles = STYLES,
+)]
 pub struct Cli {
-    /// Bundle directory to query.
-    #[arg(long, global = true, value_name = "DIR", default_value = ".")]
+    /// Bundle directory to query [default: current directory].
+    #[arg(
+        long,
+        global = true,
+        value_name = "DIR",
+        default_value = ".",
+        hide_default_value = true
+    )]
     pub bundle: PathBuf,
 
-    /// Emit machine-readable JSON instead of human-readable text.
+    /// Emit machine-readable JSON on stdout instead of human-readable text.
     #[arg(long, global = true)]
     pub json: bool,
 
-    /// Disable colored output.
+    /// Disable colored output (also honors NO_COLOR).
     #[arg(long, global = true)]
     pub no_color: bool,
 
@@ -29,13 +115,16 @@ pub struct Cli {
 /// The okq subcommands.
 #[derive(Subcommand, Debug)]
 pub enum Command {
-    /// Print one concept's frontmatter and/or body (optionally a single section).
+    /// Expand one concept: print its frontmatter and/or body, or a single section.
+    #[command(after_help = GET_EXAMPLES, after_long_help = GET_EXAMPLES)]
     Get(GetArgs),
 
-    /// Filter concepts by frontmatter/content predicates (set membership, not ranking).
+    /// Filter concepts by exact predicate (tags, type, frontmatter, text match).
+    #[command(after_help = FIND_EXAMPLES, after_long_help = FIND_EXAMPLES)]
     Find(FindArgs),
 
-    /// Ranked full-text retrieval over section text (BM25, via a Tantivy index).
+    /// Search: rank sections by relevance (full-text BM25, via a Tantivy index).
+    #[command(after_help = SEARCH_EXAMPLES, after_long_help = SEARCH_EXAMPLES)]
     Search(SearchArgs),
 }
 

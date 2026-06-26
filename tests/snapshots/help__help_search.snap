@@ -1,0 +1,45 @@
+---
+source: tests/help.rs
+expression: "help(&[\"search\", \"--help\"])"
+---
+Search: rank sections by relevance (full-text BM25, via a Tantivy index)
+
+Usage: okq search [OPTIONS] <QUERY>
+
+Arguments:
+  <QUERY>
+          The query. Multiple terms rank by relevance (OR + BM25); `"quote"` for a phrase
+
+Options:
+      --bundle <DIR>
+          Bundle directory to query [default: current directory]
+
+      --limit <N>
+          Maximum number of ranked hits to return
+          
+          [default: 10]
+
+      --json
+          Emit machine-readable JSON on stdout instead of human-readable text
+
+      --reindex
+          Force a full rebuild of the index before searching
+
+      --ephemeral
+          Build a transient in-memory index for this run; write nothing to disk
+
+      --no-color
+          Disable colored output (also honors NO_COLOR)
+
+  -h, --help
+          Print help (see a summary with '-h')
+
+Examples:
+  # Rank sections by relevance (terms OR together, BM25)
+  okq search "tantivy index lifecycle"
+
+  # Exact phrase, top 5 hits
+  okq search '"search backend"' --limit 5
+
+  # Feed the best hit's location into get, as JSON
+  okq search retrieval --json | jq -r '.results[0].path'

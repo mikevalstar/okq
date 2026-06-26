@@ -1,0 +1,43 @@
+---
+source: tests/help.rs
+expression: "help(&[\"get\", \"--help\"])"
+---
+Expand one concept: print its frontmatter and/or body, or a single section
+
+Usage: okq get [OPTIONS] <CONCEPT>
+
+Arguments:
+  <CONCEPT>
+          Concept to expand: a concept id (`tables/users`) or `.md` path (`tables/users.md`)
+
+Options:
+      --bundle <DIR>
+          Bundle directory to query [default: current directory]
+
+      --frontmatter
+          Print only the frontmatter
+
+      --body
+          Print only the body
+
+      --json
+          Emit machine-readable JSON on stdout instead of human-readable text
+
+      --no-color
+          Disable colored output (also honors NO_COLOR)
+
+      --section <HEADING>
+          Print only the named section (matched by heading text or slug)
+
+  -h, --help
+          Print help (see a summary with '-h')
+
+Examples:
+  # Whole concept (frontmatter + body) — pipe to a pager or glow
+  okq get adrs/0002-library-stack
+
+  # Just one section, addressed by heading or slug
+  okq get adrs/0002-library-stack --section Decision
+
+  # Only the frontmatter, as JSON
+  okq get features/get --frontmatter --json
