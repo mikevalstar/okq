@@ -6,7 +6,7 @@
 
 use std::path::Path;
 
-use okf::{Bundle, ConceptId, Value};
+use okf::{Bundle, Value};
 use schemars::JsonSchema;
 use serde::Serialize;
 
@@ -86,10 +86,10 @@ pub struct Got {
 /// Runs `get` against the bundle at `bundle_dir`.
 pub fn run(bundle_dir: &Path, args: &GetArgs) -> Result<Got, AppError> {
     let bundle = Bundle::load(bundle_dir)?;
-    let id = resolve_id(&args.concept)?;
-    let concept = bundle.get(&id).ok_or_else(|| AppError::ConceptNotFound {
-        input: args.concept.clone(),
-    })?;
+    let id = crate::model::resolve_concept(&bundle, &args.concept)?;
+    let concept = bundle
+        .get(&id)
+        .expect("resolve_concept returns an existing concept");
 
     let rel = concept
         .path
@@ -137,17 +137,6 @@ pub fn run(bundle_dir: &Path, args: &GetArgs) -> Result<Got, AppError> {
             sections,
         },
         frontmatter_yaml,
-    })
-}
-
-/// Resolves a caller-supplied identity into a [`ConceptId`]: a `.md` suffix and
-/// a leading `./` are tolerated; the remainder must be a valid concept id.
-fn resolve_id(input: &str) -> Result<ConceptId, AppError> {
-    let trimmed = input.trim_start_matches("./");
-    let stripped = trimmed.strip_suffix(".md").unwrap_or(trimmed);
-    ConceptId::parse(stripped).map_err(|e| AppError::InvalidConcept {
-        input: input.to_string(),
-        reason: e.to_string(),
     })
 }
 
@@ -212,25 +201,4 @@ pub fn render_human(w: &mut impl std::io::Write, got: &Got, no_color: bool) -> s
         }
     }
     Ok(())
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn resolve_id_accepts_id_and_path_forms() {
-        assert_eq!(
-            resolve_id("tables/users").unwrap().to_string(),
-            "tables/users"
-        );
-        assert_eq!(
-            resolve_id("tables/users.md").unwrap().to_string(),
-            "tables/users"
-        );
-        assert_eq!(
-            resolve_id("./tables/users.md").unwrap().to_string(),
-            "tables/users"
-        );
-    }
 }

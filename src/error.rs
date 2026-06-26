@@ -46,6 +46,13 @@ pub enum AppError {
         /// The identity as the caller typed it.
         input: String,
     },
+    /// A partial identity matched more than one concept.
+    ConceptAmbiguous {
+        /// The identity as the caller typed it.
+        input: String,
+        /// The matching concept ids.
+        candidates: Vec<String>,
+    },
     /// `--section` matched no heading in the resolved concept.
     SectionNotFound {
         /// The concept that was searched.
@@ -70,7 +77,9 @@ impl AppError {
         match self {
             AppError::Usage(_) => exit::USAGE,
             AppError::Bundle(_) | AppError::Index(_) => exit::ERROR,
-            AppError::InvalidConcept { .. } | AppError::ConceptNotFound { .. } => exit::NOT_FOUND,
+            AppError::InvalidConcept { .. }
+            | AppError::ConceptNotFound { .. }
+            | AppError::ConceptAmbiguous { .. } => exit::NOT_FOUND,
             AppError::SectionNotFound { .. } | AppError::SectionAmbiguous { .. } => exit::SECTION,
         }
     }
@@ -88,6 +97,11 @@ impl fmt::Display for AppError {
             AppError::ConceptNotFound { input } => {
                 write!(f, "no concept found for {input:?}")
             }
+            AppError::ConceptAmbiguous { input, candidates } => write!(
+                f,
+                "{input:?} matches multiple concepts; disambiguate: {}",
+                candidates.join(", ")
+            ),
             AppError::SectionNotFound { concept, query } => {
                 write!(f, "no section {query:?} in concept {concept:?}")
             }

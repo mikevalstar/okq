@@ -200,6 +200,24 @@ fn neighbors_missing_concept_exits_4() {
 }
 
 #[test]
+fn graph_commands_accept_partial_names() {
+    // A nested concept resolved by its bare name flows through the shared
+    // resolver into the graph commands.
+    let dir = tempfile::tempdir().unwrap();
+    write(
+        dir.path().join("adrs/one.md"),
+        "---\ntype: adr\ntitle: One\nrelated: [two]\n---\n\n# One\n",
+    );
+    write(
+        dir.path().join("adrs/two.md"),
+        "---\ntype: adr\ntitle: Two\n---\n\n# Two\n",
+    );
+    // `one` resolves to `adrs/one`; its related edge reaches `adrs/two`.
+    let v = json(dir.path(), &["neighbors", "one"]);
+    assert_eq!(ids(&v), vec!["adrs/two"]);
+}
+
+#[test]
 fn out_of_bundle_links_are_not_dead() {
     // A link escaping the bundle root is out of scope, not dead.
     let dir = tempfile::tempdir().unwrap();

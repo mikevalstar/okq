@@ -148,6 +148,48 @@ fn md_path_form_resolves() {
 }
 
 #[test]
+fn bare_name_resolves_to_unique_concept() {
+    // `users` (not `tables/users`) uniquely identifies the concept.
+    let dir = fixture();
+    okq(dir.path())
+        .args(["get", "users", "--frontmatter"])
+        .assert()
+        .success()
+        .stdout(predicates::str::contains("title: Users"));
+}
+
+#[test]
+fn partial_does_not_match_arbitrary_substring() {
+    // `ser` is a substring of `users` but not a path-segment suffix.
+    let dir = fixture();
+    okq(dir.path())
+        .args(["get", "ser"])
+        .assert()
+        .failure()
+        .code(4);
+}
+
+#[test]
+fn ambiguous_partial_exits_4() {
+    let dir = tempfile::tempdir().unwrap();
+    write(
+        dir.path().join("a/notes.md"),
+        "---\ntype: note\ntitle: A Notes\n---\n\n# Notes\n",
+    );
+    write(
+        dir.path().join("b/notes.md"),
+        "---\ntype: note\ntitle: B Notes\n---\n\n# Notes\n",
+    );
+    // `notes` matches both a/notes and b/notes.
+    okq(dir.path())
+        .args(["get", "notes"])
+        .assert()
+        .failure()
+        .code(4)
+        .stderr(predicates::str::contains("a/notes"));
+}
+
+#[test]
 fn missing_concept_exits_4() {
     let dir = fixture();
     okq(dir.path())

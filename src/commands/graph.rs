@@ -214,14 +214,7 @@ pub fn deadlinks(bundle_dir: &Path, _args: &DeadlinksArgs) -> Result<DeadlinksOu
 // ---- helpers -------------------------------------------------------------
 
 fn require_concept(bundle: &Bundle, input: &str) -> Result<ConceptId, AppError> {
-    let id = model::parse_concept_id(input)?;
-    if bundle.contains(&id) {
-        Ok(id)
-    } else {
-        Err(AppError::ConceptNotFound {
-            input: input.to_string(),
-        })
-    }
+    model::resolve_concept(bundle, input)
 }
 
 fn direction(arg: DirectionArg) -> Direction {

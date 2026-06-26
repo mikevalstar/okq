@@ -11,9 +11,9 @@ use serde::Serialize;
 
 use crate::error::AppError;
 
-/// Resolves a caller-supplied identity into a [`ConceptId`]: a `.md` suffix and a
-/// leading `./` are tolerated; the remainder must be a valid concept id. Shared
-/// by the graph commands (and mirrors `get`'s resolution).
+/// Parses a caller-supplied identity into a [`ConceptId`] *syntactically*: a
+/// `.md` suffix and a leading `./` are tolerated; the remainder must be a valid
+/// concept id. This does not check existence — see [`resolve_concept`].
 pub fn parse_concept_id(input: &str) -> Result<ConceptId, AppError> {
     let trimmed = input.trim_start_matches("./");
     let stripped = trimmed.strip_suffix(".md").unwrap_or(trimmed);
@@ -21,6 +21,43 @@ pub fn parse_concept_id(input: &str) -> Result<ConceptId, AppError> {
         input: input.to_string(),
         reason: e.to_string(),
     })
+}
+
+/// Resolves a caller-supplied identity to an **existing** concept. An exact
+/// concept id (or `.md` path) always wins; otherwise a unique path-segment-
+/// aligned *suffix* matches (so `0002-foo` finds `adrs/0002-foo`, and `foo`
+/// finds a concept named `foo` in any directory). Matching is on `/` boundaries,
+/// never arbitrary substrings. A non-unique partial errors with the candidates.
+pub fn resolve_concept(bundle: &Bundle, input: &str) -> Result<ConceptId, AppError> {
+    let parsed = parse_concept_id(input)?;
+    if bundle.contains(&parsed) {
+        return Ok(parsed);
+    }
+
+    let needle = parsed.segments();
+    let mut matches: Vec<ConceptId> = bundle
+        .concepts()
+        .iter()
+        .map(|c| c.id.clone())
+        .filter(|id| ends_with_segments(id.segments(), needle))
+        .collect();
+    matches.sort();
+
+    match matches.as_slice() {
+        [] => Err(AppError::ConceptNotFound {
+            input: input.to_string(),
+        }),
+        [one] => Ok(one.clone()),
+        many => Err(AppError::ConceptAmbiguous {
+            input: input.to_string(),
+            candidates: many.iter().map(ConceptId::to_string).collect(),
+        }),
+    }
+}
+
+/// `true` if `segments` ends with `needle` (segment-aligned suffix).
+fn ends_with_segments(segments: &[String], needle: &[String]) -> bool {
+    segments.len() >= needle.len() && segments[segments.len() - needle.len()..] == *needle
 }
 
 /// One concept as it appears in a shortlist: identity, location, and the
