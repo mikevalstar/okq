@@ -11,8 +11,9 @@ homepage = "https://github.com/mikevalstar/okq"
 readme = "README.md"
 keywords = ["okf", "knowledge", "search", "markdown", "cli"]
 categories = ["command-line-utilities", "text-processing"]
-# Ship a lean crate: source + design docs, but not the test corpus or suites.
-exclude = ["/docs/tests", "/tests"]
+# Ship a lean crate: source + design docs, but not the test corpus, suites,
+# or internal working notes.
+exclude = ["/docs/tests", "/tests", "/CLAUDE.md"]
 
 [lib]
 name = "okq"
