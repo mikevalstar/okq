@@ -51,6 +51,15 @@ No other OKF tool does this, and it maps directly onto how both humans and agent
 | `okq stats` | Bundle overview: counts by type/tag, link density, hub concepts, edge-type distribution. |
 | `okq get <concept>` | Print one concept's frontmatter and/or body (`--frontmatter`, `--body`, `--section <heading>`, `--json`). The expand-on-demand counterpart to `search`/`neighbors` shortlists. |
 
+**Authoring / onboarding commands** — query is the point, but a bundle has to *exist* before it can be queried, and the chicken-and-egg of "what does a conformant bundle even look like?" is a real adoption barrier:
+
+| Command | Purpose |
+|---|---|
+| `okq init` | Scaffold a starter OKF bundle in an empty/existing dir: the standard folder layout (decisions / features / guides / …), a seed `index.md`, a `README` explaining the bundle, and the OKF-conformant frontmatter conventions wired in. Gets a repo from zero to a queryable, conformant skeleton in one command. |
+| `okq new <type> [title]` | Create a single concept from the matching template (`decision`, `feature`, `guide`, …) with frontmatter pre-filled (id, type, created date) and a body skeleton. The repeatable "add one more doc" counterpart to `init`. |
+
+Templates ship embedded in the binary (no template-dir bootstrapping problem) and degrade to OKF v0.1 defaults; a bundle can override them with its own `.okq/templates/` later if needed. **Positioning honesty:** scaffolding/authoring overlaps existing tooling (`scaccogatto/okf-skills`, `okf fmt`) — `okq`'s angle is *one integrated tool* where the same thing that scaffolds a bundle also queries and navigates it, not a novel capability.
+
 Global flags: `--json`, `--bundle <dir>` (default: cwd), `--no-color`, exit codes that are script-friendly.
 
 **Search vs. graph — the two retrieval modes.** `search`/`find` answer *"where do I start?"*; `neighbors`/`backlinks`/`path` answer *"what's connected to here?"*. The expensive agent loop — find one doc, then grep-and-read outward to map an area — collapses into `search → neighbors → get`. That composition is the core ergonomic.
@@ -80,7 +89,9 @@ Open question: how much of `okf`'s graph is reusable vs. what `okq` must build. 
 - **M1 — Read, find & search.** Load a bundle via `okf`; implement `find` (tag/type/where/match), section-level ranked `search`, and `get` (incl. `--section`), all with `--json` and `path:line` output. Dogfood against a real `docs/` tree.
 - **M2 — Graph.** `neighbors`, `backlinks`, `path`, `orphans`, `deadlinks` over the link graph, with typed edges and a default depth of 1.
 - **M3 — Health & stats.** `stats`, CI-friendly checks (orphans/deadlinks as non-zero exit), stable JSON schemas documented.
+- **M3.5 — Scaffold & author.** `okq init` (starter bundle: layout + seed `index.md` + embedded templates) and `okq new <type>` (single doc from template). Closes the loop — `okq` can now *create* the bundles it queries, lowering the adoption barrier.
 - **M4 — Release.** Publish `okq` to crates.io; prebuilt binaries; install docs. (Name confirmed free as of 2026-06-26.)
+- **M4.5 — Agent skills.** Ship a small set of bundled, installable agent skills (see §9) — one teaching agents to *navigate* a bundle via `okq` (search → neighbors → get), one explaining the OKF *format* itself (referencing the Google spec as the canonical base). Distributed alongside the binary so adopting `okq` also onboards the agents that use it.
 - **Later — Agent ergonomics.** Optional MCP server (`okq mcp`) exposing search/neighbors/path as tools; `--watch` / incremental reindex on changed files (hash/mtime) to keep any index from going stale.
 - **Later, evidence-gated — semantic retrieval.** *Only if* observed real queries miss on vocabulary mismatch (query terms that never appear literally in the relevant doc) does vector search earn its cost. Even then: add it as a **second retriever fused with the lexical one (RRF)**, not a replacement — pure-vector blurs exactly the exact-token queries (IDs, API names, error codes) that dominate technical bundles. Local embedding model only, to preserve the local-first/no-network principle. This is explicitly *not* a v1 concern.
 
@@ -93,8 +104,22 @@ Open question: how much of `okf`'s graph is reusable vs. what `okq` must build. 
 - `search` backend: in-memory BM25 vs. SQLite FTS5 vs. Tantivy — where's the bundle-size crossover that justifies a persisted index over a cold rebuild each run?
 - Edge-type taxonomy: which relations are first-class (`supersedes`, `related`, `depends-on`, generic `link`)? Derive from frontmatter conventions, or define a fixed set and map onto it?
 - Vector deferral: what concrete signal (a query miss-rate threshold? a corpus size?) flips the decision to add semantic retrieval — so it stays evidence-gated, not vibes-gated.
+- Templates: embedded-in-binary defaults vs. a bundle-local `.okq/templates/` override — and how `okq new`'s templates stay in lockstep with the OKF version `init` scaffolds.
+- Skill packaging: Claude Code skill bundle first, but how portable should the skill *content* be (OKF model + retrieval loop) across agent/skill formats — and how does it stay pinned to a moving OKF spec without a rewrite each version?
 
-## 9. Prior art / references
+## 9. Agent skills (bundled)
+
+`okq` is a tool; a skill is the *instruction* that teaches an agent when and how to reach for it. Shipping both means adopting `okq` also onboards the agents that will use it. Two skills, kept deliberately small:
+
+1. **`okf-navigate` — how to explore a bundle with `okq`.** Teaches the retrieval loop: start with `okq search` (ranked, locations-only), expand with `okq get --section`, then traverse with `okq neighbors`/`backlinks` to map an area — instead of reading files linearly and "losing the middle." Encodes the token-frugal contract (work from shortlists, expand on demand). This is the skill that makes the *tool* pay off.
+
+2. **`okf-explain` — what the OKF format *is*.** Teaches an agent (or a human via the agent) the bundle anatomy: the folder taxonomy, required frontmatter, ID/naming conventions, the cross-link model, and how to author a conformant doc (pairs with `okq new`). **The Google OKF spec is the canonical base** the skill references and quotes.
+
+**On the canonical reference, honestly:** OKF is young and Google-originated. The skill cites the [Google spec](https://github.com/GoogleCloudPlatform/knowledge-catalog/tree/main/okf) as the source of truth *for now* — but the format is expected to evolve as the OSS community takes it up (cf. the W4G1/okf and okf-skills efforts already diverging on details). So the skill is written to **reference the spec by pointer, not by hardcoding the schema**, and pins the OKF version it targets, so that when the community standard moves, updating one pointer + version pin re-aligns the skill rather than a rewrite. The plan should *expect* the canonical reference to shift away from Google over time.
+
+Format/packaging is an open question (§8): a Claude Code skill bundle is the obvious first target (cf. `scaccogatto/okf-skills`), but the *content* — the OKF mental model + the `okq` retrieval loop — should be portable to whatever skill/agent format matters, not welded to one vendor.
+
+## 10. Prior art / references
 
 - OKF spec & reference impls — `GoogleCloudPlatform/knowledge-catalog`
 - `W4G1/okf` — pure-Rust OKF library + CLI (validate/graph/parse/fmt) — likely dependency
