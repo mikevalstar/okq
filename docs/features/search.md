@@ -1,6 +1,6 @@
 ---
 title: okq search — ranked full-text retrieval
-status: accepted # draft | accepted | active | deprecated
+status: active # draft | accepted | active | deprecated
 created: 2026-06-26
 updated: 2026-06-26
 tags: [cli, search, tantivy, bm25, ranking, index, json]

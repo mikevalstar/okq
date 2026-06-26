@@ -7,6 +7,7 @@
 pub mod cli;
 pub mod commands;
 pub mod error;
+pub mod index;
 pub mod model;
 pub mod sections;
 pub mod yaml_json;
@@ -49,6 +50,16 @@ fn dispatch(cli: &Cli) -> Result<(), AppError> {
             } else {
                 let mut out = anstream::stdout().lock();
                 commands::find::render_human(&mut out, &found, cli.no_color)?;
+            }
+            Ok(())
+        }
+        Command::Search(args) => {
+            let found = commands::search::run(&cli.bundle, args)?;
+            if cli.json {
+                println!("{}", commands::search::to_json(&found));
+            } else {
+                let mut out = anstream::stdout().lock();
+                commands::search::render_human(&mut out, &found, cli.no_color)?;
             }
             Ok(())
         }

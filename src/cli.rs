@@ -34,6 +34,9 @@ pub enum Command {
 
     /// Filter concepts by frontmatter/content predicates (set membership, not ranking).
     Find(FindArgs),
+
+    /// Ranked full-text retrieval over section text (BM25, via a Tantivy index).
+    Search(SearchArgs),
 }
 
 /// Arguments for `okq get`.
@@ -79,4 +82,24 @@ pub struct FindArgs {
     /// Treat `--match` as a regular expression instead of a literal substring.
     #[arg(long, requires = "match_")]
     pub regex: bool,
+}
+
+/// Arguments for `okq search`.
+#[derive(Args, Debug)]
+pub struct SearchArgs {
+    /// The query. Multiple terms rank by relevance (OR + BM25); `"quote"` for a phrase.
+    #[arg(value_name = "QUERY")]
+    pub query: String,
+
+    /// Maximum number of ranked hits to return.
+    #[arg(long, default_value_t = 10, value_name = "N")]
+    pub limit: usize,
+
+    /// Force a full rebuild of the index before searching.
+    #[arg(long)]
+    pub reindex: bool,
+
+    /// Build a transient in-memory index for this run; write nothing to disk.
+    #[arg(long)]
+    pub ephemeral: bool,
 }
