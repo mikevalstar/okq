@@ -48,6 +48,9 @@ The token-frugal contract (PLAN.md §3) says discovery commands return ranked `p
 1. As a **concept ID** — the OKF canonical identity: the file path within the bundle with `.md` removed (`tables/users` → `tables/users.md`). This is the primary form.
 2. As a **literal path** — the same with the `.md` suffix included (`tables/users.md`), and a leading `./` tolerated.
 3. *(Open question, see below)* As a **frontmatter `id`** value, if the bundle uses explicit `id:` fields.
+4. *(Planned — lands after `find`.)* As a **partial path / bare concept name** — a path-segment-aligned suffix of a concept id that *uniquely* identifies one concept. `okq get 0001-documentation-first-okf-shaped` resolves to `adrs/0001-documentation-first-okf-shaped` when that name is unique in the bundle, so callers needn't remember the full path.
+
+Resolution prefers the **most exact** match: an exact concept id (1) or `.md` path (2) always wins; only if those miss does okq fall back to a unique segment-aligned suffix, then a unique final-segment (name) match. Matching is on `/` boundaries, never arbitrary substrings (`get ers` does **not** match `tables/users`). If a partial matches more than one concept, it is an **ambiguous-resolution error** that lists the candidates with their `path:line`; the caller disambiguates by adding more of the path. This mode reuses `find`'s concept-matching, which is why it's sequenced after `find` rather than shipped with the initial `get`.
 
 Resolution is relative to `--bundle <dir>` (default: cwd). The **reserved files `index.md` and `log.md` are not concept-addressable** (OKF reserves them; they're generated/scoped artifacts, not concepts) — `get`-ting one is a not-found unless a future `--raw` opts in.
 
@@ -122,6 +125,7 @@ These are settled here once and inherited by `find`, `search`, and the graph com
 - [ ] Works on a non-OKF, OKF-shaped Markdown+frontmatter tree (this repo's own `docs/`), proving format-tolerance.
 - [ ] Fully non-interactive; identical behavior on and off a TTY.
 - [ ] Output contracts (human + JSON) are snapshot-tested (`insta`) so the schema is locked from day one.
+- [ ] *(Planned, post-`find`)* A unique partial path / bare name resolves to its concept; a non-unique partial errors and lists candidates; exact id/path always takes precedence over a partial.
 
 ## Open questions
 
@@ -130,6 +134,7 @@ These are settled here once and inherited by `find`, `search`, and the graph com
 - **Exit-code taxonomy** — codes 0/2/4/5 here are shared across all commands; promote the taxonomy to its own ADR so each new command maps onto it rather than inventing codes.
 - **Section addressing edge cases** — duplicate headings, headings inside fenced code blocks, frontmatter-only docs (no headings). Define precisely during build.
 - **`--raw` escape hatch** — a future flag to `get` reserved/non-concept files (`index.md`, `log.md`) verbatim?
+- **Partial-resolution ambiguity code** — when a bare name matches multiple concepts, does it reuse exit `4` (concept-resolution failure, with candidates listed) or earn its own code? Lean toward `4` for now; revisit when the shared exit-code ADR is written.
 
 ## Related
 
