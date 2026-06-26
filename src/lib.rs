@@ -15,15 +15,15 @@ pub mod yaml_json;
 use clap::Parser;
 
 use cli::{Cli, Command};
-use error::AppError;
+use error::{AppError, exit};
 
 /// Parses argv, runs the requested command, and returns the process exit code.
-/// Usage errors are handled by clap (exit 2); everything else maps through
-/// [`AppError::exit_code`].
+/// On success a command yields its own exit code (`0`, or `3` for a `--check`
+/// that found issues — ADR-0004); errors map through [`AppError::exit_code`].
 pub fn run() -> i32 {
     let cli = Cli::parse();
     match dispatch(&cli) {
-        Ok(()) => 0,
+        Ok(code) => code,
         Err(e) => {
             eprintln!("okq: error: {e}");
             e.exit_code()
@@ -31,7 +31,8 @@ pub fn run() -> i32 {
     }
 }
 
-fn dispatch(cli: &Cli) -> Result<(), AppError> {
+/// Runs the chosen command and returns its success exit code.
+fn dispatch(cli: &Cli) -> Result<i32, AppError> {
     match &cli.command {
         Command::Get(args) => {
             let got = commands::get::run(&cli.bundle, args)?;
@@ -41,7 +42,7 @@ fn dispatch(cli: &Cli) -> Result<(), AppError> {
                 let mut out = anstream::stdout().lock();
                 commands::get::render_human(&mut out, &got, cli.no_color)?;
             }
-            Ok(())
+            Ok(exit::SUCCESS)
         }
         Command::Find(args) => {
             let found = commands::find::run(&cli.bundle, args)?;
@@ -53,7 +54,7 @@ fn dispatch(cli: &Cli) -> Result<(), AppError> {
                 let mut out = anstream::stdout().lock();
                 commands::find::render_human(&mut out, &found, cli.no_color)?;
             }
-            Ok(())
+            Ok(exit::SUCCESS)
         }
         Command::Search(args) => {
             let found = commands::search::run(&cli.bundle, args)?;
@@ -65,7 +66,7 @@ fn dispatch(cli: &Cli) -> Result<(), AppError> {
                 let mut out = anstream::stdout().lock();
                 commands::search::render_human(&mut out, &found, cli.no_color)?;
             }
-            Ok(())
+            Ok(exit::SUCCESS)
         }
     }
 }

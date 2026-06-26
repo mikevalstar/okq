@@ -1,11 +1,28 @@
 //! Application errors, each carrying the process exit code it maps to.
 //!
-//! The exit-code taxonomy is shared across all okq commands (see the `get`
-//! feature spec); it is intended to graduate into its own ADR once a second
-//! command lands. Codes: `0` success, `2` usage (clap), `4` concept not found,
-//! `5` section not found/ambiguous, `1` other (I/O, bad bundle).
+//! The exit-code taxonomy is the canonical agent/script contract defined in
+//! ADR-0004 (`docs/adrs/0004-exit-code-taxonomy.md`); this module is its single
+//! source of truth. See [`exit`] for the codes and [`AppError::exit_code`] for
+//! the error→code mapping. Code `3` (a health check that *found issues*) is not
+//! an error — a command returns it from a successful run via `dispatch`.
 
 use std::fmt;
+
+/// The okq exit-code taxonomy (ADR-0004). The canonical numbers; never renumber.
+pub mod exit {
+    /// Success — including a valid empty answer (no matches, no path, no neighbors).
+    pub const SUCCESS: i32 = 0;
+    /// Other / internal error: bad bundle, I/O, search-index failure.
+    pub const ERROR: i32 = 1;
+    /// Usage error: bad flags/args, malformed `--where`, invalid regex/query.
+    pub const USAGE: i32 = 2;
+    /// A health check ran cleanly but found issues (opt-in, e.g. `--check`).
+    pub const CHECK_FAILED: i32 = 3;
+    /// Concept not found / not resolvable.
+    pub const NOT_FOUND: i32 = 4;
+    /// Section not found / ambiguous within a resolved concept.
+    pub const SECTION: i32 = 5;
+}
 
 /// A top-level okq error.
 #[derive(Debug)]
@@ -48,13 +65,13 @@ pub enum AppError {
 }
 
 impl AppError {
-    /// The process exit code this error maps to.
+    /// The process exit code this error maps to (ADR-0004).
     pub fn exit_code(&self) -> i32 {
         match self {
-            AppError::Usage(_) => 2,
-            AppError::Bundle(_) | AppError::Index(_) => 1,
-            AppError::InvalidConcept { .. } | AppError::ConceptNotFound { .. } => 4,
-            AppError::SectionNotFound { .. } | AppError::SectionAmbiguous { .. } => 5,
+            AppError::Usage(_) => exit::USAGE,
+            AppError::Bundle(_) | AppError::Index(_) => exit::ERROR,
+            AppError::InvalidConcept { .. } | AppError::ConceptNotFound { .. } => exit::NOT_FOUND,
+            AppError::SectionNotFound { .. } | AppError::SectionAmbiguous { .. } => exit::SECTION,
         }
     }
 }
