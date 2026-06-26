@@ -1,6 +1,6 @@
 ---
 title: okq graph navigation — neighbors / backlinks / path / orphans / deadlinks
-status: accepted # draft | accepted | active | deprecated
+status: active # draft | accepted | active | deprecated
 created: 2026-06-26
 updated: 2026-06-26
 tags: [cli, graph, neighbors, backlinks, path, orphans, deadlinks, edges, json]

@@ -13,10 +13,15 @@ no network, no API key — same bundle, same answer, every time.
 Usage: okq [OPTIONS] <COMMAND>
 
 Commands:
-  get     Expand one concept: print its frontmatter and/or body, or a single section
-  find    Filter concepts by exact predicate (tags, type, frontmatter, text match)
-  search  Search: rank sections by relevance (full-text BM25, via a Tantivy index)
-  help    Print this message or the help of the given subcommand(s)
+  get        Expand one concept: print its frontmatter and/or body, or a single section
+  find       Filter concepts by exact predicate (tags, type, frontmatter, text match)
+  search     Search: rank sections by relevance (full-text BM25, via a Tantivy index)
+  neighbors  Concepts adjacent to one concept via the link graph (N-hop, typed edges)
+  backlinks  Concepts that link *to* a concept (the inbound view)
+  path       Shortest link path between two concepts
+  orphans    Concepts with no inbound links (stale-doc candidates)
+  deadlinks  Links pointing to missing/renamed concepts (inline + frontmatter)
+  help       Print this message or the help of the given subcommand(s)
 
 Options:
       --bundle <DIR>

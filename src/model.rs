@@ -5,9 +5,23 @@
 //! later), so a shortlist looks the same to an agent regardless of which
 //! command produced it. It mirrors the per-concept envelope `get` ratified.
 
-use okf::{Bundle, Concept};
+use okf::{Bundle, Concept, ConceptId};
 use schemars::JsonSchema;
 use serde::Serialize;
+
+use crate::error::AppError;
+
+/// Resolves a caller-supplied identity into a [`ConceptId`]: a `.md` suffix and a
+/// leading `./` are tolerated; the remainder must be a valid concept id. Shared
+/// by the graph commands (and mirrors `get`'s resolution).
+pub fn parse_concept_id(input: &str) -> Result<ConceptId, AppError> {
+    let trimmed = input.trim_start_matches("./");
+    let stripped = trimmed.strip_suffix(".md").unwrap_or(trimmed);
+    ConceptId::parse(stripped).map_err(|e| AppError::InvalidConcept {
+        input: input.to_string(),
+        reason: e.to_string(),
+    })
+}
 
 /// One concept as it appears in a shortlist: identity, location, and the
 /// frontmatter an agent needs to decide whether to expand it — never the body.

@@ -2,7 +2,7 @@
 
 **A fast, deterministic CLI for searching and navigating [Open Knowledge Format](https://github.com/GoogleCloudPlatform/knowledge-catalog/tree/main/okf) (OKF) document bundles — for humans *and* AI agents.**
 
-> Status: 🌱 **alpha.** The retrieval core — `get`, `find`, `search` — works today. The graph commands (`neighbors`, `backlinks`, `path`, …) are next. See [PLAN.md](PLAN.md) for the full roadmap.
+> Status: 🌱 **alpha.** Retrieval (`get`, `find`, `search`) and graph navigation (`neighbors`, `backlinks`, `path`, `orphans`, `deadlinks`) work today. Bundle stats are next. See [PLAN.md](PLAN.md) for the full roadmap.
 
 ---
 
@@ -66,8 +66,13 @@ Output is **token-frugal by design**: results are ranked `path:line` + frontmatt
 | `okq search <query>` | Ranked, section-level full-text retrieval (BM25). The "find the doc(s) about X" backbone. |
 | `okq find` | Filter concepts by exact predicate: `--tag`, `--type`, `--where field=value`, `--match` (`--regex`). |
 | `okq get <concept>` | Expand one concept: frontmatter and/or body, or a single `--section`. |
+| `okq neighbors <concept>` | Adjacent concepts via the link graph: `--depth`, `--direction`, `--edge`. |
+| `okq backlinks <concept>` | Concepts that link *to* this one (the inbound view). |
+| `okq path <a> <b>` | Shortest link path between two concepts (`--undirected`). |
+| `okq orphans` | Concepts with no inbound links (stale-doc candidates); `--check` for CI. |
+| `okq deadlinks` | Links pointing at missing/renamed concepts; `--check` for CI. |
 
-Run `okq <command> --help` for details and examples. Coming next: `neighbors`, `backlinks`, `path`, `orphans`, `deadlinks`, `stats` (graph navigation).
+Run `okq <command> --help` for details and examples. The graph commands draw edges from **both** inline markdown links and frontmatter relations (`related`, `supersedes`, …). Coming next: `stats` (bundle metrics).
 
 ## How it works
 

@@ -78,6 +78,43 @@ Examples:
   # Feed the best hit's location into get, as JSON
   okq search retrieval --json | jq -r '.results[0].path'";
 
+const NEIGHBORS_EXAMPLES: &str = "\
+Examples:
+  # Concepts one hop away, in or out, any edge type
+  okq neighbors adrs/0002-library-stack
+
+  # Two hops, outbound only, following just `supersedes` edges
+  okq neighbors adrs/0002-library-stack --depth 2 --direction out --edge supersedes";
+
+const BACKLINKS_EXAMPLES: &str = "\
+Examples:
+  # What links *to* this concept (the inbound view)
+  okq backlinks adrs/0002-library-stack --json";
+
+const PATH_EXAMPLES: &str = "\
+Examples:
+  # Shortest route between two concepts (follows edge direction)
+  okq path adrs/0003-search-index-in-xdg-cache adrs/0001-documentation-first-okf-shaped
+
+  # Ignore direction (treat links as bidirectional)
+  okq path features/search features/get --undirected";
+
+const ORPHANS_EXAMPLES: &str = "\
+Examples:
+  # Concepts nothing links to (stale-doc candidates)
+  okq orphans
+
+  # Fail CI if any exist
+  okq orphans --check";
+
+const DEADLINKS_EXAMPLES: &str = "\
+Examples:
+  # Links pointing at missing/renamed concepts
+  okq deadlinks
+
+  # Fail CI if any exist
+  okq deadlinks --check";
+
 /// okq — query and navigation for Open Knowledge Format (OKF) bundles.
 #[derive(Parser, Debug)]
 #[command(
@@ -126,6 +163,105 @@ pub enum Command {
     /// Search: rank sections by relevance (full-text BM25, via a Tantivy index).
     #[command(after_help = SEARCH_EXAMPLES, after_long_help = SEARCH_EXAMPLES)]
     Search(SearchArgs),
+
+    /// Concepts adjacent to one concept via the link graph (N-hop, typed edges).
+    #[command(after_help = NEIGHBORS_EXAMPLES, after_long_help = NEIGHBORS_EXAMPLES)]
+    Neighbors(NeighborsArgs),
+
+    /// Concepts that link *to* a concept (the inbound view).
+    #[command(after_help = BACKLINKS_EXAMPLES, after_long_help = BACKLINKS_EXAMPLES)]
+    Backlinks(BacklinksArgs),
+
+    /// Shortest link path between two concepts.
+    #[command(after_help = PATH_EXAMPLES, after_long_help = PATH_EXAMPLES)]
+    Path(PathArgs),
+
+    /// Concepts with no inbound links (stale-doc candidates).
+    #[command(after_help = ORPHANS_EXAMPLES, after_long_help = ORPHANS_EXAMPLES)]
+    Orphans(OrphansArgs),
+
+    /// Links pointing to missing/renamed concepts (inline + frontmatter).
+    #[command(after_help = DEADLINKS_EXAMPLES, after_long_help = DEADLINKS_EXAMPLES)]
+    Deadlinks(DeadlinksArgs),
+}
+
+/// Edge-traversal direction.
+#[derive(Clone, Copy, Debug, clap::ValueEnum)]
+pub enum DirectionArg {
+    /// Follow inbound edges.
+    In,
+    /// Follow outbound edges.
+    Out,
+    /// Follow both.
+    Both,
+}
+
+/// Arguments for `okq neighbors`.
+#[derive(Args, Debug)]
+pub struct NeighborsArgs {
+    /// Concept whose neighbors to list (id or `.md` path).
+    #[arg(value_name = "CONCEPT")]
+    pub concept: String,
+
+    /// How many hops out to traverse.
+    #[arg(long, default_value_t = 1, value_name = "N")]
+    pub depth: usize,
+
+    /// Which edge directions to follow.
+    #[arg(long, value_enum, default_value_t = DirectionArg::Both)]
+    pub direction: DirectionArg,
+
+    /// Restrict to these edge types (repeatable; e.g. `link`, `related`, `supersedes`).
+    #[arg(long, value_name = "TYPE")]
+    pub edge: Vec<String>,
+}
+
+/// Arguments for `okq backlinks`.
+#[derive(Args, Debug)]
+pub struct BacklinksArgs {
+    /// Concept whose inbound links to list (id or `.md` path).
+    #[arg(value_name = "CONCEPT")]
+    pub concept: String,
+
+    /// Restrict to these edge types (repeatable).
+    #[arg(long, value_name = "TYPE")]
+    pub edge: Vec<String>,
+}
+
+/// Arguments for `okq path`.
+#[derive(Args, Debug)]
+pub struct PathArgs {
+    /// Start concept.
+    #[arg(value_name = "FROM")]
+    pub from: String,
+
+    /// End concept.
+    #[arg(value_name = "TO")]
+    pub to: String,
+
+    /// Ignore edge direction (treat links as bidirectional).
+    #[arg(long)]
+    pub undirected: bool,
+
+    /// Restrict to these edge types (repeatable).
+    #[arg(long, value_name = "TYPE")]
+    pub edge: Vec<String>,
+}
+
+/// Arguments for `okq orphans`.
+#[derive(Args, Debug)]
+pub struct OrphansArgs {
+    /// Exit 3 if any orphans are found (for CI gating).
+    #[arg(long)]
+    pub check: bool,
+}
+
+/// Arguments for `okq deadlinks`.
+#[derive(Args, Debug)]
+pub struct DeadlinksArgs {
+    /// Exit 3 if any dead links are found (for CI gating).
+    #[arg(long)]
+    pub check: bool,
 }
 
 /// Arguments for `okq get`.
