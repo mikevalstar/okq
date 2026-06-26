@@ -133,5 +133,5 @@ user asks.
 - **Tantivy `as_str`/`as_u64`** are trait methods — `use tantivy::schema::document::Value as _;`.
 - **The published crate is curated** via `exclude` in Cargo.toml (no `docs/tests`,
   no `tests/`). Re-check `cargo package --list` if you add top-level dirs.
-- **Cargo.lock** is currently git-ignored (a binary crate would normally commit
-  it — an open call noted in `.gitignore`).
+- **Cargo.lock is committed** (okq ships a binary → reproducible builds). cargo
+  excludes it from the *published* package automatically.

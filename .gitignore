@@ -1,7 +1,7 @@
 # Rust
 /target
 **/*.rs.bk
-Cargo.lock        # binary crate: keep? decide at M1. Ignored for now (pre-code).
+# Cargo.lock is committed — okq ships a binary, so we want reproducible builds.
 
 # Editor / OS
 .DS_Store
