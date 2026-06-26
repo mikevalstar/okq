@@ -1,0 +1,17 @@
+[package]
+name = "okq"
+version = "0.0.1"
+edition = "2024"
+rust-version = "1.85"
+description = "A fast, deterministic CLI for searching and navigating Open Knowledge Format (OKF) document bundles — for humans and AI agents."
+authors = ["Mike Valstar <mike@valstar.dev>"]
+license = "Apache-2.0"
+repository = "https://github.com/mikevalstar/okq"
+homepage = "https://github.com/mikevalstar/okq"
+readme = "README.md"
+keywords = ["okf", "knowledge", "search", "markdown", "cli"]
+categories = ["command-line-utilities", "text-processing"]
+
+[[bin]]
+name = "okq"
+path = "src/main.rs"
