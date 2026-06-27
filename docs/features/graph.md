@@ -7,7 +7,7 @@ updated: 2026-06-26
 tags: [cli, graph, neighbors, backlinks, path, orphans, deadlinks, edges, json]
 milestone: M2
 command: "okq neighbors | backlinks | path | orphans | deadlinks"
-related: ["search.md", "find.md", "get.md", "../adrs/0002-library-stack.md", "../adrs/0004-exit-code-taxonomy.md", "../../PLAN.md"]
+related: ["search.md", "find.md", "get.md", "../adrs/0002-library-stack.md", "../adrs/0004-exit-code-taxonomy.md", "../guides/design-overview.md"]
 ---
 
 # okq graph navigation — neighbors / backlinks / path / orphans / deadlinks
@@ -198,4 +198,4 @@ Edges pointing to missing/renamed concepts — from inline links (okf
 - [get](get.md) — expands a node chosen from a graph result
 - [ADR-0002](../adrs/0002-library-stack.md) — `okf` link graph + `petgraph` for traversal
 - [ADR-0004](../adrs/0004-exit-code-taxonomy.md) — not-found/empty/`--check` exit codes these commands adopt
-- [PLAN.md](../../PLAN.md) — §3 graph differentiator, §5 command surface, §8 edge-taxonomy & graph-reuse open questions
+- [PLAN.md](../guides/design-overview.md) — §3 graph differentiator, §5 command surface, §8 edge-taxonomy & graph-reuse open questions

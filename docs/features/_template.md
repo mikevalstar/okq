@@ -5,7 +5,7 @@ status: draft # draft | accepted | active | deprecated
 created: 2026-06-26
 updated: 2026-06-26
 tags: []
-milestone: M1 # roadmap milestone from PLAN.md §7 (M0–M4.5)
+milestone: null # optional, historical; milestones are retired — releases live in CHANGELOG.md
 command: null # the CLI command this spec defines, e.g. "okq search", or null
 related: [] # paths to related docs
 ---
@@ -35,7 +35,7 @@ Why this exists — the problem it removes. Tie it back to a real scenario (the 
 How it works from the caller's perspective:
 
 - **Invocation & flags** — the command line, including the non-interactive/`--json` path (every command is agent-runnable).
-- **Output** — human table vs. `--json` shape. Honor token-frugality: default to ranked `path:line` + frontmatter + a short snippet, never full bodies (PLAN.md §4).
+- **Output** — human table vs. `--json` shape. Honor token-frugality: default to ranked `path:line` + frontmatter + a short snippet, never full bodies ([design overview](../guides/design-overview.md) §principles).
 - **Exit codes** — what success/empty/error map to, so scripts and CI can branch on `$?`.
 
 ## Acceptance criteria
@@ -46,7 +46,7 @@ How it works from the caller's perspective:
 
 ## Open questions
 
-- Anything unresolved, with enough context that someone else could pick it up. Promote durable ones to [PLAN.md](../../PLAN.md) §8.
+- Anything unresolved, with enough context that someone else could pick it up. Keep them here in the spec they belong to; promote a durable, cross-cutting one to a new ADR or the [design overview](../guides/design-overview.md).
 
 ## Related
 

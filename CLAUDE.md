@@ -2,8 +2,9 @@
 
 `okq` is a fast, deterministic, local-first CLI for querying **Open Knowledge
 Format (OKF)** bundles (Markdown + YAML frontmatter), built to serve humans and
-AI agents with the same tool. Full design lives in [PLAN.md](PLAN.md); decisions
-and feature specs live in [docs/](docs/). Read those before large changes.
+AI agents with the same tool. The durable design lives in the [design overview](docs/guides/design-overview.md);
+decisions are ADRs, feature specs and open questions live in [docs/](docs/), and
+releases are tracked in [CHANGELOG.md](CHANGELOG.md). Read those before large changes.
 
 ## Layout
 

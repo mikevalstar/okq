@@ -7,7 +7,7 @@ updated: 2026-06-26
 tags: [cli, find, query, frontmatter, json, filter]
 milestone: M1
 command: "okq find"
-related: ["get.md", "../adrs/0002-library-stack.md", "../../PLAN.md"]
+related: ["get.md", "../adrs/0002-library-stack.md", "../guides/design-overview.md"]
 ---
 
 # okq find — filter concepts by predicate
@@ -134,5 +134,5 @@ Each `results` element is the **shared concept envelope** ratified by [get](get.
 
 - [get](get.md) — the concept envelope reused here; its planned partial-path resolution builds on `find`'s matcher
 - [ADR-0002](../adrs/0002-library-stack.md) — `okf` load + frontmatter accessors, the `regex` crate for `--match`, `schemars`/`serde_json` for the envelope
-- [PLAN.md](../../PLAN.md) — §3 token-frugal output, §5 `find` vs `search` (filter vs rank), §7 M1, §8 schema-versioning
+- [PLAN.md](../guides/design-overview.md) — §3 token-frugal output, §5 `find` vs `search` (filter vs rank), §7 M1, §8 schema-versioning
 - Future: `search` — the ranked counterpart; reuses the collection envelope ratified here

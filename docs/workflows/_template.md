@@ -24,7 +24,7 @@ What must be true before this workflow starts (e.g. "an OKF or OKF-shaped bundle
 1. Each step from the caller's point of view, noting the exact `okq` command run underneath.
 2. Include the real invocation (e.g. `okq search "auth" --json`, then `okq neighbors <hit> --depth 1`).
 3. Note decision points and branches ("if `search` returns nothing, fall back to `find --match`").
-4. For agent workflows, show how output of one command feeds the next (the search → neighbors → get composition is the core ergonomic — PLAN.md §5).
+4. For agent workflows, show how output of one command feeds the next (the search → neighbors → get composition is the core ergonomic — see the [design overview](../guides/design-overview.md)).
 
 ## Outcome
 

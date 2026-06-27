@@ -7,7 +7,7 @@ title: okq documentation
 
 This project is **documentation-first**: decisions, features, and workflows are written here before (or alongside) the code that implements them.
 
-It is also, deliberately, **dogfooding**. `okq` is a query and navigation tool for [Open Knowledge Format](https://github.com/GoogleCloudPlatform/knowledge-catalog/tree/main/okf) (OKF) bundles — collections of Markdown files with YAML frontmatter, cross-linked into a knowledge graph. This `docs/` tree is intentionally OKF-*shaped*: one concept per file, frontmatter on every doc, cross-links between them. That means `okq` can (and, per [M1 in the plan](../PLAN.md), will) be run against its own documentation as a real test corpus. We eat our own dog food.
+It is also, deliberately, **dogfooding**. `okq` is a query and navigation tool for [Open Knowledge Format](https://github.com/GoogleCloudPlatform/knowledge-catalog/tree/main/okf) (OKF) bundles — collections of Markdown files with YAML frontmatter, cross-linked into a knowledge graph. This `docs/` tree is intentionally OKF-*shaped*: one concept per file, frontmatter on every doc, cross-links between them. That means `okq` is run against its own documentation as a real test corpus ([ADR-0005](adrs/0005-dogfood-okq-for-docs.md)). We eat our own dog food.
 
 ## Structure
 
@@ -51,5 +51,6 @@ The frontmatter here is kept compatible with [OKF v0.1](https://github.com/Googl
 
 ## See also
 
-- [PLAN.md](../PLAN.md) — the living design document: vision, command surface, milestones, open questions.
+- [design overview](guides/design-overview.md) — the durable design picture: vision, principles, architecture, and where everything is tracked now.
+- [CHANGELOG.md](../CHANGELOG.md) — release history.
 - [OKF specification](https://github.com/GoogleCloudPlatform/knowledge-catalog/tree/main/okf) — the canonical format this project targets and this docs tree conforms to.

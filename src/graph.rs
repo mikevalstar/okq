@@ -114,7 +114,7 @@ impl Graph {
             }
             // Inline markdown links (resolved by okf; broken ones are dead — but
             // only if they point *into* the bundle. A link that escapes the
-            // bundle root (e.g. `../PLAN.md`) or is external is not dead, just
+            // bundle root (e.g. `../README.md`) or is external is not dead, just
             // out of scope; re-resolving `raw` ourselves filters those out,
             // matching how frontmatter relations are treated. A link to a hidden
             // concept is dead too — `.okqignore` removed it from the bundle.

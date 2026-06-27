@@ -7,7 +7,7 @@ updated: 2026-06-26
 tags: [rust, search, tantivy, indexing, cache, xdg]
 supersedes: "0002 (index-location sub-decision only)"
 superseded-by: null
-related: ["0002-library-stack.md", "../features/search.md", "../../PLAN.md"]
+related: ["0002-library-stack.md", "../features/search.md", "../guides/design-overview.md"]
 ---
 
 # ADR-0003: The search index lives in the XDG cache, not the bundle
@@ -52,4 +52,4 @@ Store the index under `${XDG_CACHE_HOME:-~/.cache}/okq/<bundle-key>/`, where `<b
 
 - [ADR-0002](0002-library-stack.md) — Tantivy as the backend (this ADR revises only its index-*location* sub-decision)
 - [search.md](../features/search.md) — the feature that depends on this; carries the open questions on key derivation, staleness, and cleanup
-- [PLAN.md](../../PLAN.md) — §6 architecture, §8 index-lifecycle open questions
+- [PLAN.md](../guides/design-overview.md) — §6 architecture, §8 index-lifecycle open questions

@@ -7,7 +7,7 @@ updated: 2026-06-26
 tags: [cli, schema, json, contract, agents]
 milestone: M3
 command: "okq schema"
-related: ["stats.md", "../adrs/0004-exit-code-taxonomy.md", "../../PLAN.md"]
+related: ["stats.md", "../adrs/0004-exit-code-taxonomy.md", "../guides/design-overview.md"]
 ---
 
 # okq schema — emit the JSON Schema for command output
@@ -93,4 +93,4 @@ into something enforced, not just asserted.
 
 - [stats](stats.md) — where this deliverable was first specced (the other half of M3)
 - [ADR-0004](../adrs/0004-exit-code-taxonomy.md) — the sibling "contract" decision (exit codes)
-- [PLAN.md](../../PLAN.md) — §7 M3 (documented JSON schemas), §8 schema versioning as a day-one contract
+- [PLAN.md](../guides/design-overview.md) — §7 M3 (documented JSON schemas), §8 schema versioning as a day-one contract

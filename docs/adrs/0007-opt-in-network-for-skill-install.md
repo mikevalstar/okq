@@ -11,7 +11,7 @@ related:
   - "0002-library-stack.md"
   - "../features/skills-install.md"
   - "../features/skills.md"
-  - "../../PLAN.md"
+  - "../guides/design-overview.md"
 ---
 
 # ADR-0007: Network is opt-in, scoped to skill install
@@ -100,4 +100,4 @@ present only when the user asks for it on that one command.
   precedent this fetch is weighed against
 - [skills-install.md](../features/skills-install.md) — the command this decision enables
 - [skills.md](../features/skills.md) — the skills being installed
-- [PLAN.md](../../PLAN.md) — §4 principles (local-first / no-network)
+- [PLAN.md](../guides/design-overview.md) — §4 principles (local-first / no-network)

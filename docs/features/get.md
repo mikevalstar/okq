@@ -7,7 +7,7 @@ updated: 2026-06-26
 tags: [cli, get, retrieval, json, sections, identity]
 milestone: M1
 command: "okq get"
-related: ["../adrs/0002-library-stack.md", "../adrs/0001-documentation-first-okf-shaped.md", "../../PLAN.md"]
+related: ["../adrs/0002-library-stack.md", "../adrs/0001-documentation-first-okf-shaped.md", "../guides/design-overview.md"]
 ---
 
 # okq get — expand one concept on demand
@@ -20,7 +20,7 @@ related: ["../adrs/0002-library-stack.md", "../adrs/0001-documentation-first-okf
 
 The token-frugal contract (PLAN.md §3) says discovery commands return ranked `path:line` + a snippet, never full bodies — the caller (human or agent) then expands exactly what it chose. That expansion step needs a command, and that command is `get`. Without it, the only way to read a hit is to dump the whole file (the very thing the design fights) or hand-roll `sed`/`awk` line slicing.
 
-`get` is also the **first feature built** ([per the M1 plan](../../PLAN.md)) because it's the smallest end-to-end slice — load → resolve → output — and so it's where four cross-cutting contracts every other command inherits get pinned down (see [Cross-cutting contracts](#cross-cutting-contracts-this-feature-ratifies)).
+`get` is also the **first feature built** ([per the M1 plan](../guides/design-overview.md)) because it's the smallest end-to-end slice — load → resolve → output — and so it's where four cross-cutting contracts every other command inherits get pinned down (see [Cross-cutting contracts](#cross-cutting-contracts-this-feature-ratifies)).
 
 ## Scope
 
@@ -141,5 +141,5 @@ These are settled here once and inherited by `find`, `search`, and the graph com
 
 - [ADR-0002](../adrs/0002-library-stack.md) — `pulldown-cmark` sections, `okf` resolution, `schemars` JSON contract, `clap` surface that this feature builds on
 - [ADR-0001](../adrs/0001-documentation-first-okf-shaped.md) — the OKF-shaped docs tree `get` is first dogfooded against
-- [PLAN.md](../../PLAN.md) — §3 token-frugal output, §5 command surface (`get`, chunking), §7 M1, §8 identity & schema-versioning open questions
+- [PLAN.md](../guides/design-overview.md) — §3 token-frugal output, §5 command surface (`get`, chunking), §7 M1, §8 identity & schema-versioning open questions
 - Future: `find`, `search` feature specs — reuse the concept envelope and section model ratified here

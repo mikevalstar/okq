@@ -139,7 +139,7 @@ is not in the bundle.
 - **`init` scaffolding.** Should `okq init` drop a commented starter `.okqignore`?
   Cheap, but separate from this feature.
 - **A `--no-ignore` short form / env var** (`OKQ_NO_IGNORE`)? Only if demand
-  appears; promote to [PLAN.md](../../PLAN.md) §8 if so.
+  appears; promote to [PLAN.md](../guides/design-overview.md) §8 if so.
 
 ## Related
 

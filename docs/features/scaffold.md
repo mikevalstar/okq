@@ -7,7 +7,7 @@ updated: 2026-06-26
 tags: [cli, init, new, scaffold, authoring, okf, templates]
 milestone: M3.5
 command: "okq init | okq new"
-related: ["get.md", "stats.md", "../adrs/0001-documentation-first-okf-shaped.md", "../adrs/0004-exit-code-taxonomy.md", "../../PLAN.md"]
+related: ["get.md", "stats.md", "../adrs/0001-documentation-first-okf-shaped.md", "../adrs/0004-exit-code-taxonomy.md", "../guides/design-overview.md"]
 ---
 
 # okq init & new — scaffold and author OKF bundles
@@ -170,4 +170,4 @@ creating only what's missing and refreshing the README block.
 - [ADR-0001](../adrs/0001-documentation-first-okf-shaped.md) — our own OKF-shaped docs tree, the dogfood model for what `init` produces
 - [get](get.md) / [stats](stats.md) — what a scaffolded bundle is immediately queryable with
 - [OKF spec](https://github.com/GoogleCloudPlatform/knowledge-catalog/tree/main/okf) — the conformance target for layout, frontmatter, and reserved files
-- [PLAN.md](../../PLAN.md) — §5 `init`/`new`, §7 M3.5, §8 template-override & index.md open questions
+- [PLAN.md](../guides/design-overview.md) — §5 `init`/`new`, §7 M3.5, §8 template-override & index.md open questions

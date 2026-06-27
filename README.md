@@ -2,7 +2,7 @@
 
 A fast, local command-line tool for searching and navigating [Open Knowledge Format](https://github.com/GoogleCloudPlatform/knowledge-catalog/tree/main/okf) (OKF) bundles: directories of Markdown files with YAML frontmatter, cross-linked into a knowledge graph.
 
-> Beta. Every command is implemented and tested. The `--json` shapes and exit codes are stable enough to script against. See [PLAN.md](PLAN.md) for what's next.
+> Beta. Every command is implemented and tested. The `--json` shapes and exit codes are stable enough to script against. See the [design overview](docs/guides/design-overview.md) for how it's shaped and the [CHANGELOG](CHANGELOG.md) for releases.
 
 okq runs full-text search, frontmatter queries, and graph navigation over a tree of docs. It is deterministic and local: no embeddings, no network, no API key, same answer every time. The same command works whether a person runs it or a program does, because every command has a `--json` mode and documented exit codes.
 

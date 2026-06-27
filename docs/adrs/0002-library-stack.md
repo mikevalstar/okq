@@ -7,7 +7,7 @@ updated: 2026-06-26
 tags: [rust, dependencies, okf, ripgrep, search, graph, cli]
 supersedes: null
 superseded-by: null
-related: ["0001-documentation-first-okf-shaped.md", "0003-search-index-in-xdg-cache.md", "../../PLAN.md"]
+related: ["0001-documentation-first-okf-shaped.md", "0003-search-index-in-xdg-cache.md", "../guides/design-overview.md"]
 ---
 
 # ADR-0002: Library stack (stand on the shoulders of giants)
@@ -16,7 +16,7 @@ related: ["0001-documentation-first-okf-shaped.md", "0003-search-index-in-xdg-ca
 
 ## Context
 
-`okq` is Rust ([PLAN.md](../../PLAN.md) §4) and its design principle is "fast & dependency-light: lean on the upstream `okf` crate … `okq` adds the *query* surface on top rather than reimplementing the parser." We need to decide, across the whole [command surface](../../PLAN.md#5-command-surface-draft) (`search`, `find`, `neighbors`, `backlinks`, `path`, `orphans`, `deadlinks`, `stats`, `get`, `init`, `new`), which capabilities we **reuse from mature crates** versus build ourselves.
+`okq` is Rust ([PLAN.md](../guides/design-overview.md) §4) and its design principle is "fast & dependency-light: lean on the upstream `okf` crate … `okq` adds the *query* surface on top rather than reimplementing the parser." We need to decide, across the whole [command surface](../guides/design-overview.md#5-command-surface-draft) (`search`, `find`, `neighbors`, `backlinks`, `path`, `orphans`, `deadlinks`, `stats`, `get`, `init`, `new`), which capabilities we **reuse from mature crates** versus build ourselves.
 
 Two facts shape the decision:
 
@@ -109,4 +109,4 @@ Adopt this stack. Each entry maps to a capability `okf` does not provide; heavy 
 ## Related
 
 - [ADR-0001](0001-documentation-first-okf-shaped.md) — the docs/process decision this follows
-- [PLAN.md](../../PLAN.md) — §4 principles, §5 command surface, §6 architecture, §8 open questions (reuse depth, search backend, schema versioning)
+- [PLAN.md](../guides/design-overview.md) — §4 principles, §5 command surface, §6 architecture, §8 open questions (reuse depth, search backend, schema versioning)

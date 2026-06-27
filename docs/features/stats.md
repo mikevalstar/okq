@@ -7,7 +7,7 @@ updated: 2026-06-26
 tags: [cli, stats, metrics, graph, health, json]
 milestone: M3
 command: "okq stats"
-related: ["graph.md", "find.md", "../adrs/0004-exit-code-taxonomy.md", "../../PLAN.md"]
+related: ["graph.md", "find.md", "../adrs/0004-exit-code-taxonomy.md", "../guides/design-overview.md"]
 ---
 
 # okq stats — bundle overview & health metrics
@@ -171,4 +171,4 @@ can ship first. (Open question below on exact form.)
 - [graph](graph.md) — the typed-edge model `stats` aggregates (edges, hubs, orphans, dead links)
 - [find](find.md) — the per-concept counterpart; `stats` is the bundle-level rollup
 - [ADR-0004](../adrs/0004-exit-code-taxonomy.md) — why `stats` is exit-0 (a query, not a gate)
-- [PLAN.md](../../PLAN.md) — §5 `stats`, §7 M3 (stats + documented JSON schemas), §8 schema versioning
+- [PLAN.md](../guides/design-overview.md) — §5 `stats`, §7 M3 (stats + documented JSON schemas), §8 schema versioning

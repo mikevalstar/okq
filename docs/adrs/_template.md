@@ -32,7 +32,7 @@ The option chosen, stated plainly, and the main reasons it won.
 
 ## Consequences
 
-What becomes easier, what becomes harder, and what we're committing to. Include follow-up work this decision creates and any new open questions for [PLAN.md](../../PLAN.md) §8.
+What becomes easier, what becomes harder, and what we're committing to. Include follow-up work this decision creates and any new open questions — record those in the feature spec they belong to, or note them here.
 
 ## Related
 

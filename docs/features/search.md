@@ -7,7 +7,7 @@ updated: 2026-06-26
 tags: [cli, search, tantivy, bm25, ranking, index, json]
 milestone: M1
 command: "okq search"
-related: ["find.md", "get.md", "../adrs/0002-library-stack.md", "../adrs/0003-search-index-in-xdg-cache.md", "../../PLAN.md"]
+related: ["find.md", "get.md", "../adrs/0002-library-stack.md", "../adrs/0003-search-index-in-xdg-cache.md", "../guides/design-overview.md"]
 ---
 
 # okq search — ranked full-text retrieval
@@ -159,4 +159,4 @@ Results are sorted by **score descending, tie-broken by `(path, line)` ascending
 - [get](get.md) — the section model reused here; `search → get --section` is the core expand step
 - [ADR-0002](../adrs/0002-library-stack.md) — Tantivy as the day-one search backend, the index-as-derived-cache rule, `pulldown-cmark` sections
 - [ADR-0003](../adrs/0003-search-index-in-xdg-cache.md) — the search index lives in the XDG cache, not in the bundle
-- [PLAN.md](../../PLAN.md) — §2 the context-assembly wall, §3 token-frugal output, §5 `search` vs `find`, §6 architecture, §8 index-lifecycle open questions
+- [PLAN.md](../guides/design-overview.md) — §2 the context-assembly wall, §3 token-frugal output, §5 `search` vs `find`, §6 architecture, §8 index-lifecycle open questions

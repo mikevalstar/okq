@@ -1,5 +1,5 @@
 //! okq — the query and navigation layer for Open Knowledge Format (OKF)
-//! bundles. See PLAN.md and docs/ for the design.
+//! bundles. See docs/ (the design overview + ADRs) for the design.
 //!
 //! This crate is structured library-first: all logic lives here and the thin
 //! `okq` binary just calls [`run`], so commands are testable without a process.
