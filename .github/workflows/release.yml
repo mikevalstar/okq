@@ -7,6 +7,19 @@ on:
     tags: ["v*"]
 
 jobs:
+  # Create the GitHub Release for this tag first, so the binaries job has
+  # somewhere to upload to (upload-rust-binary-action does not create it, and
+  # parallel matrix jobs must not race to create it).
+  create-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: taiki-e/create-gh-release-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   # Publish to crates.io via Trusted Publishing (OIDC) — no stored token.
   # Requires the crate's Trusted Publishing config on crates.io to allow this
   # repo + workflow + the `release` environment.
@@ -35,8 +48,9 @@ jobs:
   # Build prebuilt binaries on native/arch-matched runners (no cross), and
   # attach them to the GitHub Release. Naming is cargo-binstall / ubi friendly.
   binaries:
+    needs: create-release
     permissions:
-      contents: write # create the release and upload assets
+      contents: write # upload assets to the release
     strategy:
       fail-fast: false
       matrix:
