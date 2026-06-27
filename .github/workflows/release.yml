@@ -1,0 +1,66 @@
+name: release
+
+# Fires only on a version tag (e.g. v0.1.1). To cut a release: bump the version
+# in Cargo.toml, commit, then `git tag v0.1.1 && git push origin v0.1.1`.
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  # Publish to crates.io via Trusted Publishing (OIDC) — no stored token.
+  # Requires the crate's Trusted Publishing config on crates.io to allow this
+  # repo + workflow + the `release` environment.
+  publish-crate:
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      id-token: write # mint the short-lived crates.io token via OIDC
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Verify the tag matches Cargo.toml version
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          ver="$(grep -m1 '^version' Cargo.toml | cut -d'"' -f2)"
+          if [ "$tag" != "$ver" ]; then
+            echo "tag v$tag does not match Cargo.toml version $ver"; exit 1
+          fi
+      - uses: rust-lang/crates-io-auth-action@v1
+        id: auth
+      - run: cargo publish --locked
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+
+  # Build prebuilt binaries on native/arch-matched runners (no cross), and
+  # attach them to the GitHub Release. Naming is cargo-binstall / ubi friendly.
+  binaries:
+    permissions:
+      contents: write # create the release and upload assets
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-24.04-arm
+          - target: x86_64-apple-darwin
+            os: macos-latest
+          - target: aarch64-apple-darwin
+            os: macos-latest
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: taiki-e/upload-rust-binary-action@v1
+        with:
+          bin: okq
+          target: ${{ matrix.target }}
+          archive: $bin-$target
+          checksum: sha256
+          token: ${{ secrets.GITHUB_TOKEN }}

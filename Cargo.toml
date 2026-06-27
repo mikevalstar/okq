@@ -1,6 +1,6 @@
 [package]
 name = "okq"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 rust-version = "1.85"
 description = "A fast, deterministic CLI for searching and navigating Open Knowledge Format (OKF) document bundles — for humans and AI agents."
@@ -12,8 +12,18 @@ readme = "README.md"
 keywords = ["okf", "knowledge", "search", "markdown", "cli"]
 categories = ["command-line-utilities", "text-processing"]
 # Ship a lean crate: source + design docs, but not the test corpus, suites,
-# or internal working notes.
-exclude = ["/docs/tests", "/tests", "/CLAUDE.md"]
+# CI config, or internal working notes.
+exclude = ["/docs/tests", "/tests", "/CLAUDE.md", "/.github"]
+
+# cargo-binstall (and `mise use cargo:okq`) fetch prebuilt binaries from the
+# GitHub Release instead of compiling. Names match the release workflow.
+[package.metadata.binstall]
+pkg-url = "{ repo }/releases/download/v{ version }/{ name }-{ target }{ archive-suffix }"
+bin-dir = "{ bin }{ binary-ext }"
+pkg-fmt = "tgz"
+
+[package.metadata.binstall.overrides.x86_64-pc-windows-msvc]
+pkg-fmt = "zip"
 
 [lib]
 name = "okq"

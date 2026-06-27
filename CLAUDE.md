@@ -122,6 +122,15 @@ commit message with the `Co-Authored-By: Claude …` trailer. Branch off main
 only if asked; this repo commits to `main` directly. Commit/push only when the
 user asks.
 
+**Releasing.** Publishing is automated via `.github/workflows/release.yml`, which
+fires on a `v*` tag. To cut a release: bump `version` in Cargo.toml, run a build
+so `Cargo.lock` updates, commit, then `git tag vX.Y.Z && git push origin vX.Y.Z`.
+CI publishes to crates.io via Trusted Publishing (OIDC — no stored token; the
+`release` environment must be allowed in the crate's crates.io settings) and
+attaches prebuilt binaries to the GitHub Release. The tag must match the
+Cargo.toml version (the workflow checks). Don't `cargo publish` by hand unless CI
+is unavailable.
+
 ## Gotchas
 
 - **okf loads permissively**: malformed docs go to `Bundle::parse_errors` and are
