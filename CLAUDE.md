@@ -14,13 +14,15 @@ src/
   main.rs              — entry point: std::process::exit(okq::run())
   lib.rs               — run() + dispatch (one arm per subcommand)
   cli.rs               — clap parser; help text, examples, styles
-  error.rs             — AppError + exit-code mapping
-  model.rs             — ConceptRecord (shared shortlist envelope)
+  error.rs             — AppError + exit-code mapping (exit:: constants)
+  model.rs             — ConceptRecord (shared envelope) + resolve_concept (partial ids)
   sections.rs          — heading-delimited section chunking (pulldown-cmark)
   yaml_json.rs         — okf YAML → serde_json bridge
   index.rs             — Tantivy search index: schema, build, XDG cache, staleness
-  commands/{get,find,search}.rs
-docs/                  — documentation-first: adrs/, features/, guides/, workflows/
+  graph.rs             — typed-edge graph: inline links + frontmatter relations, BFS
+  templates.rs         — embedded init/new templates + date helper
+  commands/{get,find,search,graph,stats,schema,scaffold}.rs
+docs/                  — documentation-first OKF bundle: adrs/, features/, guides/, workflows/
 docs/tests/            — deliberately malformed fixtures for robustness tests
 tests/                 — assert_cmd integration tests + insta snapshots
 ```
@@ -32,7 +34,7 @@ the link graph. okq owns the **query layer**. Don't reimplement what okf provide
 
 ```sh
 cargo build
-cargo test                       # unit + integration; 55+ tests
+cargo test                       # unit + integration; 95+ tests
 cargo clippy --all-targets       # must be warning-free
 cargo fmt                        # must be clean (cargo fmt --check)
 cargo run -- --bundle docs search "tantivy"   # dogfood against our own docs/

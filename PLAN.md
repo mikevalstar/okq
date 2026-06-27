@@ -1,6 +1,6 @@
 # okq — Project Plan
 
-> Living design document. Created 2026-06-26. Status: **planning / pre-alpha.**
+> Living design document. Created 2026-06-26. Status: **beta (v0.1.0).** The full command surface (§5) is implemented and tested; `--json` shapes and exit codes are stable. Remaining work is release and the "Later" items below.
 
 ## 1. Vision
 
@@ -85,12 +85,12 @@ Open question: how much of `okf`'s graph is reusable vs. what `okq` must build. 
 
 ## 7. Milestones
 
-- **M0 — Spike (this).** Repo, plan, README. Evaluate the `okf` crate: does its parser + link graph give us the primitives, or do we vendor/fork? Decide MSRV, error model, output schema.
-- **M1 — Read, find & search.** Load a bundle via `okf`; implement `find` (tag/type/where/match), section-level ranked `search`, and `get` (incl. `--section`), all with `--json` and `path:line` output. Dogfood against a real `docs/` tree.
-- **M2 — Graph.** `neighbors`, `backlinks`, `path`, `orphans`, `deadlinks` over the link graph, with typed edges and a default depth of 1.
-- **M3 — Health & stats.** `stats`, CI-friendly checks (orphans/deadlinks as non-zero exit), stable JSON schemas documented.
-- **M3.5 — Scaffold & author.** `okq init` (starter bundle: layout + seed `index.md` + embedded templates) and `okq new <type>` (single doc from template). Closes the loop — `okq` can now *create* the bundles it queries, lowering the adoption barrier.
-- **M4 — Release.** Publish `okq` to crates.io; prebuilt binaries; install docs. (Name confirmed free as of 2026-06-26.)
+- **M0 — Spike. ✅** Repo, plan, README. Evaluated the `okf` crate (reuse for the data layer; ADR-0002) and the search backend (Tantivy; ADR-0002/0003). MSRV 1.85, edition 2024.
+- **M1 — Read, find & search. ✅** `find` (tag/type/where/match), section-level ranked `search` (Tantivy BM25, XDG-cached), and `get` (incl. `--section`), all with `--json` and `path:line`. Dogfooded against this repo's `docs/`.
+- **M2 — Graph. ✅** `neighbors`, `backlinks`, `path`, `orphans`, `deadlinks` over typed edges (inline links + frontmatter relations), default depth 1.
+- **M3 — Health & stats. ✅** `stats`, `--check` CI gating on `orphans`/`deadlinks` (exit 3; ADR-0004), and `schema` (JSON Schema for every `--json` envelope).
+- **M3.5 — Scaffold & author. ✅** `okq init` (Full-OKF starter: `index.md` + `okf_version`, `adrs/`+`features/`, seed ADR, README injection) and `okq new <type>` (single doc from an embedded template). okq can now create the bundles it queries.
+- **M4 — Release. ◐** Beta at v0.1.0. Remaining: publish to crates.io, prebuilt binaries, install docs. (Name confirmed free as of 2026-06-26.)
 - **M4.5 — Agent skills.** Ship a small set of bundled, installable agent skills (see §9) — one teaching agents to *navigate* a bundle via `okq` (search → neighbors → get), one explaining the OKF *format* itself (referencing the Google spec as the canonical base). Distributed alongside the binary so adopting `okq` also onboards the agents that use it.
 - **Later — Agent ergonomics.** Optional MCP server (`okq mcp`) exposing search/neighbors/path as tools; `--watch` / incremental reindex on changed files (hash/mtime) to keep any index from going stale.
 - **Later, evidence-gated — semantic retrieval.** *Only if* observed real queries miss on vocabulary mismatch (query terms that never appear literally in the relevant doc) does vector search earn its cost. Even then: add it as a **second retriever fused with the lexical one (RRF)**, not a replacement — pure-vector blurs exactly the exact-token queries (IDs, API names, error codes) that dominate technical bundles. Local embedding model only, to preserve the local-first/no-network principle. This is explicitly *not* a v1 concern.

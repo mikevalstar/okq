@@ -1,21 +1,14 @@
 # okq
 
-**A fast, deterministic CLI for searching and navigating [Open Knowledge Format](https://github.com/GoogleCloudPlatform/knowledge-catalog/tree/main/okf) (OKF) document bundles — for humans *and* AI agents.**
+A fast, local command-line tool for searching and navigating [Open Knowledge Format](https://github.com/GoogleCloudPlatform/knowledge-catalog/tree/main/okf) (OKF) bundles: directories of Markdown files with YAML frontmatter, cross-linked into a knowledge graph.
 
-> Status: 🌱 **alpha.** Retrieval (`get`, `find`, `search`), graph navigation (`neighbors`, `backlinks`, `path`, `orphans`, `deadlinks`), bundle `stats`/`schema`, and scaffolding (`init`, `new`) all work today. See [PLAN.md](PLAN.md) for the full roadmap.
+> Beta. Every command is implemented and tested. The `--json` shapes and exit codes are stable enough to script against. See [PLAN.md](PLAN.md) for what's next.
 
----
+okq runs full-text search, frontmatter queries, and graph navigation over a tree of docs. It is deterministic and local: no embeddings, no network, no API key, same answer every time. The same command works whether a person runs it or a program does, because every command has a `--json` mode and documented exit codes.
 
-## The problem
+## What's an OKF bundle?
 
-Engineering knowledge lives as large collections of Markdown files with YAML frontmatter — ADRs, decision logs, runbooks, design docs, wikis. Google's **Open Knowledge Format (OKF)** standardizes exactly this: Markdown + frontmatter, one concept per file, cross-linked into a knowledge graph.
-
-The format is great; the *navigation* is not — for either audience:
-
-- **Humans** can't easily ask "which decisions are security-related?" or "what's orphaned?" without hand-rolling `grep`/`yq`/`fd` pipelines.
-- **AI agents** hit a wall: past ~100 docs an `index.md` no longer fits in context, and an agent reading files sequentially "gets lost in the middle." The fix is *programmatic* multi-stage retrieval — search, then follow links — but no OKF tool shipped that. Existing tooling only **validates**, **visualizes**, or **authors** bundles.
-
-`okq` fills that gap: a single, scriptable, **local, deterministic** tool that both a person and an agent can use to *query* a bundle.
+OKF is a small, vendor-neutral convention: one concept per Markdown file, a handful of well-known YAML frontmatter keys (`type`, `title`, `tags`, …), and links between files. ADRs, design docs, runbooks, and wikis all fit it. okq works on any OKF bundle, and degrades gracefully on any Markdown-with-frontmatter tree.
 
 ## Install
 
@@ -23,85 +16,91 @@ The format is great; the *navigation* is not — for either audience:
 cargo install okq
 ```
 
-## Quickstart
+## Usage
 
-Point `okq` at any OKF (or OKF-*shaped*) Markdown tree with `--bundle` (default: the current directory).
+Point okq at a bundle with `--bundle` (default: the current directory).
 
 ```sh
-# Rank sections across the bundle by relevance (BM25)
+# full-text search, ranked by relevance
 okq search "retrieval latency"
 
-# Filter concepts by exact predicate — tags, type, frontmatter, text
+# filter by frontmatter
 okq find --type adr --tag security
-okq find --where status=accepted
 
-# Expand one concept — or just one section of it
-okq get adrs/0006-agent-runnable-commands
-okq get adrs/0006-agent-runnable-commands --section Decision
+# read one concept, or a single section of it
+okq get adrs/0002-library-stack --section Decision
+
+# follow the links
+okq neighbors adrs/0002-library-stack
+okq backlinks features/search
+okq path features/search features/get
+
+# health and overview
+okq deadlinks
+okq orphans
+okq stats
 ```
 
-The core ergonomic is **locate, then expand** — `search`/`find` return locations-only shortlists; `get` expands what you choose:
+You don't need the full path. A unique suffix is enough: `okq get 0002-library-stack`.
+
+## Scripting and agents
+
+Every command takes `--json` and writes one JSON document to stdout; messages and progress go to stderr. Exit codes are documented (below), so a script can branch on `$?` without parsing output. That makes okq a clean tool call for an LLM assembling context: it returns the relevant locations instead of dumping whole files.
 
 ```sh
-# Find the most relevant section, then print it
-path=$(okq search "xdg cache" --json | jq -r '.results[0].path')
-okq get "${path%.md}" --section "The index lifecycle"
-```
-
-## Built for agents, too
-
-Every command has a `--json` mode (one document on stdout, logs on stderr) and script-friendly exit codes, so each invocation is a clean tool-call for an LLM — no embeddings, no vector DB, no API key, fully reproducible.
-
-```sh
-okq search "auth" --json | jq -r '.results[].path'
+okq search auth --json | jq -r '.results[].path'
 okq find --tag security --json | jq '.count'
+okq deadlinks --check        # exit 3 if any dead links, for CI
 ```
 
-Output is **token-frugal by design**: results are ranked `path:line` + frontmatter + a short snippet — never full document dumps. The caller expands precisely what it needs with `get`.
+`okq schema <command>` prints the JSON Schema for that command's output, generated from the code, so you can validate against it.
 
 ## Commands
 
 | Command | What it does |
 |---------|--------------|
-| `okq search <query>` | Ranked, section-level full-text retrieval (BM25). The "find the doc(s) about X" backbone. |
-| `okq find` | Filter concepts by exact predicate: `--tag`, `--type`, `--where field=value`, `--match` (`--regex`). |
-| `okq get <concept>` | Expand one concept: frontmatter and/or body, or a single `--section`. |
-| `okq neighbors <concept>` | Adjacent concepts via the link graph: `--depth`, `--direction`, `--edge`. |
-| `okq backlinks <concept>` | Concepts that link *to* this one (the inbound view). |
+| `okq search <query>` | Ranked full-text search over section text (BM25). |
+| `okq find` | Filter concepts by `--tag`, `--type`, `--where field=value`, `--match` (`--regex`). |
+| `okq get <concept>` | Print a concept's frontmatter and/or body, or one `--section`. |
+| `okq neighbors <concept>` | Adjacent concepts via the link graph (`--depth`, `--direction`, `--edge`). |
+| `okq backlinks <concept>` | Concepts that link to this one. |
 | `okq path <a> <b>` | Shortest link path between two concepts (`--undirected`). |
-| `okq orphans` | Concepts with no inbound links (stale-doc candidates); `--check` for CI. |
-| `okq deadlinks` | Links pointing at missing/renamed concepts; `--check` for CI. |
-| `okq stats` | Bundle overview: counts by type/tag, link density, edge-type distribution, hubs. |
-| `okq schema [<cmd>]` | Print the JSON Schema for a command's `--json` envelope (the agent contract). |
-| `okq init` | Scaffold a new OKF bundle (`adrs/` + `features/`, seed ADR, README, `index.md`). |
-| `okq new <type> [title]` | Add one concept from a template (`adr` auto-numbers, `feature` slugifies). |
+| `okq orphans` | Concepts with no inbound links (`--check` for CI). |
+| `okq deadlinks` | Links pointing at missing concepts (`--check` for CI). |
+| `okq stats` | Counts by type and tag, link density, edge types, hubs. |
+| `okq schema [<cmd>]` | JSON Schema for a command's `--json` output. |
+| `okq init` | Scaffold a new bundle: `adrs/` + `features/`, a seed ADR, a README. |
+| `okq new <type> [title]` | Add one concept from a template (`adr` numbers itself, `feature` slugifies). |
 
-Run `okq <command> --help` for details and examples. The graph commands draw edges from **both** inline markdown links and frontmatter relations (`related`, `supersedes`, …).
+Run `okq <command> --help` for flags and examples.
+
+## Starting a bundle
+
+```sh
+okq init                       # scaffold an OKF bundle in the current directory
+okq new adr "Adopt Tantivy"    # add a numbered ADR from a template
+```
+
+`init` is non-destructive: it creates only the files that are missing, and adds its section to an existing README between markers rather than overwriting it.
 
 ## How it works
 
-- **Deterministic & local-first** — pure frontmatter + lexical + (soon) graph queries. Same bundle → same answer, every time. No ML, no network.
-- **Section-level** — documents are chunked by heading, so `search` ranks and `get --section` expands at the right granularity.
-- **Ranked search** is a persisted [Tantivy](https://github.com/quickwit-oss/tantivy) BM25 index, cached per-bundle in your XDG cache directory (never written into the bundle). It auto-builds and refreshes when files change; `--reindex` forces a rebuild and `--ephemeral` runs fully in-memory.
-- **Format-tolerant** — targets OKF v0.1 but degrades gracefully on any Markdown-with-frontmatter tree, and skips malformed docs instead of failing.
-- **Built on the [`okf`](https://crates.io/crates/okf) crate** for parsing, the data model, and the link graph; `okq` adds the query surface.
+- Search uses a BM25 index (Tantivy), cached per-bundle under your XDG cache directory and rebuilt when files change. okq never writes into the bundle itself.
+- The graph is built from inline Markdown links and from frontmatter relations (`related`, `supersedes`, `depends-on`, …).
+- Results are locations, not document dumps: ranked `path:line` plus a short snippet. You expand what you want with `get`.
+- Parsing and the data model come from the [`okf`](https://crates.io/crates/okf) crate; okq adds the query and navigation layer on top.
 
 ## Exit codes
 
-Scripts and CI can branch on `$?` without parsing output:
-
 | Code | Meaning |
 |------|---------|
-| `0` | Success (including zero results — an empty query is not an error) |
-| `2` | Usage error (bad flags, malformed `--where`, invalid query/regex) |
-| `4` | Concept not found |
-| `5` | Section not found / ambiguous |
-| `1` | Other error (bad bundle, I/O, index failure) |
-
-## Design & roadmap
-
-`okq` is documentation-first. The full design, command surface, and decisions live in [PLAN.md](PLAN.md) and [docs/](docs/) (architecture decision records and feature specs).
+| 0 | Success, including an empty result (a query that found nothing still ran). |
+| 1 | Internal error: bad bundle, I/O, or index failure. |
+| 2 | Usage error: bad flags, a malformed `--where`, or an invalid query. |
+| 3 | A `--check` run found issues (`orphans`/`deadlinks`). |
+| 4 | Concept not found. |
+| 5 | Section not found or ambiguous. |
 
 ## License
 
-Licensed under the [Apache License 2.0](LICENSE) — matching OKF and the upstream `okf` crate.
+[Apache-2.0](LICENSE), matching OKF and the `okf` crate.
