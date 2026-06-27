@@ -1,0 +1,32 @@
+# Dependabot keeps dependencies current by opening PRs.
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates
+version: 2
+updates:
+  # Rust crate dependencies (Cargo.toml / Cargo.lock).
+  - package-ecosystem: cargo
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: deps
+    groups:
+      # One PR for routine minor/patch bumps; majors come as individual PRs.
+      cargo-minor:
+        update-types:
+          - minor
+          - patch
+
+  # GitHub Actions used in the release workflow (checkout, toolchain, etc.).
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: ci
+    groups:
+      actions:
+        update-types:
+          - minor
+          - patch
+          - major
