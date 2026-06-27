@@ -150,6 +150,20 @@ Examples:
   # List the available types
   okq new --list";
 
+const VALIDATE_EXAMPLES: &str = "\
+Examples:
+  # Full conformance report (errors + warnings)
+  okq validate
+
+  # Same command, friendlier name
+  okq doctor
+
+  # Fail CI if the bundle is not conformant (any error)
+  okq validate --check
+
+  # Include info-level findings (e.g. unresolved links), as JSON
+  okq validate --severity info --json";
+
 const SKILLS_EXAMPLES: &str = "\
 Examples:
   # Install the okq-* agent skills into this project (.agents + .claude)
@@ -243,6 +257,10 @@ pub enum Command {
     /// Bundle overview: counts, distributions, link density, and hubs.
     #[command(after_help = STATS_EXAMPLES, after_long_help = STATS_EXAMPLES)]
     Stats(StatsArgs),
+
+    /// Check OKF conformance: report unparseable, untyped, or malformed docs.
+    #[command(visible_alias = "doctor", after_help = VALIDATE_EXAMPLES, after_long_help = VALIDATE_EXAMPLES)]
+    Validate(ValidateArgs),
 
     /// Print the JSON Schema for a command's --json output (the agent contract).
     #[command(after_help = SCHEMA_EXAMPLES, after_long_help = SCHEMA_EXAMPLES)]
@@ -346,6 +364,29 @@ pub struct StatsArgs {
     /// Cap the hubs and tags lists at this many entries.
     #[arg(long, default_value_t = 10, value_name = "N")]
     pub top: usize,
+}
+
+/// Minimum severity to display in `okq validate`.
+#[derive(Clone, Copy, Debug, clap::ValueEnum)]
+pub enum SeverityArg {
+    /// Conformance errors only.
+    Error,
+    /// Warnings and errors (default).
+    Warning,
+    /// Everything, including info-level findings (e.g. unresolved links).
+    Info,
+}
+
+/// Arguments for `okq validate`.
+#[derive(Args, Debug)]
+pub struct ValidateArgs {
+    /// Exit 3 if the bundle is not conformant (any error). For CI gating.
+    #[arg(long)]
+    pub check: bool,
+
+    /// Minimum severity to display.
+    #[arg(long, value_enum, default_value_t = SeverityArg::Warning, value_name = "LEVEL")]
+    pub severity: SeverityArg,
 }
 
 /// Arguments for `okq schema`.

@@ -45,6 +45,7 @@ okq path features/search features/get
 okq deadlinks
 okq orphans
 okq stats
+okq validate          # OKF conformance report (alias: okq doctor)
 ```
 
 You don't need the full path. A unique suffix is enough: `okq get 0002-library-stack`.
@@ -105,6 +106,7 @@ Then invoke one with `/okq-explore`, `/okq-write-okf`, or `/okq-maintain`; `okq-
 | `okq orphans` | Concepts with no inbound links (`--check` for CI). |
 | `okq deadlinks` | Links pointing at missing concepts (`--check` for CI). |
 | `okq stats` | Counts by type and tag, link density, edge types, hubs. |
+| `okq validate` | Check OKF conformance; report unparseable/untyped/malformed docs (alias `doctor`, `--check` for CI). |
 | `okq schema [<cmd>]` | JSON Schema for a command's `--json` output. |
 | `okq init` | Scaffold a new bundle: `adrs/` + `features/`, a seed ADR, a README. |
 | `okq new <type> [title]` | Add one concept from a template (`adr` numbers itself, `feature` slugifies). |

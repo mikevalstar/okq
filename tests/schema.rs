@@ -37,6 +37,7 @@ fn all_schemas_cover_every_json_command() {
         "orphans",
         "deadlinks",
         "stats",
+        "validate",
     ] {
         assert!(v.get(cmd).is_some(), "schema missing for {cmd}");
     }

@@ -8,3 +8,4 @@ pub mod schema;
 pub mod search;
 pub mod skills;
 pub mod stats;
+pub mod validate;

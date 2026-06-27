@@ -11,7 +11,16 @@ attaches prebuilt binaries to the GitHub Release.
 
 ## [Unreleased]
 
-## [0.2.0] — 2026-06-27
+## [0.3.0] — 2026-06-27
+
+### Added
+
+- `okq validate` (alias `okq doctor`) — report OKF conformance issues: docs okq
+  can't parse, concepts missing the required `type`, malformed reserved files, and
+  unresolved links, each with severity, path, and reason. `--check` gates CI (exit
+  3 on any error), `--severity <error|warning|info>` sets the display floor, and
+  `--json` emits the `okq.validate/v1` contract. Surfaces the docs okq otherwise
+  loads-but-skips silently. See [`docs/features/validate.md`](docs/features/validate.md).
 
 ### Added
 
@@ -67,7 +76,8 @@ dogfooded against this repo's own `docs/` bundle.
   taxonomy ([ADR-0004](docs/adrs/0004-exit-code-taxonomy.md)), and token-frugal
   `path:line` output.
 
-[Unreleased]: https://github.com/mikevalstar/okq/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/mikevalstar/okq/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/mikevalstar/okq/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/mikevalstar/okq/compare/v0.1.2...v0.2.0
 [0.1.2]: https://github.com/mikevalstar/okq/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/mikevalstar/okq/compare/v0.1.0...v0.1.1

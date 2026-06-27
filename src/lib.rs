@@ -142,6 +142,29 @@ fn dispatch(cli: &Cli) -> Result<i32, AppError> {
             }
             Ok(exit::SUCCESS)
         }
+        Command::Validate(args) => {
+            let out = commands::validate::run(&cli.bundle, args, cli.no_ignore)?;
+            if cli.json {
+                println!("{}", commands::validate::to_json(&out));
+            } else {
+                if !out.diagnostics.is_empty() {
+                    let mut w = anstream::stdout().lock();
+                    commands::validate::render_human(&mut w, &out, cli.no_color)?;
+                }
+                eprintln!(
+                    "{}: {} error(s), {} warning(s), {} info(s).",
+                    if out.conformant {
+                        "conformant"
+                    } else {
+                        "not conformant"
+                    },
+                    out.errors,
+                    out.warnings,
+                    out.infos
+                );
+            }
+            Ok(check_code(args.check, out.errors))
+        }
         Command::Schema(args) => {
             let value = commands::schema::run(args)?;
             println!("{}", commands::schema::to_json(&value));

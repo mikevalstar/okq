@@ -34,6 +34,11 @@ fn search_help() {
 }
 
 #[test]
+fn validate_help() {
+    insta::assert_snapshot!("help_validate", help(&["validate", "--help"]));
+}
+
+#[test]
 fn skills_help() {
     insta::assert_snapshot!("help_skills", help(&["skills", "--help"]));
 }

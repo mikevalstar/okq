@@ -1,0 +1,49 @@
+---
+source: tests/help.rs
+expression: "help(&[\"validate\", \"--help\"])"
+---
+Check OKF conformance: report unparseable, untyped, or malformed docs
+
+Usage: okq validate [OPTIONS]
+
+Options:
+      --bundle <DIR>
+          Bundle directory to query [default: current directory]
+
+      --check
+          Exit 3 if the bundle is not conformant (any error). For CI gating
+
+      --json
+          Emit machine-readable JSON on stdout instead of human-readable text
+
+      --severity <LEVEL>
+          Minimum severity to display
+
+          Possible values:
+          - error:   Conformance errors only
+          - warning: Warnings and errors (default)
+          - info:    Everything, including info-level findings (e.g. unresolved links)
+          
+          [default: warning]
+
+      --no-color
+          Disable colored output (also honors NO_COLOR)
+
+      --no-ignore
+          Ignore all .okqignore files; query the full tree, nothing excluded
+
+  -h, --help
+          Print help (see a summary with '-h')
+
+Examples:
+  # Full conformance report (errors + warnings)
+  okq validate
+
+  # Same command, friendlier name
+  okq doctor
+
+  # Fail CI if the bundle is not conformant (any error)
+  okq validate --check
+
+  # Include info-level findings (e.g. unresolved links), as JSON
+  okq validate --severity info --json
