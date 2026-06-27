@@ -29,6 +29,9 @@ Options:
       --section <HEADING>
           Print only the named section (matched by heading text or slug)
 
+      --no-ignore
+          Ignore all .okqignore files; query the full tree, nothing excluded
+
   -h, --help
           Print help (see a summary with '-h')
 

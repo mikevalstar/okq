@@ -31,6 +31,9 @@ Options:
       --no-color
           Disable colored output (also honors NO_COLOR)
 
+      --no-ignore
+          Ignore all .okqignore files; query the full tree, nothing excluded
+
   -h, --help
           Print help (see a summary with '-h')
 

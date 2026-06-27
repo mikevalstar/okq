@@ -10,6 +10,7 @@ use schemars::JsonSchema;
 use serde::Serialize;
 
 use crate::error::AppError;
+use crate::view::Corpus;
 
 /// Parses a caller-supplied identity into a [`ConceptId`] *syntactically*: a
 /// `.md` suffix and a leading `./` are tolerated; the remainder must be a valid
@@ -28,16 +29,15 @@ pub fn parse_concept_id(input: &str) -> Result<ConceptId, AppError> {
 /// aligned *suffix* matches (so `0002-foo` finds `adrs/0002-foo`, and `foo`
 /// finds a concept named `foo` in any directory). Matching is on `/` boundaries,
 /// never arbitrary substrings. A non-unique partial errors with the candidates.
-pub fn resolve_concept(bundle: &Bundle, input: &str) -> Result<ConceptId, AppError> {
+pub fn resolve_concept(corpus: &Corpus, input: &str) -> Result<ConceptId, AppError> {
     let parsed = parse_concept_id(input)?;
-    if bundle.contains(&parsed) {
+    if corpus.contains(&parsed) {
         return Ok(parsed);
     }
 
     let needle = parsed.segments();
-    let mut matches: Vec<ConceptId> = bundle
+    let mut matches: Vec<ConceptId> = corpus
         .concepts()
-        .iter()
         .map(|c| c.id.clone())
         .filter(|id| ends_with_segments(id.segments(), needle))
         .collect();

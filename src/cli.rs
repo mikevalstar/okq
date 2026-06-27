@@ -180,6 +180,10 @@ pub struct Cli {
     #[arg(long, global = true)]
     pub no_color: bool,
 
+    /// Ignore all .okqignore files; query the full tree, nothing excluded.
+    #[arg(long, global = true)]
+    pub no_ignore: bool,
+
     #[command(subcommand)]
     pub command: Command,
 }

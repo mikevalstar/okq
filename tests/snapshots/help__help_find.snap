@@ -28,6 +28,9 @@ Options:
       --match <PATTERN>
           Require the title or body to contain this pattern
 
+      --no-ignore
+          Ignore all .okqignore files; query the full tree, nothing excluded
+
       --regex
           Treat `--match` as a regular expression instead of a literal substring
 

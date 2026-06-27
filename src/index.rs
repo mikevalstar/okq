@@ -11,13 +11,13 @@ use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
 use std::time::UNIX_EPOCH;
 
-use okf::Bundle;
 use serde::{Deserialize, Serialize};
 use tantivy::schema::{Field, IndexRecordOption, STORED, Schema, TextFieldIndexing, TextOptions};
 use tantivy::{Index, TantivyDocument};
 
 use crate::error::AppError;
 use crate::sections;
+use crate::view::Corpus;
 
 /// Bumped whenever the index schema or analysis changes, forcing a rebuild.
 const INDEX_SCHEMA_VERSION: u32 = 1;
@@ -82,23 +82,23 @@ fn build_schema() -> (Schema, Fields) {
 /// Opens a fresh index from the bundle, persisting it to the XDG cache unless
 /// `ephemeral` (or the cache is unwritable), in which case it builds in RAM.
 pub fn open_or_build(
-    bundle: &Bundle,
+    corpus: &Corpus,
     reindex: bool,
     ephemeral: bool,
 ) -> Result<SearchIndex, AppError> {
     let (schema, fields) = build_schema();
 
     if ephemeral {
-        return build_in_ram(schema, fields, bundle);
+        return build_in_ram(schema, fields, corpus);
     }
 
-    let Some(cache) = cache_dir_for(bundle) else {
+    let Some(cache) = cache_dir_for(corpus) else {
         eprintln!("okq: warning: no cache directory available; using an in-memory index");
-        return build_in_ram(schema, fields, bundle);
+        return build_in_ram(schema, fields, corpus);
     };
     let index_dir = cache.join("index");
     let manifest_path = cache.join("manifest.json");
-    let want = current_manifest(bundle);
+    let want = current_manifest(corpus);
 
     // Reuse a fresh, matching index if one exists.
     if !reindex && index_dir.join("meta.json").exists() {
@@ -114,11 +114,11 @@ pub fn open_or_build(
     // Otherwise (re)build. Fall back to RAM if the cache can't be written.
     if fs::create_dir_all(&index_dir).is_err() || clear_dir(&index_dir).is_err() {
         eprintln!("okq: warning: cache directory is not writable; using an in-memory index");
-        return build_in_ram(schema, fields, bundle);
+        return build_in_ram(schema, fields, corpus);
     }
     let index =
         Index::create_in_dir(&index_dir, schema).map_err(|e| AppError::Index(e.to_string()))?;
-    add_concepts(&index, &fields, bundle)?;
+    add_concepts(&index, &fields, corpus)?;
     let _ = fs::write(
         &manifest_path,
         serde_json::to_string(&want).unwrap_or_default(),
@@ -126,19 +126,20 @@ pub fn open_or_build(
     Ok(SearchIndex { index, fields })
 }
 
-fn build_in_ram(schema: Schema, fields: Fields, bundle: &Bundle) -> Result<SearchIndex, AppError> {
+fn build_in_ram(schema: Schema, fields: Fields, corpus: &Corpus) -> Result<SearchIndex, AppError> {
     let index = Index::create_in_ram(schema);
-    add_concepts(&index, &fields, bundle)?;
+    add_concepts(&index, &fields, corpus)?;
     Ok(SearchIndex { index, fields })
 }
 
-/// Indexes every section of every concept, in deterministic order.
-fn add_concepts(index: &Index, fields: &Fields, bundle: &Bundle) -> Result<(), AppError> {
+/// Indexes every section of every visible concept, in deterministic order.
+/// `.okqignore`-hidden concepts are skipped (`corpus.concepts()` filters them).
+fn add_concepts(index: &Index, fields: &Fields, corpus: &Corpus) -> Result<(), AppError> {
     let mut writer = index
         .writer(50_000_000)
         .map_err(|e| AppError::Index(e.to_string()))?;
 
-    for c in bundle.concepts() {
+    for c in corpus.concepts() {
         let raw = fs::read_to_string(&c.path)?;
         let start = sections::body_start_line(&raw);
         let title = c.document.frontmatter.title().unwrap_or_default();
@@ -214,15 +215,23 @@ fn index_sections(body: &str, start: usize, title: &str) -> Vec<IndexSection> {
 /// canonical path. The base is `$OKQ_CACHE_DIR` if set (handy for relocating
 /// the cache or for tests), else the per-platform XDG cache dir + `okq`.
 /// `None` if no base is available.
-fn cache_dir_for(bundle: &Bundle) -> Option<PathBuf> {
+fn cache_dir_for(corpus: &Corpus) -> Option<PathBuf> {
     let base = match std::env::var_os("OKQ_CACHE_DIR") {
         Some(dir) => PathBuf::from(dir),
         None => dirs::cache_dir()?.join("okq"),
     };
-    let canon = fs::canonicalize(bundle.root()).unwrap_or_else(|_| bundle.root().to_path_buf());
+    let root = corpus.bundle().root();
+    let canon = fs::canonicalize(root).unwrap_or_else(|_| root.to_path_buf());
     let mut hasher = std::collections::hash_map::DefaultHasher::new();
     canon.to_string_lossy().hash(&mut hasher);
-    Some(base.join(format!("{:016x}", hasher.finish())))
+    // `--no-ignore` sees a different concept set than the default, so it must
+    // not share a cache with it — give the two modes separate directories.
+    let suffix = if corpus.ignore().is_enabled() {
+        ""
+    } else {
+        "-all"
+    };
+    Some(base.join(format!("{:016x}{suffix}", hasher.finish())))
 }
 
 #[derive(Serialize, Deserialize, PartialEq)]
@@ -238,30 +247,40 @@ struct FileStamp {
     size: u64,
 }
 
-fn current_manifest(bundle: &Bundle) -> Manifest {
-    let mut files: Vec<FileStamp> = bundle
+fn current_manifest(corpus: &Corpus) -> Manifest {
+    // Stamp every visible concept...
+    let mut files: Vec<FileStamp> = corpus
         .concepts()
-        .iter()
-        .filter_map(|c| {
-            let meta = fs::metadata(&c.path).ok()?;
-            let mtime = meta
-                .modified()
-                .ok()?
-                .duration_since(UNIX_EPOCH)
-                .ok()?
-                .as_nanos();
-            Some(FileStamp {
-                id: c.id.to_string(),
-                mtime_ns: mtime,
-                size: meta.len(),
-            })
-        })
+        .filter_map(|c| stamp(c.id.to_string(), &c.path))
         .collect();
+    // ...plus every `.okqignore` file, so editing the rules (which can change
+    // which concepts are visible) invalidates the index and forces a rebuild.
+    for path in corpus.ignore().files() {
+        if let Some(s) = stamp(format!(".okqignore:{}", path.display()), path) {
+            files.push(s);
+        }
+    }
     files.sort_by(|a, b| a.id.cmp(&b.id));
     Manifest {
         schema_version: INDEX_SCHEMA_VERSION,
         files,
     }
+}
+
+/// A `(mtime, size)` stamp for one file, or `None` if it can't be stat'd.
+fn stamp(id: String, path: &Path) -> Option<FileStamp> {
+    let meta = fs::metadata(path).ok()?;
+    let mtime_ns = meta
+        .modified()
+        .ok()?
+        .duration_since(UNIX_EPOCH)
+        .ok()?
+        .as_nanos();
+    Some(FileStamp {
+        id,
+        mtime_ns,
+        size: meta.len(),
+    })
 }
 
 /// Removes the contents of a directory (so `create_in_dir` sees it empty).

@@ -89,6 +89,19 @@ okq new adr "Adopt Tantivy"    # add a numbered ADR from a template
 
 `init` is non-destructive: it creates only the files that are missing, and adds its section to an existing README between markers rather than overwriting it.
 
+## Ignoring files
+
+Not every Markdown file in the tree is a concept. Drop a `.okqignore` file in the bundle (full `.gitignore` syntax — comments, `!` negation, anchoring, `**`, and per-directory nesting) and matching files drop out of every command:
+
+```gitignore
+# fixtures and scratch notes aren't real concepts
+tests/
+drafts/
+!drafts/keep.md
+```
+
+Ignored files are treated as if they weren't in the bundle: they don't show up in `search`, `find`, `stats`, or `orphans`; `get` on one reports "not found"; and a link pointing at one becomes a dead link. Pass `--no-ignore` on any command to query the full tree.
+
 ## How it works
 
 - Search uses a BM25 index (Tantivy), cached per-bundle under your XDG cache directory and rebuilt when files change. okq never writes into the bundle itself.

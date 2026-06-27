@@ -5,13 +5,13 @@ use std::collections::BTreeMap;
 use std::io::Write;
 use std::path::Path;
 
-use okf::Bundle;
 use schemars::JsonSchema;
 use serde::Serialize;
 
 use crate::cli::StatsArgs;
 use crate::error::AppError;
 use crate::graph::Graph;
+use crate::view::Corpus;
 
 /// Schema tag stamped on every `stats` JSON document.
 pub const SCHEMA: &str = "okq.stats/v1";
@@ -60,11 +60,12 @@ pub struct Hub {
 }
 
 /// Runs `stats` against the bundle at `bundle_dir`.
-pub fn run(bundle_dir: &Path, args: &StatsArgs) -> Result<StatsOutput, AppError> {
-    let bundle = Bundle::load(bundle_dir)?;
-    let graph = Graph::build(&bundle);
+pub fn run(bundle_dir: &Path, args: &StatsArgs, no_ignore: bool) -> Result<StatsOutput, AppError> {
+    let corpus = Corpus::load(bundle_dir, no_ignore)?;
+    let bundle = corpus.bundle();
+    let graph = Graph::build(bundle, corpus.hidden());
 
-    let concepts = bundle.concepts().len();
+    let concepts = corpus.concepts().count();
     let edges = graph.total_edges();
     let link_density = if concepts > 0 {
         ((edges as f64 / concepts as f64) * 100.0).round() / 100.0
@@ -74,7 +75,7 @@ pub fn run(bundle_dir: &Path, args: &StatsArgs) -> Result<StatsOutput, AppError>
 
     let mut types: BTreeMap<String, usize> = BTreeMap::new();
     let mut tags: BTreeMap<String, usize> = BTreeMap::new();
-    for c in bundle.concepts() {
+    for c in corpus.concepts() {
         let type_ = c
             .document
             .frontmatter
@@ -86,9 +87,8 @@ pub fn run(bundle_dir: &Path, args: &StatsArgs) -> Result<StatsOutput, AppError>
         }
     }
 
-    let mut ranked: Vec<Hub> = bundle
+    let mut ranked: Vec<Hub> = corpus
         .concepts()
-        .iter()
         .map(|c| {
             let path = c
                 .path
@@ -114,9 +114,13 @@ pub fn run(bundle_dir: &Path, args: &StatsArgs) -> Result<StatsOutput, AppError>
         concepts,
         edges,
         link_density,
-        orphans: graph.orphans(&bundle).len(),
+        orphans: graph.orphans(bundle, corpus.hidden()).len(),
         dead_links: graph.dead_links().len(),
-        parse_errors: bundle.parse_errors().len(),
+        parse_errors: bundle
+            .parse_errors()
+            .iter()
+            .filter(|(path, _)| !corpus.ignore().is_ignored(path))
+            .count(),
         types,
         tags,
         edge_types: graph.edge_kind_counts(),

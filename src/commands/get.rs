@@ -6,13 +6,14 @@
 
 use std::path::Path;
 
-use okf::{Bundle, Value};
+use okf::Value;
 use schemars::JsonSchema;
 use serde::Serialize;
 
 use crate::cli::GetArgs;
 use crate::error::AppError;
 use crate::sections::{self, Section};
+use crate::view::Corpus;
 use crate::yaml_json;
 
 /// Schema tag stamped on every `get` JSON document; the contract agents depend on.
@@ -84,16 +85,16 @@ pub struct Got {
 }
 
 /// Runs `get` against the bundle at `bundle_dir`.
-pub fn run(bundle_dir: &Path, args: &GetArgs) -> Result<Got, AppError> {
-    let bundle = Bundle::load(bundle_dir)?;
-    let id = crate::model::resolve_concept(&bundle, &args.concept)?;
-    let concept = bundle
+pub fn run(bundle_dir: &Path, args: &GetArgs, no_ignore: bool) -> Result<Got, AppError> {
+    let corpus = Corpus::load(bundle_dir, no_ignore)?;
+    let id = crate::model::resolve_concept(&corpus, &args.concept)?;
+    let concept = corpus
         .get(&id)
         .expect("resolve_concept returns an existing concept");
 
     let rel = concept
         .path
-        .strip_prefix(bundle.root())
+        .strip_prefix(corpus.bundle().root())
         .unwrap_or(&concept.path);
     let path = rel.to_string_lossy().replace('\\', "/");
 

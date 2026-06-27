@@ -7,7 +7,7 @@
 use std::io::Write;
 use std::path::Path;
 
-use okf::{Bundle, Concept, Frontmatter, Value};
+use okf::{Concept, Frontmatter, Value};
 use regex::Regex;
 use schemars::JsonSchema;
 use serde::Serialize;
@@ -15,6 +15,7 @@ use serde::Serialize;
 use crate::cli::FindArgs;
 use crate::error::AppError;
 use crate::model::ConceptRecord;
+use crate::view::Corpus;
 
 /// Schema tag stamped on every `find` JSON document.
 pub const SCHEMA: &str = "okq.find/v1";
@@ -32,15 +33,14 @@ pub struct FindOutput {
 }
 
 /// Runs `find` against the bundle at `bundle_dir`.
-pub fn run(bundle_dir: &Path, args: &FindArgs) -> Result<FindOutput, AppError> {
-    let bundle = Bundle::load(bundle_dir)?;
+pub fn run(bundle_dir: &Path, args: &FindArgs, no_ignore: bool) -> Result<FindOutput, AppError> {
+    let corpus = Corpus::load(bundle_dir, no_ignore)?;
     let predicate = Predicate::build(args)?;
 
-    let results: Vec<ConceptRecord> = bundle
+    let results: Vec<ConceptRecord> = corpus
         .concepts()
-        .iter()
         .filter(|c| predicate.matches(c))
-        .map(|c| ConceptRecord::from_concept(&bundle, c))
+        .map(|c| ConceptRecord::from_concept(corpus.bundle(), c))
         .collect();
 
     Ok(FindOutput {

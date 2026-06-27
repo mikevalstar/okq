@@ -100,20 +100,26 @@ pub struct Graph {
 }
 
 impl Graph {
-    /// Builds the graph from a loaded bundle.
-    pub fn build(bundle: &Bundle) -> Self {
+    /// Builds the graph from a loaded bundle, excluding `.okqignore`-hidden
+    /// concepts: hidden concepts contribute no edges, and a link *into* a hidden
+    /// concept becomes a dead link (it now points at nothing in the bundle).
+    pub fn build(bundle: &Bundle, hidden: &HashSet<ConceptId>) -> Self {
         let mut out: HashMap<ConceptId, Vec<HalfEdge>> = HashMap::new();
         let mut inn: HashMap<ConceptId, Vec<HalfEdge>> = HashMap::new();
         let mut dead: Vec<DeadLink> = Vec::new();
 
         for c in bundle.concepts() {
+            if hidden.contains(&c.id) {
+                continue;
+            }
             // Inline markdown links (resolved by okf; broken ones are dead — but
             // only if they point *into* the bundle. A link that escapes the
             // bundle root (e.g. `../PLAN.md`) or is external is not dead, just
             // out of scope; re-resolving `raw` ourselves filters those out,
-            // matching how frontmatter relations are treated.
+            // matching how frontmatter relations are treated. A link to a hidden
+            // concept is dead too — `.okqignore` removed it from the bundle.
             for link in bundle.links_from(&c.id) {
-                if link.exists {
+                if link.exists && !hidden.contains(&link.target) {
                     push_edge(&mut out, &mut inn, &c.id, &link.target, LINK_KIND);
                 } else if resolve_relative(&c.id, &link.raw).is_some() {
                     dead.push(DeadLink {
@@ -128,7 +134,7 @@ impl Graph {
             for key in RELATION_KEYS {
                 for value in relation_values(&c.document.frontmatter, key) {
                     match resolve_relative(&c.id, &value) {
-                        Some(target) if bundle.contains(&target) => {
+                        Some(target) if bundle.contains(&target) && !hidden.contains(&target) => {
                             push_edge(&mut out, &mut inn, &c.id, &target, key);
                         }
                         Some(_) => dead.push(DeadLink {
@@ -254,12 +260,14 @@ impl Graph {
         None
     }
 
-    /// Concepts with no inbound edges, in id order.
-    pub fn orphans(&self, bundle: &Bundle) -> Vec<ConceptId> {
+    /// Concepts with no inbound edges, in id order. Hidden (`.okqignore`)
+    /// concepts are not candidates — they aren't in the bundle.
+    pub fn orphans(&self, bundle: &Bundle, hidden: &HashSet<ConceptId>) -> Vec<ConceptId> {
         let mut ids: Vec<ConceptId> = bundle
             .concepts()
             .iter()
             .map(|c| c.id.clone())
+            .filter(|id| !hidden.contains(id))
             .filter(|id| self.inn.get(id).map(Vec::is_empty).unwrap_or(true))
             .collect();
         ids.sort();

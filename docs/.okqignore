@@ -1,0 +1,5 @@
+# Deliberately malformed robustness fixtures — not real concepts.
+# They exist to prove okq degrades gracefully (see tests/README.md and
+# ADR-0006), so keep them out of search / find / stats / orphans here.
+# Use `okq --bundle docs --no-ignore …` to query them anyway.
+tests/

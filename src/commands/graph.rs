@@ -15,6 +15,7 @@ use crate::cli::{
 use crate::error::AppError;
 use crate::graph::{Direction, EdgeFilter, Graph, Reached};
 use crate::model::{self, ConceptRecord};
+use crate::view::Corpus;
 
 /// Collection envelope for `neighbors`/`backlinks`.
 #[derive(Debug, Serialize, JsonSchema)]
@@ -108,10 +109,14 @@ pub struct DeadLinkRecord {
 // ---- run functions -------------------------------------------------------
 
 /// `okq neighbors`.
-pub fn neighbors(bundle_dir: &Path, args: &NeighborsArgs) -> Result<GraphListOutput, AppError> {
-    let bundle = Bundle::load(bundle_dir)?;
-    let id = require_concept(&bundle, &args.concept)?;
-    let graph = Graph::build(&bundle);
+pub fn neighbors(
+    bundle_dir: &Path,
+    args: &NeighborsArgs,
+    no_ignore: bool,
+) -> Result<GraphListOutput, AppError> {
+    let corpus = Corpus::load(bundle_dir, no_ignore)?;
+    let id = require_concept(&corpus, &args.concept)?;
+    let graph = Graph::build(corpus.bundle(), corpus.hidden());
     let reached = graph.neighbors(
         &id,
         args.depth,
@@ -122,30 +127,34 @@ pub fn neighbors(bundle_dir: &Path, args: &NeighborsArgs) -> Result<GraphListOut
         schema: "okq.neighbors/v1",
         concept: id.to_string(),
         count: reached.len(),
-        results: reached.iter().map(|r| node(&bundle, r)).collect(),
+        results: reached.iter().map(|r| node(corpus.bundle(), r)).collect(),
     })
 }
 
 /// `okq backlinks` — inbound concepts (`neighbors --direction in --depth 1`).
-pub fn backlinks(bundle_dir: &Path, args: &BacklinksArgs) -> Result<GraphListOutput, AppError> {
-    let bundle = Bundle::load(bundle_dir)?;
-    let id = require_concept(&bundle, &args.concept)?;
-    let graph = Graph::build(&bundle);
+pub fn backlinks(
+    bundle_dir: &Path,
+    args: &BacklinksArgs,
+    no_ignore: bool,
+) -> Result<GraphListOutput, AppError> {
+    let corpus = Corpus::load(bundle_dir, no_ignore)?;
+    let id = require_concept(&corpus, &args.concept)?;
+    let graph = Graph::build(corpus.bundle(), corpus.hidden());
     let reached = graph.neighbors(&id, 1, Direction::In, &EdgeFilter::new(&args.edge));
     Ok(GraphListOutput {
         schema: "okq.backlinks/v1",
         concept: id.to_string(),
         count: reached.len(),
-        results: reached.iter().map(|r| node(&bundle, r)).collect(),
+        results: reached.iter().map(|r| node(corpus.bundle(), r)).collect(),
     })
 }
 
 /// `okq path`.
-pub fn path(bundle_dir: &Path, args: &PathArgs) -> Result<PathOutput, AppError> {
-    let bundle = Bundle::load(bundle_dir)?;
-    let from = require_concept(&bundle, &args.from)?;
-    let to = require_concept(&bundle, &args.to)?;
-    let graph = Graph::build(&bundle);
+pub fn path(bundle_dir: &Path, args: &PathArgs, no_ignore: bool) -> Result<PathOutput, AppError> {
+    let corpus = Corpus::load(bundle_dir, no_ignore)?;
+    let from = require_concept(&corpus, &args.from)?;
+    let to = require_concept(&corpus, &args.to)?;
+    let graph = Graph::build(corpus.bundle(), corpus.hidden());
     let found = graph.shortest_path(&from, &to, args.undirected, &EdgeFilter::new(&args.edge));
 
     let (found_flag, steps) = match found {
@@ -155,7 +164,7 @@ pub fn path(bundle_dir: &Path, args: &PathArgs) -> Result<PathOutput, AppError> 
     let path: Vec<PathNode> = steps
         .iter()
         .map(|s| PathNode {
-            concept: record(&bundle, &s.id),
+            concept: record(corpus.bundle(), &s.id),
             edge: s.edge.clone(),
         })
         .collect();
@@ -170,14 +179,18 @@ pub fn path(bundle_dir: &Path, args: &PathArgs) -> Result<PathOutput, AppError> 
 }
 
 /// `okq orphans`.
-pub fn orphans(bundle_dir: &Path, _args: &OrphansArgs) -> Result<OrphansOutput, AppError> {
-    let bundle = Bundle::load(bundle_dir)?;
-    let graph = Graph::build(&bundle);
+pub fn orphans(
+    bundle_dir: &Path,
+    _args: &OrphansArgs,
+    no_ignore: bool,
+) -> Result<OrphansOutput, AppError> {
+    let corpus = Corpus::load(bundle_dir, no_ignore)?;
+    let graph = Graph::build(corpus.bundle(), corpus.hidden());
     let results: Vec<ConceptRecord> = graph
-        .orphans(&bundle)
+        .orphans(corpus.bundle(), corpus.hidden())
         .iter()
-        .filter_map(|id| bundle.get(id))
-        .map(|c| ConceptRecord::from_concept(&bundle, c))
+        .filter_map(|id| corpus.get(id))
+        .map(|c| ConceptRecord::from_concept(corpus.bundle(), c))
         .collect();
     Ok(OrphansOutput {
         schema: "okq.orphans/v1",
@@ -187,14 +200,18 @@ pub fn orphans(bundle_dir: &Path, _args: &OrphansArgs) -> Result<OrphansOutput, 
 }
 
 /// `okq deadlinks`.
-pub fn deadlinks(bundle_dir: &Path, _args: &DeadlinksArgs) -> Result<DeadlinksOutput, AppError> {
-    let bundle = Bundle::load(bundle_dir)?;
-    let graph = Graph::build(&bundle);
+pub fn deadlinks(
+    bundle_dir: &Path,
+    _args: &DeadlinksArgs,
+    no_ignore: bool,
+) -> Result<DeadlinksOutput, AppError> {
+    let corpus = Corpus::load(bundle_dir, no_ignore)?;
+    let graph = Graph::build(corpus.bundle(), corpus.hidden());
     let results: Vec<DeadLinkRecord> = graph
         .dead_links()
         .iter()
         .map(|d| {
-            let (source_path, line) = source_location(&bundle, &d.source, &d.raw);
+            let (source_path, line) = source_location(corpus.bundle(), &d.source, &d.raw);
             DeadLinkRecord {
                 source_id: d.source.to_string(),
                 source_path,
@@ -213,8 +230,8 @@ pub fn deadlinks(bundle_dir: &Path, _args: &DeadlinksArgs) -> Result<DeadlinksOu
 
 // ---- helpers -------------------------------------------------------------
 
-fn require_concept(bundle: &Bundle, input: &str) -> Result<ConceptId, AppError> {
-    model::resolve_concept(bundle, input)
+fn require_concept(corpus: &Corpus, input: &str) -> Result<ConceptId, AppError> {
+    model::resolve_concept(corpus, input)
 }
 
 fn direction(arg: DirectionArg) -> Direction {

@@ -8,10 +8,12 @@ pub mod cli;
 pub mod commands;
 pub mod error;
 pub mod graph;
+pub mod ignore;
 pub mod index;
 pub mod model;
 pub mod sections;
 pub mod templates;
+pub mod view;
 pub mod yaml_json;
 
 use clap::Parser;
@@ -37,7 +39,7 @@ pub fn run() -> i32 {
 fn dispatch(cli: &Cli) -> Result<i32, AppError> {
     match &cli.command {
         Command::Get(args) => {
-            let got = commands::get::run(&cli.bundle, args)?;
+            let got = commands::get::run(&cli.bundle, args, cli.no_ignore)?;
             if cli.json {
                 println!("{}", commands::get::to_json(&got));
             } else {
@@ -47,7 +49,7 @@ fn dispatch(cli: &Cli) -> Result<i32, AppError> {
             Ok(exit::SUCCESS)
         }
         Command::Find(args) => {
-            let found = commands::find::run(&cli.bundle, args)?;
+            let found = commands::find::run(&cli.bundle, args, cli.no_ignore)?;
             if cli.json {
                 println!("{}", commands::find::to_json(&found));
             } else if found.results.is_empty() {
@@ -59,7 +61,7 @@ fn dispatch(cli: &Cli) -> Result<i32, AppError> {
             Ok(exit::SUCCESS)
         }
         Command::Search(args) => {
-            let found = commands::search::run(&cli.bundle, args)?;
+            let found = commands::search::run(&cli.bundle, args, cli.no_ignore)?;
             if cli.json {
                 println!("{}", commands::search::to_json(&found));
             } else if found.results.is_empty() {
@@ -71,7 +73,7 @@ fn dispatch(cli: &Cli) -> Result<i32, AppError> {
             Ok(exit::SUCCESS)
         }
         Command::Neighbors(args) => {
-            let out = commands::graph::neighbors(&cli.bundle, args)?;
+            let out = commands::graph::neighbors(&cli.bundle, args, cli.no_ignore)?;
             if cli.json {
                 println!("{}", commands::graph::to_json(&out));
             } else if out.results.is_empty() {
@@ -83,7 +85,7 @@ fn dispatch(cli: &Cli) -> Result<i32, AppError> {
             Ok(exit::SUCCESS)
         }
         Command::Backlinks(args) => {
-            let out = commands::graph::backlinks(&cli.bundle, args)?;
+            let out = commands::graph::backlinks(&cli.bundle, args, cli.no_ignore)?;
             if cli.json {
                 println!("{}", commands::graph::to_json(&out));
             } else if out.results.is_empty() {
@@ -95,7 +97,7 @@ fn dispatch(cli: &Cli) -> Result<i32, AppError> {
             Ok(exit::SUCCESS)
         }
         Command::Path(args) => {
-            let out = commands::graph::path(&cli.bundle, args)?;
+            let out = commands::graph::path(&cli.bundle, args, cli.no_ignore)?;
             if cli.json {
                 println!("{}", commands::graph::to_json(&out));
             } else if !out.found {
@@ -107,7 +109,7 @@ fn dispatch(cli: &Cli) -> Result<i32, AppError> {
             Ok(exit::SUCCESS)
         }
         Command::Orphans(args) => {
-            let out = commands::graph::orphans(&cli.bundle, args)?;
+            let out = commands::graph::orphans(&cli.bundle, args, cli.no_ignore)?;
             if cli.json {
                 println!("{}", commands::graph::to_json(&out));
             } else if out.results.is_empty() {
@@ -119,7 +121,7 @@ fn dispatch(cli: &Cli) -> Result<i32, AppError> {
             Ok(check_code(args.check, out.count))
         }
         Command::Deadlinks(args) => {
-            let out = commands::graph::deadlinks(&cli.bundle, args)?;
+            let out = commands::graph::deadlinks(&cli.bundle, args, cli.no_ignore)?;
             if cli.json {
                 println!("{}", commands::graph::to_json(&out));
             } else if out.results.is_empty() {
@@ -131,7 +133,7 @@ fn dispatch(cli: &Cli) -> Result<i32, AppError> {
             Ok(check_code(args.check, out.count))
         }
         Command::Stats(args) => {
-            let out = commands::stats::run(&cli.bundle, args)?;
+            let out = commands::stats::run(&cli.bundle, args, cli.no_ignore)?;
             if cli.json {
                 println!("{}", commands::stats::to_json(&out));
             } else {

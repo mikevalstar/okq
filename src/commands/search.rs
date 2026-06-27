@@ -8,7 +8,7 @@ use std::cmp::Ordering;
 use std::io::Write;
 use std::path::Path;
 
-use okf::{Bundle, ConceptId};
+use okf::ConceptId;
 use schemars::JsonSchema;
 use serde::Serialize;
 use tantivy::TantivyDocument;
@@ -21,6 +21,7 @@ use tantivy::snippet::SnippetGenerator;
 use crate::cli::SearchArgs;
 use crate::error::AppError;
 use crate::index::{self, Fields};
+use crate::view::Corpus;
 
 /// Schema tag stamped on every `search` JSON document.
 pub const SCHEMA: &str = "okq.search/v1";
@@ -68,14 +69,18 @@ pub struct SearchHit {
 }
 
 /// Runs `search` against the bundle at `bundle_dir`.
-pub fn run(bundle_dir: &Path, args: &SearchArgs) -> Result<SearchOutput, AppError> {
+pub fn run(
+    bundle_dir: &Path,
+    args: &SearchArgs,
+    no_ignore: bool,
+) -> Result<SearchOutput, AppError> {
     let query_str = args.query.trim();
     if query_str.is_empty() {
         return Err(AppError::Usage("search query must not be empty".into()));
     }
 
-    let bundle = Bundle::load(bundle_dir)?;
-    let si = index::open_or_build(&bundle, args.reindex, args.ephemeral)?;
+    let corpus = Corpus::load(bundle_dir, no_ignore)?;
+    let si = index::open_or_build(&corpus, args.reindex, args.ephemeral)?;
     let f = &si.fields;
 
     let mut parser = QueryParser::for_index(&si.index, vec![f.body, f.title, f.heading]);
@@ -103,7 +108,7 @@ pub fn run(bundle_dir: &Path, args: &SearchArgs) -> Result<SearchOutput, AppErro
         let doc: TantivyDocument = searcher
             .doc(address)
             .map_err(|e| AppError::Index(e.to_string()))?;
-        hits.push(build_hit(score, &doc, f, &snippet_gen, &bundle));
+        hits.push(build_hit(score, &doc, f, &snippet_gen, &corpus));
     }
 
     // Deterministic order: score desc, then path, then line.
@@ -128,18 +133,18 @@ fn build_hit(
     doc: &TantivyDocument,
     f: &Fields,
     snippet_gen: &SnippetGenerator,
-    bundle: &Bundle,
+    corpus: &Corpus,
 ) -> SearchHit {
     let id = first_str(doc, f.concept_id);
     let heading = first_str(doc, f.heading);
 
-    // Concept-level fields come from the bundle, keyed by id.
-    let concept = ConceptId::parse(&id).ok().and_then(|cid| bundle.get(&cid));
+    // Concept-level fields come from the bundle, keyed by id (visible only).
+    let concept = ConceptId::parse(&id).ok().and_then(|cid| corpus.get(&cid));
     let (type_, title, path, tags) = match concept {
         Some(c) => {
             let rel = c
                 .path
-                .strip_prefix(bundle.root())
+                .strip_prefix(corpus.bundle().root())
                 .unwrap_or(&c.path)
                 .to_string_lossy()
                 .replace('\\', "/");
