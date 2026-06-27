@@ -16,6 +16,12 @@ OKF is a small, vendor-neutral convention: one concept per Markdown file, a hand
 cargo install okq
 ```
 
+Or with [mise](https://mise.jdx.dev):
+
+```sh
+mise use -g cargo:okq
+```
+
 ## Usage
 
 Point okq at a bundle with `--bundle` (default: the current directory).
