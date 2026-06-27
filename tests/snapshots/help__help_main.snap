@@ -22,6 +22,7 @@ Commands:
   orphans    Concepts with no inbound links (stale-doc candidates)
   deadlinks  Links pointing to missing/renamed concepts (inline + frontmatter)
   stats      Bundle overview: counts, distributions, link density, and hubs
+  schema     Print the JSON Schema for a command's --json output (the agent contract)
   help       Print this message or the help of the given subcommand(s)
 
 Options:

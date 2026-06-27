@@ -72,6 +72,7 @@ Output is **token-frugal by design**: results are ranked `path:line` + frontmatt
 | `okq orphans` | Concepts with no inbound links (stale-doc candidates); `--check` for CI. |
 | `okq deadlinks` | Links pointing at missing/renamed concepts; `--check` for CI. |
 | `okq stats` | Bundle overview: counts by type/tag, link density, edge-type distribution, hubs. |
+| `okq schema [<cmd>]` | Print the JSON Schema for a command's `--json` envelope (the agent contract). |
 
 Run `okq <command> --help` for details and examples. The graph commands draw edges from **both** inline markdown links and frontmatter relations (`related`, `supersedes`, …).
 

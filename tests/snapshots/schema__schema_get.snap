@@ -1,0 +1,110 @@
+---
+source: tests/schema.rs
+expression: "stdout(&[\"schema\", \"get\"])"
+---
+{
+  "$defs": {
+    "SectionOut": {
+      "description": "A section as it appears in the JSON envelope.",
+      "properties": {
+        "body": {
+          "description": "Section source markdown.",
+          "type": "string"
+        },
+        "heading": {
+          "description": "Heading text.",
+          "type": "string"
+        },
+        "level": {
+          "description": "Heading depth, 1–6.",
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "line": {
+          "description": "1-based source line of the heading.",
+          "format": "uint",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "slug": {
+          "description": "Slugified heading.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "heading",
+        "slug",
+        "level",
+        "line",
+        "body"
+      ],
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "The JSON envelope for `okq get`. The `id`/`type`/`title`/`path`/`line`\nfields are the shared concept envelope reused by other commands' shortlists.",
+  "properties": {
+    "body": {
+      "description": "Full body markdown. Omitted unless requested.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "frontmatter": {
+      "description": "Full frontmatter (well-known keys + producer extensions). Omitted unless requested."
+    },
+    "id": {
+      "description": "The concept id (path minus `.md`).",
+      "type": "string"
+    },
+    "line": {
+      "description": "1-based line where the concept begins (always 1).",
+      "format": "uint",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "path": {
+      "description": "The concept's path relative to the bundle root.",
+      "type": "string"
+    },
+    "schema": {
+      "description": "Schema tag (`okq.get/v1`).",
+      "type": "string"
+    },
+    "sections": {
+      "description": "The selected section(s). Present only with `--section`.",
+      "items": {
+        "$ref": "#/$defs/SectionOut"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "title": {
+      "description": "The frontmatter `title`, if present.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "type": {
+      "description": "The frontmatter `type`, if present.",
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "schema",
+    "id",
+    "path",
+    "line"
+  ],
+  "title": "GetOutput",
+  "type": "object"
+}

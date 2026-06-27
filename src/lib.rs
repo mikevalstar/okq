@@ -139,6 +139,11 @@ fn dispatch(cli: &Cli) -> Result<i32, AppError> {
             }
             Ok(exit::SUCCESS)
         }
+        Command::Schema(args) => {
+            let value = commands::schema::run(args)?;
+            println!("{}", commands::schema::to_json(&value));
+            Ok(exit::SUCCESS)
+        }
     }
 }
 

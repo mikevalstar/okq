@@ -123,6 +123,14 @@ Examples:
   # Machine-readable, with the top 5 hubs/tags
   okq stats --json --top 5";
 
+const SCHEMA_EXAMPLES: &str = "\
+Examples:
+  # JSON Schema for one command's --json envelope
+  okq schema search
+
+  # All schemas, as a committable contract artifact
+  okq schema > schemas.json";
+
 /// okq — query and navigation for Open Knowledge Format (OKF) bundles.
 #[derive(Parser, Debug)]
 #[command(
@@ -195,6 +203,10 @@ pub enum Command {
     /// Bundle overview: counts, distributions, link density, and hubs.
     #[command(after_help = STATS_EXAMPLES, after_long_help = STATS_EXAMPLES)]
     Stats(StatsArgs),
+
+    /// Print the JSON Schema for a command's --json output (the agent contract).
+    #[command(after_help = SCHEMA_EXAMPLES, after_long_help = SCHEMA_EXAMPLES)]
+    Schema(SchemaArgs),
 }
 
 /// Edge-traversal direction.
@@ -282,6 +294,14 @@ pub struct StatsArgs {
     /// Cap the hubs and tags lists at this many entries.
     #[arg(long, default_value_t = 10, value_name = "N")]
     pub top: usize,
+}
+
+/// Arguments for `okq schema`.
+#[derive(Args, Debug)]
+pub struct SchemaArgs {
+    /// Command whose output schema to print; omit for all commands.
+    #[arg(value_name = "COMMAND")]
+    pub command: Option<String>,
 }
 
 /// Arguments for `okq get`.
