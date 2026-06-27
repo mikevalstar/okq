@@ -61,6 +61,33 @@ okq deadlinks --check        # exit 3 if any dead links, for CI
 
 `okq schema <command>` prints the JSON Schema for that command's output, generated from the code, so you can validate against it.
 
+## Agent skills
+
+The [`skills/`](skills/) directory ships [Agent Skills](https://agentskills.io) that teach an AI agent to use okq well — so adopting okq also onboards the agents that work in your bundles. They follow the open `SKILL.md` standard and work in Claude Code and other compatible agents.
+
+| Skill | What it does |
+|-------|--------------|
+| `okq-explore` | Search and navigate a bundle to assemble context before work. |
+| `okq-write-okf` | Author OKF docs from okq's templates, with cross-links and verification. |
+| `okq-maintain` | Find and fix bundle rot; audit a doc against the code. |
+| `okq-reference` | The okq CLI contract — loaded automatically as background knowledge. |
+
+Install all four with [skills.sh](https://www.skills.sh):
+
+```sh
+npx skills add mikevalstar/okq
+```
+
+Or install them by hand — copy (or symlink) the skill folders into your agent's skills directory:
+
+```sh
+# Claude Code: personal (all projects) or project-local
+cp -r skills/okq-* ~/.claude/skills/        # personal
+cp -r skills/okq-* .claude/skills/          # this project only
+```
+
+Then invoke one with `/okq-explore`, `/okq-write-okf`, or `/okq-maintain`; `okq-reference` loads on its own when okq or OKF comes up.
+
 ## Commands
 
 | Command | What it does |
