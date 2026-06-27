@@ -1,4 +1,5 @@
 ---
+type: feature
 title: okq schema — emit the JSON Schema for command output
 status: active # draft | accepted | active | deprecated
 created: 2026-06-26

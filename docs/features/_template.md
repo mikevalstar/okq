@@ -1,4 +1,5 @@
 ---
+type: feature
 title: Feature name (often a command, e.g. "okq search")
 status: draft # draft | accepted | active | deprecated
 created: 2026-06-26

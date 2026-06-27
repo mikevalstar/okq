@@ -1,4 +1,5 @@
 ---
+type: guide
 title: Guide name
 status: active # draft | active | deprecated
 created: 2026-06-26

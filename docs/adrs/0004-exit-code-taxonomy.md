@@ -1,4 +1,5 @@
 ---
+type: adr
 title: ADR-0004 — Exit-code taxonomy
 status: accepted
 created: 2026-06-26

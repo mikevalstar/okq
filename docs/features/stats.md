@@ -1,4 +1,5 @@
 ---
+type: feature
 title: okq stats — bundle overview & health metrics
 status: active # draft | accepted | active | deprecated
 created: 2026-06-26

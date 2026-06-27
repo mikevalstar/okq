@@ -1,4 +1,5 @@
 ---
+type: feature
 title: okq init & new — scaffold and author OKF bundles
 status: accepted # draft | accepted | active | deprecated
 created: 2026-06-26
@@ -67,9 +68,15 @@ Each piece earns its place:
 
 ### README handling (treat the base as something you modify)
 
-- **No README yet** → write a **base README**: a short intro plus a "Managed with
-  okq" section (what the bundle is, and example `okq` commands to query it).
-- **README exists** → **inject** the okq section between markers, idempotently:
+Because `README.md` isn't a reserved OKF filename, it *is* a concept — so for the
+bundle to stay conformant it needs a `type`. `init` ensures the README carries
+`type: readme` frontmatter (adding a minimal block if absent), then:
+
+- **No README yet** → write a **base README**: `type: readme` frontmatter, a short
+  intro, plus a "Managed with okq" section (what the bundle is, and example `okq`
+  commands to query it).
+- **README exists** → ensure its `type: readme` frontmatter, then **inject** the
+  okq section between markers, idempotently:
 
   ```markdown
   <!-- okq:begin -->

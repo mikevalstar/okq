@@ -1,3 +1,8 @@
+---
+type: readme
+title: okq documentation
+---
+
 # Documentation
 
 This project is **documentation-first**: decisions, features, and workflows are written here before (or alongside) the code that implements them.
@@ -21,6 +26,7 @@ Every doc starts with YAML frontmatter so docs can be searched, filtered, and gr
 
 ```yaml
 ---
+type: adr            # REQUIRED for OKF conformance — adr | feature | guide | workflow | …
 title: Short human-readable title
 status: draft        # draft | accepted | active | superseded | deprecated
 created: 2026-06-26  # ISO date
@@ -30,7 +36,7 @@ related: []          # paths to related docs — these become typed graph edges
 ---
 ```
 
-Doc types add fields on top of this (ADRs have `supersedes`/`superseded-by`, features have `milestone`, etc.) — see each `_template.md`.
+`type` is the one **OKF-required** key (a bundle is conformant when every concept has a non-empty `type`); the rest are well-known OKF keys or this repo's producer extensions, which consumers preserve. Doc types add fields on top (ADRs have `supersedes`/`superseded-by`, features have `milestone`, etc.) — see each `_template.md`. The reserved `index.md` (directory listing; the root carries `okf_version`) and `log.md` are **not** concepts and carry no `type`.
 
 The frontmatter here is kept compatible with [OKF v0.1](https://github.com/GoogleCloudPlatform/knowledge-catalog/tree/main/okf) so this tree stays a valid query target. Where OKF and this repo's needs diverge, the divergence is itself an ADR.
 

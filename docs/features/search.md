@@ -1,4 +1,5 @@
 ---
+type: feature
 title: okq search — ranked full-text retrieval
 status: active # draft | accepted | active | deprecated
 created: 2026-06-26

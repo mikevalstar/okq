@@ -1,4 +1,5 @@
 ---
+type: adr
 title: ADR-0001 — Documentation-first, in an OKF-shaped docs tree
 status: accepted
 created: 2026-06-26

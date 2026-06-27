@@ -1,4 +1,5 @@
 ---
+type: adr
 title: ADR-0003 — The search index lives in the XDG cache, not the bundle
 status: accepted
 created: 2026-06-26

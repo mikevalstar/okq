@@ -1,4 +1,5 @@
 ---
+type: feature
 title: okq get — expand one concept on demand
 status: active # draft | accepted | active | deprecated
 created: 2026-06-26

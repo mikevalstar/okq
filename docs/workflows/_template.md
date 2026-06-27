@@ -1,4 +1,5 @@
 ---
+type: workflow
 title: Workflow name (verb phrase, e.g. "Explore a bundle")
 status: draft # draft | active | deprecated
 created: 2026-06-26

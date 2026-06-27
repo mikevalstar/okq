@@ -1,4 +1,5 @@
 ---
+type: adr
 title: ADR-0005 — Dogfood okq for our own docs, specs, and features
 status: accepted
 created: 2026-06-26

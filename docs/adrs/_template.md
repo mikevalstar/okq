@@ -1,4 +1,5 @@
 ---
+type: adr
 title: ADR-NNNN — Short title of the decision
 status: draft # draft | accepted | superseded
 created: 2026-06-26

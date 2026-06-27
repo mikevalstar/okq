@@ -1,4 +1,5 @@
 ---
+type: adr
 title: ADR-0002 — Library stack (stand on the shoulders of giants)
 status: accepted
 created: 2026-06-26
