@@ -150,6 +150,23 @@ Examples:
   # List the available types
   okq new --list";
 
+const SKILLS_EXAMPLES: &str = "\
+Examples:
+  # Install the okq-* agent skills into this project (.agents + .claude)
+  okq skills install
+
+  # ...for every project (~/.agents + ~/.claude)
+  okq skills install --global
+
+  # Fetch the latest skills from GitHub instead of the embedded copy
+  okq skills install --from-repo
+
+  # Or let skills.sh do it: npx skills add mikevalstar/okq
+  okq skills install --via-skills-sh
+
+  # See what's bundled with this binary
+  okq skills list";
+
 /// okq — query and navigation for Open Knowledge Format (OKF) bundles.
 #[derive(Parser, Debug)]
 #[command(
@@ -238,6 +255,10 @@ pub enum Command {
     /// Create one concept from a template (adr | feature).
     #[command(after_help = NEW_EXAMPLES, after_long_help = NEW_EXAMPLES)]
     New(NewArgs),
+
+    /// Install or list the okq-* agent skills (teach an agent to use okq).
+    #[command(after_help = SKILLS_EXAMPLES, after_long_help = SKILLS_EXAMPLES)]
+    Skills(SkillsArgs),
 }
 
 /// Edge-traversal direction.
@@ -338,6 +359,41 @@ pub struct SchemaArgs {
 /// Arguments for `okq init`.
 #[derive(Args, Debug)]
 pub struct InitArgs {}
+
+/// Arguments for `okq skills`.
+#[derive(Args, Debug)]
+pub struct SkillsArgs {
+    /// What to do with the skills.
+    #[command(subcommand)]
+    pub action: SkillsAction,
+}
+
+/// The `okq skills` actions.
+#[derive(Subcommand, Debug)]
+pub enum SkillsAction {
+    /// Install or update the okq-* skills (idempotent).
+    Install(SkillsInstallArgs),
+
+    /// List the skills bundled with this binary.
+    List,
+}
+
+/// Arguments for `okq skills install`.
+#[derive(Args, Debug)]
+pub struct SkillsInstallArgs {
+    /// Install into your home dirs (~/.agents, ~/.claude) for all projects.
+    #[arg(long)]
+    pub global: bool,
+
+    /// Fetch the latest skills from GitHub instead of the copy embedded in this
+    /// binary (the only okq command that uses the network — ADR-0007).
+    #[arg(long, conflicts_with = "via_skills_sh")]
+    pub from_repo: bool,
+
+    /// Delegate to skills.sh: run `npx skills add mikevalstar/okq`.
+    #[arg(long = "via-skills-sh")]
+    pub via_skills_sh: bool,
+}
 
 /// Arguments for `okq new`.
 #[derive(Args, Debug)]

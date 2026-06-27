@@ -1,0 +1,44 @@
+---
+source: tests/help.rs
+expression: "help(&[\"skills\", \"--help\"])"
+---
+Install or list the okq-* agent skills (teach an agent to use okq)
+
+Usage: okq skills [OPTIONS] <COMMAND>
+
+Commands:
+  install  Install or update the okq-* skills (idempotent)
+  list     List the skills bundled with this binary
+  help     Print this message or the help of the given subcommand(s)
+
+Options:
+      --bundle <DIR>
+          Bundle directory to query [default: current directory]
+
+      --json
+          Emit machine-readable JSON on stdout instead of human-readable text
+
+      --no-color
+          Disable colored output (also honors NO_COLOR)
+
+      --no-ignore
+          Ignore all .okqignore files; query the full tree, nothing excluded
+
+  -h, --help
+          Print help (see a summary with '-h')
+
+Examples:
+  # Install the okq-* agent skills into this project (.agents + .claude)
+  okq skills install
+
+  # ...for every project (~/.agents + ~/.claude)
+  okq skills install --global
+
+  # Fetch the latest skills from GitHub instead of the embedded copy
+  okq skills install --from-repo
+
+  # Or let skills.sh do it: npx skills add mikevalstar/okq
+  okq skills install --via-skills-sh
+
+  # See what's bundled with this binary
+  okq skills list

@@ -63,7 +63,7 @@ okq deadlinks --check        # exit 3 if any dead links, for CI
 
 ## Agent skills
 
-The [`skills/`](skills/) directory ships [Agent Skills](https://agentskills.io) that teach an AI agent to use okq well — so adopting okq also onboards the agents that work in your bundles. They follow the open `SKILL.md` standard and work in Claude Code and other compatible agents.
+okq ships [Agent Skills](https://agentskills.io) that teach an AI agent to use okq well — so adopting okq also onboards the agents that work in your bundles. They follow the open `SKILL.md` standard and work in Claude Code and other compatible agents.
 
 | Skill | What it does |
 |-------|--------------|
@@ -72,21 +72,25 @@ The [`skills/`](skills/) directory ships [Agent Skills](https://agentskills.io) 
 | `okq-maintain` | Find and fix bundle rot; audit a doc against the code. |
 | `okq-reference` | The okq CLI contract — loaded automatically as background knowledge. |
 
-Install all four with [skills.sh](https://www.skills.sh):
+Install them with okq itself:
 
 ```sh
-npx skills add mikevalstar/okq
+okq skills install            # into this project (.agents + .claude)
+okq skills install --global   # into ~/.agents + ~/.claude, for every project
 ```
 
-Or install them by hand — copy (or symlink) the skill folders into your agent's skills directory:
+This writes the skills to a canonical `.agents/skills/` and symlinks them into `.claude/skills/` (the same layout [skills.sh](https://www.skills.sh) uses). The skills are embedded in the binary, so this works offline; re-run any time to update. Prefer the registry, or want the latest between okq releases?
 
 ```sh
-# Claude Code: personal (all projects) or project-local
-cp -r skills/okq-* ~/.claude/skills/        # personal
-cp -r skills/okq-* .claude/skills/          # this project only
+okq skills install --via-skills-sh   # delegates to: npx skills add mikevalstar/okq
+okq skills install --from-repo       # fetch the latest from GitHub (the one networked command)
 ```
 
-Then invoke one with `/okq-explore`, `/okq-write-okf`, or `/okq-maintain`; `okq-reference` loads on its own when okq or OKF comes up.
+Then invoke one with `/okq-explore`, `/okq-write-okf`, or `/okq-maintain`; `okq-reference` loads on its own when okq or OKF comes up. Run `okq skills list` to see what's bundled.
+
+**These are complete, working skills — but treat them as a starting point.** You'll get the most out of them by tailoring each `SKILL.md` to your own documentation setup: your bundle layout, your frontmatter keys and status lifecycle, the conventions your team already follows. The defaults are sensible; your edits make them sharp.
+
+**A note on scale.** Skills like these earn their keep on **large bundles — roughly 100+ documents** — where an agent genuinely needs ranked search and graph navigation to find the right context without reading everything. On a small bundle, an agent is just as effective reading and grepping the files directly, and the skills add little. Reach for them when the docs have outgrown what fits comfortably in a single look.
 
 ## Commands
 
@@ -104,6 +108,7 @@ Then invoke one with `/okq-explore`, `/okq-write-okf`, or `/okq-maintain`; `okq-
 | `okq schema [<cmd>]` | JSON Schema for a command's `--json` output. |
 | `okq init` | Scaffold a new bundle: `adrs/` + `features/`, a seed ADR, a README. |
 | `okq new <type> [title]` | Add one concept from a template (`adr` numbers itself, `feature` slugifies). |
+| `okq skills install` | Install/update the okq-* agent skills (`--global`, `--from-repo`, `--via-skills-sh`). |
 
 Run `okq <command> --help` for flags and examples.
 

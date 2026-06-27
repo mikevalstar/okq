@@ -1,0 +1,17 @@
+---
+source: tests/help.rs
+expression: "help(&[\"skills\", \"install\", \"--help\"])"
+---
+Install or update the okq-* skills (idempotent)
+
+Usage: okq skills install [OPTIONS]
+
+Options:
+      --bundle <DIR>   Bundle directory to query [default: current directory]
+      --global         Install into your home dirs (~/.agents, ~/.claude) for all projects
+      --from-repo      Fetch the latest skills from GitHub instead of the copy embedded in this binary (the only okq command that uses the network — ADR-0007)
+      --json           Emit machine-readable JSON on stdout instead of human-readable text
+      --no-color       Disable colored output (also honors NO_COLOR)
+      --via-skills-sh  Delegate to skills.sh: run `npx skills add mikevalstar/okq`
+      --no-ignore      Ignore all .okqignore files; query the full tree, nothing excluded
+  -h, --help           Print help

@@ -8,6 +8,8 @@ tags: [skills, agents, distribution]
 milestone: M4.5 # roadmap milestone from PLAN.md §7
 command: null # skills are packaged assets, not a CLI command
 related:
+  - ./skills-install.md
+  - ../adrs/0007-opt-in-network-for-skill-install.md
   - ../adrs/0005-dogfood-okq-for-docs.md
   - ../adrs/0001-documentation-first-okf-shaped.md
   - ../adrs/0004-exit-code-taxonomy.md
@@ -132,12 +134,14 @@ referenced rather than duplicated.
 
 ## Open questions
 
-- **Packaging for distribution.** Bundle the skills inside the published crate /
-  release artifacts too, or rely solely on the GitHub repo + skills.sh index?
-  (The published crate is curated via `exclude`; adding `skills/` needs a
-  `cargo package --list` re-check.)
+- ~~**Packaging for distribution.**~~ Resolved: the skills are **embedded in the
+  binary** and installed by [`okq skills install`](./skills-install.md), so
+  `skills/` ships in the published crate (kept out of `exclude`; re-check
+  `cargo package --list`). skills.sh still indexes the repo as a second channel.
 - **Versioning.** Do skills version with the binary (one tag) or independently?
-  Leaning: version with the repo, since they assume a command surface.
+  Embedding ties them to the binary by default; `okq skills install --from-repo`
+  ([ADR-0007](../adrs/0007-opt-in-network-for-skill-install.md)) is the
+  out-of-band escape hatch.
 - **`okq-reference` overlap with CLAUDE.md.** Avoid drift between the skill's
   CLI contract and CLAUDE.md/the per-command feature specs — single source, or
   generate one from the other?

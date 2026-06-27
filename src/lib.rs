@@ -173,6 +173,61 @@ fn dispatch(cli: &Cli) -> Result<i32, AppError> {
             println!("{}", path.display());
             Ok(exit::SUCCESS)
         }
+        Command::Skills(args) => match &args.action {
+            cli::SkillsAction::List => {
+                let skills = commands::skills::list();
+                if cli.json {
+                    let value = serde_json::json!({
+                        "schema": "okq.skills-list/v1",
+                        "count": skills.len(),
+                        "skills": skills.iter()
+                            .map(|s| serde_json::json!({"name": s.name, "description": s.description}))
+                            .collect::<Vec<_>>(),
+                    });
+                    println!(
+                        "{}",
+                        serde_json::to_string_pretty(&value).unwrap_or_default()
+                    );
+                } else {
+                    for s in &skills {
+                        println!("{}\n    {}", s.name, s.description);
+                    }
+                }
+                Ok(exit::SUCCESS)
+            }
+            cli::SkillsAction::Install(args) => {
+                if args.via_skills_sh {
+                    commands::skills::run_skills_sh()?;
+                    return Ok(exit::SUCCESS);
+                }
+                let report = commands::skills::install(args.global, args.from_repo)?;
+                if cli.json {
+                    println!("{}", commands::skills::to_json(&report));
+                } else {
+                    for s in &report.skills {
+                        let how = if s.linked {
+                            "linked"
+                        } else if s.note.is_empty() {
+                            "copied"
+                        } else {
+                            "skipped link"
+                        };
+                        eprintln!("  {:>7}  {} ({how})", s.verb, s.name);
+                        if !s.note.is_empty() {
+                            eprintln!("           note: {}", s.note);
+                        }
+                    }
+                    eprintln!(
+                        "Installed {} {} skill(s) to {} (linked into {}). Invoke with /okq-explore.",
+                        report.skills.len(),
+                        report.source,
+                        report.base_dir.display(),
+                        report.link_dir.display(),
+                    );
+                }
+                Ok(exit::SUCCESS)
+            }
+        },
     }
 }
 

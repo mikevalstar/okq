@@ -34,6 +34,19 @@ fn search_help() {
 }
 
 #[test]
+fn skills_help() {
+    insta::assert_snapshot!("help_skills", help(&["skills", "--help"]));
+}
+
+#[test]
+fn skills_install_help() {
+    insta::assert_snapshot!(
+        "help_skills_install",
+        help(&["skills", "install", "--help"])
+    );
+}
+
+#[test]
 fn examples_and_learn_more_present() {
     // The affordances that make help "good" — assert they survive refactors.
     let h = help(&["--help"]);
