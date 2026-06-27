@@ -129,6 +129,16 @@ fn dispatch(cli: &Cli) -> Result<i32, AppError> {
             }
             Ok(check_code(args.check, out.count))
         }
+        Command::Stats(args) => {
+            let out = commands::stats::run(&cli.bundle, args)?;
+            if cli.json {
+                println!("{}", commands::stats::to_json(&out));
+            } else {
+                let mut w = anstream::stdout().lock();
+                commands::stats::render_human(&mut w, &out, args.top, cli.no_color)?;
+            }
+            Ok(exit::SUCCESS)
+        }
     }
 }
 

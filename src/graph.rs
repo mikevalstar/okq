@@ -7,7 +7,7 @@
 //! adjacency + hand-rolled BFS covers neighbors/path; petgraph isn't needed for
 //! these unweighted, typed, direction-filtered traversals.
 
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
 
 use okf::{Bundle, ConceptId, Value};
 
@@ -269,6 +269,32 @@ impl Graph {
     /// All dead links in the bundle (inline + frontmatter), sorted.
     pub fn dead_links(&self) -> &[DeadLink] {
         &self.dead
+    }
+
+    /// Total number of resolved edges (each directed edge counted once).
+    pub fn total_edges(&self) -> usize {
+        self.out.values().map(Vec::len).sum()
+    }
+
+    /// Count of edges by kind, key-sorted.
+    pub fn edge_kind_counts(&self) -> BTreeMap<String, usize> {
+        let mut counts = BTreeMap::new();
+        for edges in self.out.values() {
+            for e in edges {
+                *counts.entry(e.kind.clone()).or_insert(0) += 1;
+            }
+        }
+        counts
+    }
+
+    /// Number of inbound edges to a concept.
+    pub fn in_degree(&self, id: &ConceptId) -> usize {
+        self.inn.get(id).map(Vec::len).unwrap_or(0)
+    }
+
+    /// Number of outbound edges from a concept.
+    pub fn out_degree(&self, id: &ConceptId) -> usize {
+        self.out.get(id).map(Vec::len).unwrap_or(0)
     }
 }
 

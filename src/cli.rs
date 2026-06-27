@@ -115,6 +115,14 @@ Examples:
   # Fail CI if any exist
   okq deadlinks --check";
 
+const STATS_EXAMPLES: &str = "\
+Examples:
+  # One-glance overview of the bundle
+  okq stats
+
+  # Machine-readable, with the top 5 hubs/tags
+  okq stats --json --top 5";
+
 /// okq — query and navigation for Open Knowledge Format (OKF) bundles.
 #[derive(Parser, Debug)]
 #[command(
@@ -183,6 +191,10 @@ pub enum Command {
     /// Links pointing to missing/renamed concepts (inline + frontmatter).
     #[command(after_help = DEADLINKS_EXAMPLES, after_long_help = DEADLINKS_EXAMPLES)]
     Deadlinks(DeadlinksArgs),
+
+    /// Bundle overview: counts, distributions, link density, and hubs.
+    #[command(after_help = STATS_EXAMPLES, after_long_help = STATS_EXAMPLES)]
+    Stats(StatsArgs),
 }
 
 /// Edge-traversal direction.
@@ -262,6 +274,14 @@ pub struct DeadlinksArgs {
     /// Exit 3 if any dead links are found (for CI gating).
     #[arg(long)]
     pub check: bool,
+}
+
+/// Arguments for `okq stats`.
+#[derive(Args, Debug)]
+pub struct StatsArgs {
+    /// Cap the hubs and tags lists at this many entries.
+    #[arg(long, default_value_t = 10, value_name = "N")]
+    pub top: usize,
 }
 
 /// Arguments for `okq get`.

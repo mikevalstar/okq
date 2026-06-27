@@ -2,7 +2,7 @@
 
 **A fast, deterministic CLI for searching and navigating [Open Knowledge Format](https://github.com/GoogleCloudPlatform/knowledge-catalog/tree/main/okf) (OKF) document bundles — for humans *and* AI agents.**
 
-> Status: 🌱 **alpha.** Retrieval (`get`, `find`, `search`) and graph navigation (`neighbors`, `backlinks`, `path`, `orphans`, `deadlinks`) work today. Bundle stats are next. See [PLAN.md](PLAN.md) for the full roadmap.
+> Status: 🌱 **alpha.** Retrieval (`get`, `find`, `search`), graph navigation (`neighbors`, `backlinks`, `path`, `orphans`, `deadlinks`), and bundle `stats` all work today. See [PLAN.md](PLAN.md) for the full roadmap.
 
 ---
 
@@ -71,8 +71,9 @@ Output is **token-frugal by design**: results are ranked `path:line` + frontmatt
 | `okq path <a> <b>` | Shortest link path between two concepts (`--undirected`). |
 | `okq orphans` | Concepts with no inbound links (stale-doc candidates); `--check` for CI. |
 | `okq deadlinks` | Links pointing at missing/renamed concepts; `--check` for CI. |
+| `okq stats` | Bundle overview: counts by type/tag, link density, edge-type distribution, hubs. |
 
-Run `okq <command> --help` for details and examples. The graph commands draw edges from **both** inline markdown links and frontmatter relations (`related`, `supersedes`, …). Coming next: `stats` (bundle metrics).
+Run `okq <command> --help` for details and examples. The graph commands draw edges from **both** inline markdown links and frontmatter relations (`related`, `supersedes`, …).
 
 ## How it works
 
