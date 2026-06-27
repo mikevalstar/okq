@@ -23,6 +23,8 @@ Commands:
   deadlinks  Links pointing to missing/renamed concepts (inline + frontmatter)
   stats      Bundle overview: counts, distributions, link density, and hubs
   schema     Print the JSON Schema for a command's --json output (the agent contract)
+  init       Scaffold a new OKF bundle (adrs/ + features/, seed docs, README)
+  new        Create one concept from a template (adr | feature)
   help       Print this message or the help of the given subcommand(s)
 
 Options:

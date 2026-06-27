@@ -1,7 +1,7 @@
 ---
 type: feature
 title: okq init & new — scaffold and author OKF bundles
-status: accepted # draft | accepted | active | deprecated
+status: active # draft | accepted | active | deprecated
 created: 2026-06-26
 updated: 2026-06-26
 tags: [cli, init, new, scaffold, authoring, okf, templates]

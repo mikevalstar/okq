@@ -34,6 +34,8 @@ pub enum AppError {
     Bundle(okf::BundleError),
     /// A search-index operation failed (build, open, writer-lock contention).
     Index(String),
+    /// A write/scaffold operation failed or would overwrite an existing file.
+    Io(String),
     /// The concept identity was syntactically invalid.
     InvalidConcept {
         /// The identity as the caller typed it.
@@ -76,7 +78,7 @@ impl AppError {
     pub fn exit_code(&self) -> i32 {
         match self {
             AppError::Usage(_) => exit::USAGE,
-            AppError::Bundle(_) | AppError::Index(_) => exit::ERROR,
+            AppError::Bundle(_) | AppError::Index(_) | AppError::Io(_) => exit::ERROR,
             AppError::InvalidConcept { .. }
             | AppError::ConceptNotFound { .. }
             | AppError::ConceptAmbiguous { .. } => exit::NOT_FOUND,
@@ -91,6 +93,7 @@ impl fmt::Display for AppError {
             AppError::Usage(msg) => write!(f, "{msg}"),
             AppError::Bundle(e) => write!(f, "{e}"),
             AppError::Index(msg) => write!(f, "search index error: {msg}"),
+            AppError::Io(msg) => write!(f, "{msg}"),
             AppError::InvalidConcept { input, reason } => {
                 write!(f, "invalid concept id {input:?}: {reason}")
             }

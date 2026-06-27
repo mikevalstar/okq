@@ -11,6 +11,7 @@ pub mod graph;
 pub mod index;
 pub mod model;
 pub mod sections;
+pub mod templates;
 pub mod yaml_json;
 
 use clap::Parser;
@@ -142,6 +143,32 @@ fn dispatch(cli: &Cli) -> Result<i32, AppError> {
         Command::Schema(args) => {
             let value = commands::schema::run(args)?;
             println!("{}", commands::schema::to_json(&value));
+            Ok(exit::SUCCESS)
+        }
+        Command::Init(_) => {
+            let report = commands::scaffold::init(&cli.bundle)?;
+            for action in &report {
+                eprintln!("  {:>7}  {}", action.verb, action.path);
+            }
+            eprintln!(
+                "Initialized OKF bundle. Try: okq --bundle {} stats",
+                cli.bundle.display()
+            );
+            Ok(exit::SUCCESS)
+        }
+        Command::New(args) => {
+            if args.list {
+                println!("{}", commands::scaffold::TYPES.join("\n"));
+                return Ok(exit::SUCCESS);
+            }
+            let type_ = args.type_.as_deref().ok_or_else(|| {
+                AppError::Usage("a type is required: okq new <adr|feature> \"<title>\"".into())
+            })?;
+            let title = args.title.as_deref().ok_or_else(|| {
+                AppError::Usage(format!("a title is required: okq new {type_} \"<title>\""))
+            })?;
+            let path = commands::scaffold::new(&cli.bundle, type_, title)?;
+            println!("{}", path.display());
             Ok(exit::SUCCESS)
         }
     }

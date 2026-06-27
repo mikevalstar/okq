@@ -2,7 +2,7 @@
 
 **A fast, deterministic CLI for searching and navigating [Open Knowledge Format](https://github.com/GoogleCloudPlatform/knowledge-catalog/tree/main/okf) (OKF) document bundles — for humans *and* AI agents.**
 
-> Status: 🌱 **alpha.** Retrieval (`get`, `find`, `search`), graph navigation (`neighbors`, `backlinks`, `path`, `orphans`, `deadlinks`), and bundle `stats` all work today. See [PLAN.md](PLAN.md) for the full roadmap.
+> Status: 🌱 **alpha.** Retrieval (`get`, `find`, `search`), graph navigation (`neighbors`, `backlinks`, `path`, `orphans`, `deadlinks`), bundle `stats`/`schema`, and scaffolding (`init`, `new`) all work today. See [PLAN.md](PLAN.md) for the full roadmap.
 
 ---
 
@@ -73,6 +73,8 @@ Output is **token-frugal by design**: results are ranked `path:line` + frontmatt
 | `okq deadlinks` | Links pointing at missing/renamed concepts; `--check` for CI. |
 | `okq stats` | Bundle overview: counts by type/tag, link density, edge-type distribution, hubs. |
 | `okq schema [<cmd>]` | Print the JSON Schema for a command's `--json` envelope (the agent contract). |
+| `okq init` | Scaffold a new OKF bundle (`adrs/` + `features/`, seed ADR, README, `index.md`). |
+| `okq new <type> [title]` | Add one concept from a template (`adr` auto-numbers, `feature` slugifies). |
 
 Run `okq <command> --help` for details and examples. The graph commands draw edges from **both** inline markdown links and frontmatter relations (`related`, `supersedes`, …).
 

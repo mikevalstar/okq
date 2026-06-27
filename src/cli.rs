@@ -131,6 +131,25 @@ Examples:
   # All schemas, as a committable contract artifact
   okq schema > schemas.json";
 
+const INIT_EXAMPLES: &str = "\
+Examples:
+  # Scaffold an OKF bundle in the current directory
+  okq init
+
+  # ...or in a specific directory (idempotent; safe to re-run)
+  okq --bundle docs init";
+
+const NEW_EXAMPLES: &str = "\
+Examples:
+  # Add an auto-numbered ADR
+  okq new adr \"Adopt Tantivy for search\"
+
+  # Add a feature spec; open the file it prints
+  $EDITOR \"$(okq new feature 'Saved searches')\"
+
+  # List the available types
+  okq new --list";
+
 /// okq — query and navigation for Open Knowledge Format (OKF) bundles.
 #[derive(Parser, Debug)]
 #[command(
@@ -207,6 +226,14 @@ pub enum Command {
     /// Print the JSON Schema for a command's --json output (the agent contract).
     #[command(after_help = SCHEMA_EXAMPLES, after_long_help = SCHEMA_EXAMPLES)]
     Schema(SchemaArgs),
+
+    /// Scaffold a new OKF bundle (adrs/ + features/, seed docs, README).
+    #[command(after_help = INIT_EXAMPLES, after_long_help = INIT_EXAMPLES)]
+    Init(InitArgs),
+
+    /// Create one concept from a template (adr | feature).
+    #[command(after_help = NEW_EXAMPLES, after_long_help = NEW_EXAMPLES)]
+    New(NewArgs),
 }
 
 /// Edge-traversal direction.
@@ -302,6 +329,26 @@ pub struct SchemaArgs {
     /// Command whose output schema to print; omit for all commands.
     #[arg(value_name = "COMMAND")]
     pub command: Option<String>,
+}
+
+/// Arguments for `okq init`.
+#[derive(Args, Debug)]
+pub struct InitArgs {}
+
+/// Arguments for `okq new`.
+#[derive(Args, Debug)]
+pub struct NewArgs {
+    /// Concept type to create (`adr` or `feature`).
+    #[arg(value_name = "TYPE")]
+    pub type_: Option<String>,
+
+    /// Title for the new concept.
+    #[arg(value_name = "TITLE")]
+    pub title: Option<String>,
+
+    /// List the available types and exit.
+    #[arg(long)]
+    pub list: bool,
 }
 
 /// Arguments for `okq get`.
