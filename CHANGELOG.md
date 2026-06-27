@@ -21,6 +21,12 @@ attaches prebuilt binaries to the GitHub Release.
   3 on any error), `--severity <error|warning|info>` sets the display floor, and
   `--json` emits the `okq.validate/v1` contract. Surfaces the docs okq otherwise
   loads-but-skips silently. See [`docs/features/validate.md`](docs/features/validate.md).
+- `okq index` — regenerate the `index.md` directory listings from the bundle's
+  concepts: per-directory folder links and a concept table, written into a fenced
+  block so surrounding prose (and the root's `okf_version`) is preserved.
+  Idempotent; `--check` fails CI (exit 3) on a stale listing; `--json` emits
+  `okq.index/v1`. Completes the authoring loop (`init` → `new` → `index`). See
+  [`docs/features/index-command.md`](docs/features/index-command.md).
 
 ### Added
 

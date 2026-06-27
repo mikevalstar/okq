@@ -11,6 +11,11 @@ pub const README_BEGIN: &str = "<!-- okq:begin -->";
 /// Closing marker for the okq-owned README block.
 pub const README_END: &str = "<!-- okq:end -->";
 
+/// Markers that fence the generated listing in a directory `index.md`.
+pub const INDEX_BEGIN: &str = "<!-- okq:index:begin -->";
+/// Closing marker for the generated `index.md` listing.
+pub const INDEX_END: &str = "<!-- okq:index:end -->";
+
 /// Today's date as ISO-8601 `YYYY-MM-DD` (UTC), for frontmatter `timestamp`.
 /// Authoring may read the clock — the determinism principle binds queries, not writes.
 pub fn today_iso() -> String {

@@ -18,3 +18,18 @@ This tree is queried with okq itself (we dogfood — see ADR-0005):
     okq --bundle docs stats
 
 See [README.md](README.md) for the structure and conventions.
+
+<!-- okq:index:begin -->
+### Folders
+
+- [adrs/](adrs/)
+- [features/](features/)
+- [guides/](guides/)
+- [workflows/](workflows/)
+
+### Concepts
+
+| Title | File |
+|-------|------|
+| okq documentation | [README.md](README.md) |
+<!-- okq:index:end -->

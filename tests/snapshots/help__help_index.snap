@@ -1,0 +1,36 @@
+---
+source: tests/help.rs
+expression: "help(&[\"index\", \"--help\"])"
+---
+Regenerate the directory-listing index.md files from the bundle's concepts
+
+Usage: okq index [OPTIONS]
+
+Options:
+      --bundle <DIR>
+          Bundle directory to query [default: current directory]
+
+      --check
+          Don't write; exit 3 if any index.md listing is out of date (for CI)
+
+      --json
+          Emit machine-readable JSON on stdout instead of human-readable text
+
+      --no-color
+          Disable colored output (also honors NO_COLOR)
+
+      --no-ignore
+          Ignore all .okqignore files; query the full tree, nothing excluded
+
+  -h, --help
+          Print help (see a summary with '-h')
+
+Examples:
+  # Regenerate every directory's index.md listing
+  okq index
+
+  # ...in a specific bundle
+  okq --bundle docs index
+
+  # Fail CI if any listing is stale (writes nothing)
+  okq index --check

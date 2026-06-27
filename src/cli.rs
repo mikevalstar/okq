@@ -164,6 +164,17 @@ Examples:
   # Include info-level findings (e.g. unresolved links), as JSON
   okq validate --severity info --json";
 
+const INDEX_EXAMPLES: &str = "\
+Examples:
+  # Regenerate every directory's index.md listing
+  okq index
+
+  # ...in a specific bundle
+  okq --bundle docs index
+
+  # Fail CI if any listing is stale (writes nothing)
+  okq index --check";
+
 const SKILLS_EXAMPLES: &str = "\
 Examples:
   # Install the okq-* agent skills into this project (.agents + .claude)
@@ -273,6 +284,10 @@ pub enum Command {
     /// Create one concept from a template (adr | feature).
     #[command(after_help = NEW_EXAMPLES, after_long_help = NEW_EXAMPLES)]
     New(NewArgs),
+
+    /// Regenerate the directory-listing index.md files from the bundle's concepts.
+    #[command(after_help = INDEX_EXAMPLES, after_long_help = INDEX_EXAMPLES)]
+    Index(IndexArgs),
 
     /// Install or list the okq-* agent skills (teach an agent to use okq).
     #[command(after_help = SKILLS_EXAMPLES, after_long_help = SKILLS_EXAMPLES)]
@@ -434,6 +449,14 @@ pub struct SkillsInstallArgs {
     /// Delegate to skills.sh: run `npx skills add mikevalstar/okq`.
     #[arg(long = "via-skills-sh")]
     pub via_skills_sh: bool,
+}
+
+/// Arguments for `okq index`.
+#[derive(Args, Debug)]
+pub struct IndexArgs {
+    /// Don't write; exit 3 if any index.md listing is out of date (for CI).
+    #[arg(long)]
+    pub check: bool,
 }
 
 /// Arguments for `okq new`.

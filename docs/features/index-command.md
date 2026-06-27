@@ -1,7 +1,7 @@
 ---
 type: feature
 title: okq index
-status: draft # draft | accepted | active | deprecated
+status: active # draft | accepted | active | deprecated
 created: 2026-06-27
 updated: 2026-06-27
 tags: [cli, authoring, scaffold, index]
@@ -39,10 +39,10 @@ so okq, which already has the full concept list, is the natural generator.
 - Regenerate the listing in each directory's `index.md` (root and subdirectories)
   from the bundle's concepts: a table/list of `id` + `title` (+ `type` where it
   helps), in deterministic order.
-- Preserve human-authored content: manage only a **fenced listing block** (the
-  same `<!-- okq:begin -->` / `<!-- okq:end -->` marker approach `init` uses for
-  the README), leaving surrounding prose and the root `index.md`'s `okf_version`
-  frontmatter untouched.
+- Preserve human-authored content: manage only a **fenced listing block**
+  (`<!-- okq:index:begin -->` / `<!-- okq:index:end -->`, an index-specific
+  variant of the marker approach `init` uses for the README), leaving surrounding
+  prose and the root `index.md`'s `okf_version` frontmatter untouched.
 - Create an `index.md` where one is missing (so a new subdirectory of concepts
   gets a listing).
 - Idempotent: re-running rewrites only when the generated block actually changed;
@@ -104,16 +104,21 @@ Shared taxonomy ([ADR-0004](../adrs/0004-exit-code-taxonomy.md)):
 - [ ] Generated `index.md` files stay OKF-conformant (reserved; no spurious
       `type`) and don't introduce dead links or parse errors.
 
+## Resolved during implementation
+
+- **Listing shape:** a `| Title | File |` table of relative links for the
+  directory's concepts, preceded by a `### Folders` bullet list of immediate
+  subdirectory links. (Was: table vs. bullet list.)
+- **Nesting depth:** each `index.md` lists its **direct** concept children plus
+  links to immediate subdirectories that contain concepts — a navigable tree, not
+  a recursive flatten. (Was: direct children vs. recurse.)
+- **Marker adoption:** a marker-less `index.md` gets the block **appended** below
+  its existing content on first run (no `--force` needed); subsequent runs rewrite
+  only between the markers. (Was: wrap vs. require a flag.)
+
 ## Open questions
 
-- **Listing shape:** table (`| id | title |`) vs. bullet list of links — which
-  reads better for both humans and `okq get` follow-up? Lean: a table of relative
-  links.
-- **Nesting depth:** does a directory's `index.md` list only its direct children,
-  or recurse? Lean: direct children, matching the per-directory convention.
-- **Marker adoption:** existing hand-written `index.md` files without markers —
-  wrap their current content in markers on first run, or require `--force`? Lean:
-  insert the block at top and leave existing prose below, like the README flow.
+- None outstanding.
 
 ## Related
 

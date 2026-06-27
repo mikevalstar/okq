@@ -142,6 +142,23 @@ fn dispatch(cli: &Cli) -> Result<i32, AppError> {
             }
             Ok(exit::SUCCESS)
         }
+        Command::Index(args) => {
+            let out = commands::index::run(&cli.bundle, args, cli.no_ignore)?;
+            let stale = out.files.iter().filter(|f| f.verb != "unchanged").count();
+            if cli.json {
+                println!("{}", commands::index::to_json(&out));
+            } else {
+                for f in &out.files {
+                    eprintln!("  {:>9}  {} ({} concept(s))", f.verb, f.path, f.concepts);
+                }
+                if args.check && stale > 0 {
+                    eprintln!("{stale} index.md listing(s) out of date.");
+                } else {
+                    eprintln!("{} index.md listing(s) up to date.", out.files.len());
+                }
+            }
+            Ok(check_code(args.check, stale))
+        }
         Command::Validate(args) => {
             let out = commands::validate::run(&cli.bundle, args, cli.no_ignore)?;
             if cli.json {

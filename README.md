@@ -110,6 +110,7 @@ Then invoke one with `/okq-explore`, `/okq-write-okf`, or `/okq-maintain`; `okq-
 | `okq schema [<cmd>]` | JSON Schema for a command's `--json` output. |
 | `okq init` | Scaffold a new bundle: `adrs/` + `features/`, a seed ADR, a README. |
 | `okq new <type> [title]` | Add one concept from a template (`adr` numbers itself, `feature` slugifies). |
+| `okq index` | Regenerate the `index.md` directory listings (`--check` for CI). |
 | `okq skills install` | Install/update the okq-* agent skills (`--global`, `--from-repo`, `--via-skills-sh`). |
 
 Run `okq <command> --help` for flags and examples.
@@ -119,9 +120,10 @@ Run `okq <command> --help` for flags and examples.
 ```sh
 okq init                       # scaffold an OKF bundle in the current directory
 okq new adr "Adopt Tantivy"    # add a numbered ADR from a template
+okq index                      # refresh the index.md directory listings
 ```
 
-`init` is non-destructive: it creates only the files that are missing, and adds its section to an existing README between markers rather than overwriting it.
+`init` is non-destructive: it creates only the files that are missing, and adds its section to an existing README between markers rather than overwriting it. `index` is the maintenance counterpart — re-run it after adding docs to keep each directory's `index.md` listing current; it rewrites only a fenced block, leaving your prose intact.
 
 ## Ignoring files
 
