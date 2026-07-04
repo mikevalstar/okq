@@ -48,7 +48,7 @@ serde_json = "1.0.150"
 tantivy = "0.25.0"
 # Only used by `okq skills install --from-repo` (the sole network path, ADR-0007).
 # rustls/webpki-roots TLS — no system OpenSSL, so the release matrix stays clean.
-ureq = "2.12.1"
+ureq = "3.3.0"
 
 [dev-dependencies]
 assert_cmd = "2.2.2"
