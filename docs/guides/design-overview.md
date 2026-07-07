@@ -10,6 +10,7 @@ related:
   - ../adrs/0001-documentation-first-okf-shaped.md
   - ../adrs/0002-library-stack.md
   - ../adrs/0008-scope-non-goals.md
+  - ../adrs/0009-okf-spaces-fork.md
   - ../features/search.md
   - ../features/graph.md
 ---
@@ -81,7 +82,9 @@ their own ADR.
    expands what it chooses via `get`.
 4. **Fast & dependency-light.** Rust, leaning on the upstream [`okf`](https://crates.io/crates/okf)
    crate for the data layer ([ADR-0002](../adrs/0002-library-stack.md)); okq adds
-   the *query* surface rather than reimplementing the parser.
+   the *query* surface rather than reimplementing the parser. (okq currently tracks
+   a temporary fork of `okf` for spaces-in-filenames support, per
+   [ADR-0009](../adrs/0009-okf-spaces-fork.md).)
 5. **Format-tolerant.** Targets OKF v0.1 but degrades gracefully on any
    Markdown-with-frontmatter tree, so it's useful before a repo formally adopts OKF.
 6. **Composable.** Plays well with `jq`/`fzf`/`fd`; output is a stream of paths or
