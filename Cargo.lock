@@ -948,12 +948,11 @@ dependencies = [
 [[package]]
 name = "okf"
 version = "0.1.0-alpha.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7c9efaa455d841f45758ffe8f58b05bf864364ad819dde7433633a0f3f1f6f0f"
+source = "git+https://github.com/mikevalstar/okf?rev=cedbbc76841e7afdc61fe5c060128675ab0c883f#cedbbc76841e7afdc61fe5c060128675ab0c883f"
 
 [[package]]
 name = "okq"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "anstream",
  "anstyle",

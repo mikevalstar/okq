@@ -22,5 +22,6 @@ Copy [`_template.md`](_template.md) to start a new one, or run
 | ADR-0006 — .okqignore for excluding files from a bundle | [0006-okqignore-filtering.md](0006-okqignore-filtering.md) |
 | ADR-0007 — Network is opt-in, scoped to skill install | [0007-opt-in-network-for-skill-install.md](0007-opt-in-network-for-skill-install.md) |
 | ADR-0008 — Scope & non-goals (no MCP server; vector search not planned) | [0008-scope-non-goals.md](0008-scope-non-goals.md) |
+| ADR-0009 — Track a fork of okf until it allows spaces in file names | [0009-okf-spaces-fork.md](0009-okf-spaces-fork.md) |
 | ADR-NNNN — Short title of the decision | [_template.md](_template.md) |
 <!-- okq:index:end -->

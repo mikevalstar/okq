@@ -11,6 +11,16 @@ attaches prebuilt binaries to the GitHub Release.
 
 ## [Unreleased]
 
+## [0.3.1] — 2026-07-07
+
+### Changed
+
+- Depend on a temporary fork of `okf` ([mikevalstar/okf#1](https://github.com/mikevalstar/okf/pull/1),
+  pinned by commit) that permits optional spaces in concept file names, so
+  documents like `Quarterly Report.md` load and their links resolve. Reverts to
+  the crates.io release once upstream okf ships this. See
+  [`docs/adrs/0009-okf-spaces-fork.md`](docs/adrs/0009-okf-spaces-fork.md).
+
 ## [0.3.0] — 2026-06-27
 
 ### Added
