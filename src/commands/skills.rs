@@ -289,10 +289,11 @@ fn skill_name_from_path(path: &str) -> Option<String> {
 /// A blocking HTTP GET returning the body as text, with okq's User-Agent.
 fn http_get(url: &str) -> Result<String, AppError> {
     ureq::get(url)
-        .set("User-Agent", concat!("okq/", env!("CARGO_PKG_VERSION")))
+        .header("User-Agent", concat!("okq/", env!("CARGO_PKG_VERSION")))
         .call()
         .map_err(|e| AppError::Io(format!("fetching {url}: {e}")))?
-        .into_string()
+        .into_body()
+        .read_to_string()
         .map_err(|e| AppError::Io(format!("reading {url}: {e}")))
 }
 

@@ -38,7 +38,7 @@ anstream = "1.0.0"
 anstyle = "1.0.14"
 clap = { version = "4.6.1", features = ["derive"] }
 dirs = "6.0.0"
-ignore = "0.4.26"
+ignore = "0.4.27"
 # Temporary fork: permits emoji and Unicode in concept file names (a superset of
 # the spaces support). Pinned to a commit for reproducibility; revert to the
 # crates.io release once upstream okf ships this. See docs/adrs/0010-okf-unicode-filenames-fork.md.
@@ -51,7 +51,7 @@ serde_json = "1.0.150"
 tantivy = "0.25.0"
 # Only used by `okq skills install --from-repo` (the sole network path, ADR-0007).
 # rustls/webpki-roots TLS — no system OpenSSL, so the release matrix stays clean.
-ureq = "2.12.1"
+ureq = "3.3.0"
 
 [dev-dependencies]
 assert_cmd = "2.2.2"

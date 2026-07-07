@@ -31,6 +31,9 @@ attaches prebuilt binaries to the GitHub Release.
 - Re-pin the `okf` dependency to the fork's permissive-filenames branch (a
   superset of the spaces branch). [ADR-0010](docs/adrs/0010-okf-unicode-filenames-fork.md)
   supersedes [ADR-0009](docs/adrs/0009-okf-spaces-fork.md).
+- Dependencies: bump `ureq` 2.12.1 → 3.3.0 (the skill-install fetch is ported to
+  the 3.x request/body API; still rustls, no system OpenSSL) and `ignore`
+  0.4.26 → 0.4.27.
 
 ### Fixed
 
