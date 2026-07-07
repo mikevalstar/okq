@@ -11,6 +11,35 @@ attaches prebuilt binaries to the GitHub Release.
 
 ## [Unreleased]
 
+## [0.3.4] — 2026-07-07
+
+### Added
+
+- **Emoji & Unicode in file names.** A concept may now live in a file named with
+  emoji (`🚀 Launch.md`), accented Latin (`café.md`), or CJK (`设计.md`) — a
+  leading emoji included. Such concepts load and are surfaced by
+  `get`/`find`/`search`/graph like any other, and percent-encoded links to them
+  (`Q1%20%F0%9F%9A%80%20Launch.md`) resolve. This widens the temporary `okf`
+  fork's concept-id rule from an ASCII allowlist to a denylist (reject only
+  control chars, `/`, `\`, and `: * ? " < > |`, plus a leading `.`/`-` or a
+  leading/trailing space). See
+  [`docs/features/emoji-filenames.md`](docs/features/emoji-filenames.md) and
+  [ADR-0010](docs/adrs/0010-okf-unicode-filenames-fork.md).
+
+### Changed
+
+- Re-pin the `okf` dependency to the fork's permissive-filenames branch (a
+  superset of the spaces branch). [ADR-0010](docs/adrs/0010-okf-unicode-filenames-fork.md)
+  supersedes [ADR-0009](docs/adrs/0009-okf-spaces-fork.md).
+
+### Fixed
+
+- `deadlinks` now reports **broken percent-encoded links** (e.g. a typo'd
+  `Quarterly%20Reprot.md` or `%F0%9F…`-encoded target). The graph resolver
+  percent-decodes a link target before classifying it — mirroring `okf` — so an
+  encoded in-bundle link is judged by the concept it denotes, closing a gap the
+  spaces work left (working encoded links resolved; broken ones slipped through).
+
 ## [0.3.3] — 2026-07-07
 
 ### Added

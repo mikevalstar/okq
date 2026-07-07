@@ -190,6 +190,38 @@ fn deadlinks_check_exits_3() {
 }
 
 #[test]
+fn encoded_links_to_an_emoji_concept_resolve_and_broken_ones_are_dead() {
+    // A concept whose file name contains an emoji, plus a linker that references
+    // it two ways: a working percent-encoded link and a typo'd one. The working
+    // link is a real edge; the broken one is a dead link even though it is
+    // percent-encoded (ADR-0010 / emoji-filenames — the graph decodes the target).
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path();
+    write(
+        root.join("🚀 launch.md"),
+        "---\ntype: plan\ntitle: Launch\n---\n\n# Launch\n",
+    );
+    write(
+        root.join("overview.md"),
+        "---\ntype: doc\ntitle: Overview\n---\n\n# Overview\n\n\
+         Works: [ok](%F0%9F%9A%80%20launch.md).\n\
+         Typo: [bad](%F0%9F%9A%80%20launhc.md).\n",
+    );
+
+    // The working encoded link is a real outbound edge to the emoji concept.
+    let n = json(root, &["neighbors", "overview"]);
+    assert_eq!(ids(&n), vec!["🚀 launch".to_string()]);
+    assert_eq!(n["results"][0]["edge"], "link");
+
+    // The broken encoded link is reported as a dead link, raw as written.
+    let d = json(root, &["deadlinks"]);
+    assert_eq!(d["count"], 1);
+    assert_eq!(d["results"][0]["source_id"], "overview");
+    assert_eq!(d["results"][0]["raw"], "%F0%9F%9A%80%20launhc.md");
+    assert_eq!(d["results"][0]["edge"], "link");
+}
+
+#[test]
 fn neighbors_missing_concept_exits_4() {
     let dir = fixture();
     okq(dir.path())

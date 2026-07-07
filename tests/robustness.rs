@@ -39,12 +39,14 @@ fn malformed_bundle_loads_and_skips_bad_docs() {
     let json = String::from_utf8(out.get_output().stdout.clone()).unwrap();
     let ids = ids(&json);
 
-    // Good / edge-but-valid docs are present.
+    // Good / edge-but-valid docs are present — including a concept whose file
+    // name begins with an emoji (the widened concept-id rule, ADR-0010).
     for good in [
         "only-frontmatter",
         "no-frontmatter",
         "empty",
         "unicode-emoji",
+        "🚀 launch",
     ] {
         assert!(
             ids.iter().any(|id| id == good),
@@ -61,8 +63,6 @@ fn malformed_bundle_loads_and_skips_bad_docs() {
     ] {
         assert!(!ids.iter().any(|id| id == bad), "{bad:?} should be skipped");
     }
-    // The badly-named file never becomes a concept.
-    assert!(!ids.iter().any(|id| id.contains("bad name")));
 }
 
 #[test]
@@ -87,9 +87,11 @@ fn get_on_parse_error_doc_is_graceful_not_found() {
 }
 
 #[test]
-fn get_on_invalid_filename_is_graceful() {
+fn get_on_invalid_concept_id_is_graceful() {
+    // A reserved character makes the id unparseable under the widened rule
+    // (ADR-0010); `get` fails cleanly (not-found) instead of panicking.
     okq("docs/tests")
-        .args(["get", "bad name"])
+        .args(["get", "bad:name"])
         .assert()
         .failure()
         .code(4);

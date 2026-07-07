@@ -1,18 +1,26 @@
 ---
 type: adr
 title: ADR-0009 — Track a fork of okf until it allows spaces in file names
-status: accepted
+status: superseded
 created: 2026-07-07
 updated: 2026-07-07
 tags: [okf, dependencies, fork, filenames, concept-id]
 supersedes: null
-superseded-by: null
+superseded-by: "0010-okf-unicode-filenames-fork.md"
 related:
   - "0002-library-stack.md"
   - "../guides/design-overview.md"
 ---
 
 # ADR-0009: Track a fork of okf until it allows spaces in file names
+
+> **Superseded by [ADR-0010](0010-okf-unicode-filenames-fork.md): the fork is
+> widened to permit emoji and arbitrary Unicode in file names, and okq re-pins to
+> that permissive-filenames branch.** The permissive rule is a superset of the
+> spaces rule below, so this ADR's decision (depend on the fork temporarily,
+> pinned to a commit) still holds — only the pinned commit and the breadth of the
+> character rule change. The spaces branch itself remains the pending upstream
+> ticket; see ADR-0010 for why the two are kept as sibling branches.
 
 ## Context
 

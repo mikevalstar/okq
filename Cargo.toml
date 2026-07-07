@@ -1,6 +1,6 @@
 [package]
 name = "okq"
-version = "0.3.3"
+version = "0.3.4"
 edition = "2024"
 rust-version = "1.85"
 description = "A fast, deterministic CLI for searching and navigating Open Knowledge Format (OKF) document bundles — for humans and AI agents."
@@ -39,10 +39,10 @@ anstyle = "1.0.14"
 clap = { version = "4.6.1", features = ["derive"] }
 dirs = "6.0.0"
 ignore = "0.4.26"
-# Temporary fork: adds optional spaces in concept file names (mikevalstar/okf#1).
-# Pinned to a commit for reproducibility; revert to the crates.io release once
-# upstream okf ships this. See docs/adrs/0009-okf-spaces-fork.md.
-okf = { git = "https://github.com/mikevalstar/okf", rev = "cedbbc76841e7afdc61fe5c060128675ab0c883f" }
+# Temporary fork: permits emoji and Unicode in concept file names (a superset of
+# the spaces support). Pinned to a commit for reproducibility; revert to the
+# crates.io release once upstream okf ships this. See docs/adrs/0010-okf-unicode-filenames-fork.md.
+okf = { git = "https://github.com/mikevalstar/okf", rev = "1999badeb5679442e2157c458af96d07f84c9587" }
 pulldown-cmark = "0.13.4"
 regex = "1.12.4"
 schemars = "1.2.1"

@@ -948,11 +948,11 @@ dependencies = [
 [[package]]
 name = "okf"
 version = "0.1.0-alpha.1"
-source = "git+https://github.com/mikevalstar/okf?rev=cedbbc76841e7afdc61fe5c060128675ab0c883f#cedbbc76841e7afdc61fe5c060128675ab0c883f"
+source = "git+https://github.com/mikevalstar/okf?rev=1999badeb5679442e2157c458af96d07f84c9587#1999badeb5679442e2157c458af96d07f84c9587"
 
 [[package]]
 name = "okq"
-version = "0.3.3"
+version = "0.3.4"
 dependencies = [
  "anstream",
  "anstyle",

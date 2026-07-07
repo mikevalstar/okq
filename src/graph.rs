@@ -472,7 +472,11 @@ fn resolve_from_root(value: &str) -> Option<ConceptId> {
 
 /// Resolves a relation/link target written relative to `source`'s directory into
 /// a bundle concept id. Returns `None` for external URLs or paths that escape the
-/// bundle root (mirrors okf's inline-link resolution).
+/// bundle root (mirrors okf's inline-link resolution). Each path component is
+/// percent-decoded — as okf does — so an encoded target (`Quarterly%20Report`,
+/// `%F0%9F%9A%80%20Launch`) is classified by the concept it denotes, not by its
+/// literal escapes; that keeps a *broken* encoded link a dead link and a working
+/// encoded relation a real edge, independent of what characters the id rule allows.
 fn resolve_relative(source: &ConceptId, value: &str) -> Option<ConceptId> {
     let value = value.split('#').next().unwrap_or(value).trim();
     if value.is_empty() || value.contains("://") {
@@ -483,13 +487,40 @@ fn resolve_relative(source: &ConceptId, value: &str) -> Option<ConceptId> {
     let mut segments: Vec<String> = source.segments().to_vec();
     segments.pop(); // drop the source file → its directory
     for part in value.split('/') {
+        // Structural `.`/`..` are matched before decoding, so an *encoded* dot
+        // segment can't smuggle in path traversal; only real components decode.
         match part {
             "" | "." => {}
             ".." => {
                 segments.pop()?;
             }
-            p => segments.push(p.to_string()),
+            p => segments.push(percent_decode(p)),
         }
     }
     ConceptId::new(segments).ok()
+}
+
+/// Percent-decodes a single path component (`Quarterly%20Report` →
+/// `Quarterly Report`, `%F0%9F%9A%80` → `🚀`), accumulating raw bytes so multi-byte
+/// UTF-8 escapes reassemble. Malformed or incomplete `%` escapes are left as
+/// written. Mirrors okf's link resolver so okq classifies encoded targets the
+/// same way the data layer does.
+fn percent_decode(s: &str) -> String {
+    let bytes = s.as_bytes();
+    let mut out = Vec::with_capacity(bytes.len());
+    let mut i = 0;
+    while i < bytes.len() {
+        if bytes[i] == b'%' && i + 2 < bytes.len() {
+            let hi = (bytes[i + 1] as char).to_digit(16);
+            let lo = (bytes[i + 2] as char).to_digit(16);
+            if let (Some(h), Some(l)) = (hi, lo) {
+                out.push((h * 16 + l) as u8);
+                i += 3;
+                continue;
+            }
+        }
+        out.push(bytes[i]);
+        i += 1;
+    }
+    String::from_utf8_lossy(&out).into_owned()
 }

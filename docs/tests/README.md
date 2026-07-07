@@ -24,13 +24,13 @@ The Rust suite that drives these lives in [`tests/robustness.rs`](../../tests/ro
 | `tab-indentation.md` | tab-indented YAML (rejected) | parse error → skipped |
 | `frontmatter-is-list.md` | frontmatter is a sequence, not a mapping | parse error → skipped |
 | `frontmatter-is-scalar.md` | frontmatter is a bare scalar | parse error → skipped |
-| `bad name!.md` | filename is not a valid concept-id segment | parse error → skipped |
 | `empty.md` | zero bytes | valid concept, empty body |
 | `no-frontmatter.md` | OKF-shaped: body only, no frontmatter | valid concept, no `type` |
 | `only-frontmatter.md` | frontmatter, no body | valid concept, empty body |
 | `tags-not-a-list.md` | `tags` is a scalar, not a sequence | valid; `tags` reads as empty |
 | `duplicate-headings.md` | two identical headings | `get --section` → ambiguous (exit 5) |
 | `unicode-emoji.md` | multibyte/emoji/RTL in headings & body | valid; section slicing stays char-safe |
+| `🚀 launch.md` | file name begins with an emoji (widened id rule, ADR-0010) | valid concept, id `🚀 launch` |
 | `headings-in-code-fence.md` | `#` lines inside a code fence | those are not sections |
 | `wikilinks-malformed.md` | unterminated / empty / nested / code-fenced `[[wikilinks]]` | valid; scanner extracts what it can, never panics |
 | `deeply/nested/concept.md` | multi-segment concept id | valid, nested |

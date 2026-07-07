@@ -5,7 +5,7 @@ status: accepted
 created: 2026-06-26
 updated: 2026-06-26
 tags: [rust, search, tantivy, indexing, cache, xdg]
-supersedes: "0002 (index-location sub-decision only)"
+supersedes: "0002-library-stack.md" # the index-location sub-decision only; see ADR-0002's amendment banner
 superseded-by: null
 related: ["0002-library-stack.md", "../features/search.md", "../guides/design-overview.md"]
 ---
