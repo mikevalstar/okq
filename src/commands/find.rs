@@ -187,8 +187,7 @@ pub fn render_human(w: &mut impl Write, out: &FindOutput, no_color: bool) -> std
     };
     for r in &out.results {
         let ty = r.type_.as_deref().unwrap_or("-");
-        let title = r.title.as_deref().unwrap_or("");
-        writeln!(w, "{loc}{}:{}{loc:#}\t{ty}\t{title}", r.path, r.line)?;
+        writeln!(w, "{loc}{}:{}{loc:#}\t{ty}\t{}", r.path, r.line, r.title)?;
     }
     Ok(())
 }

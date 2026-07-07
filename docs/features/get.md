@@ -7,7 +7,7 @@ updated: 2026-06-26
 tags: [cli, get, retrieval, json, sections, identity]
 milestone: M1
 command: "okq get"
-related: ["../adrs/0002-library-stack.md", "../adrs/0001-documentation-first-okf-shaped.md", "../guides/design-overview.md"]
+related: ["frontmatter-optional-title.md", "../adrs/0002-library-stack.md", "../adrs/0001-documentation-first-okf-shaped.md", "../guides/design-overview.md"]
 ---
 
 # okq get — expand one concept on demand
@@ -142,4 +142,5 @@ These are settled here once and inherited by `find`, `search`, and the graph com
 - [ADR-0002](../adrs/0002-library-stack.md) — `pulldown-cmark` sections, `okf` resolution, `schemars` JSON contract, `clap` surface that this feature builds on
 - [ADR-0001](../adrs/0001-documentation-first-okf-shaped.md) — the OKF-shaped docs tree `get` is first dogfooded against
 - [PLAN.md](../guides/design-overview.md) — §3 token-frugal output, §5 command surface (`get`, chunking), §7 M1, §8 identity & schema-versioning open questions
+- [optional frontmatter](frontmatter-optional-title.md) — how `title` is inferred when a concept has no frontmatter, and why `get --frontmatter` still shows the true (empty) block
 - Future: `find`, `search` feature specs — reuse the concept envelope and section model ratified here

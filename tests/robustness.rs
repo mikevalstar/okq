@@ -128,6 +128,16 @@ fn no_frontmatter_doc_is_queryable() {
 }
 
 #[test]
+fn no_frontmatter_doc_titles_from_filename() {
+    // A file with no frontmatter reports its filename as the `title`, verbatim.
+    okq("docs/tests")
+        .args(["get", "no-frontmatter", "--json"])
+        .assert()
+        .success()
+        .stdout(predicates::str::contains("\"title\": \"no-frontmatter\""));
+}
+
+#[test]
 fn scalar_tags_do_not_break_tag_filter() {
     // tags-not-a-list has a scalar `tags`; it must not crash --tag, and must
     // not match (its tags read as empty). only-frontmatter (tags: [edge]) does.

@@ -48,9 +48,8 @@ pub struct StatsOutput {
 pub struct Hub {
     /// The concept id.
     pub id: String,
-    /// The frontmatter title, if present.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub title: Option<String>,
+    /// The concept's title: the frontmatter `title`, or the filename if none.
+    pub title: String,
     /// Path relative to the bundle root.
     pub path: String,
     /// Number of inbound edges.
@@ -98,7 +97,7 @@ pub fn run(bundle_dir: &Path, args: &StatsArgs, no_ignore: bool) -> Result<Stats
                 .replace('\\', "/");
             Hub {
                 id: c.id.to_string(),
-                title: c.document.frontmatter.title(),
+                title: crate::model::concept_title(c),
                 path,
                 in_degree: graph.in_degree(&c.id),
                 out_degree: graph.out_degree(&c.id),
@@ -182,8 +181,11 @@ pub fn render_human(
     if !out.hubs.is_empty() {
         writeln!(w, "\nHubs (most linked-to):")?;
         for h in &out.hubs {
-            let title = h.title.as_deref().unwrap_or("");
-            writeln!(w, "  {:>3}  {bold}{}{bold:#}  {title}", h.in_degree, h.path)?;
+            writeln!(
+                w,
+                "  {:>3}  {bold}{}{bold:#}  {}",
+                h.in_degree, h.path, h.title
+            )?;
         }
     }
     Ok(())
