@@ -952,7 +952,7 @@ source = "git+https://github.com/mikevalstar/okf?rev=cedbbc76841e7afdc61fe5c0601
 
 [[package]]
 name = "okq"
-version = "0.3.1"
+version = "0.3.2"
 dependencies = [
  "anstream",
  "anstyle",

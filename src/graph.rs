@@ -18,6 +18,11 @@ pub const RELATION_KEYS: [&str; 4] = ["related", "supersedes", "superseded-by", 
 /// Edge kind for an inline markdown link.
 pub const LINK_KIND: &str = "link";
 
+/// Edge kind for an Obsidian-style `[[wikilink]]` (or `![[embed]]`). These are
+/// scanned by okq from the body — okf only understands CommonMark links. See
+/// [`crate::wikilinks`] and issue #5.
+pub const WIKILINK_KIND: &str = "wikilink";
+
 /// Traversal direction.
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum Direction {
@@ -108,6 +113,11 @@ impl Graph {
         let mut inn: HashMap<ConceptId, Vec<HalfEdge>> = HashMap::new();
         let mut dead: Vec<DeadLink> = Vec::new();
 
+        // Index visible concepts by their bare name (case-insensitively) so a
+        // wikilink like `[[Users]]` can resolve to `tables/users` the way an
+        // Obsidian vault would, not just by full path.
+        let names = name_index(bundle, hidden);
+
         for c in bundle.concepts() {
             if hidden.contains(&c.id) {
                 continue;
@@ -145,6 +155,27 @@ impl Graph {
                         // None: external URL or a path that escapes the bundle — not an edge.
                         None => {}
                     }
+                }
+            }
+
+            // Obsidian-style wikilinks scanned from the body (okf only sees
+            // CommonMark links). Deduped per source so `[[Foo]]` written twice
+            // is one edge / one dead link.
+            let mut seen: HashSet<String> = HashSet::new();
+            for wl in crate::wikilinks::extract(&c.document.body) {
+                if !seen.insert(wl.target.clone()) {
+                    continue;
+                }
+                match resolve_wikilink(&c.id, &wl.target, bundle, hidden, &names) {
+                    WikiResolution::Resolved(target) => {
+                        push_edge(&mut out, &mut inn, &c.id, &target, WIKILINK_KIND);
+                    }
+                    WikiResolution::Dead => dead.push(DeadLink {
+                        source: c.id.clone(),
+                        raw: wl.target,
+                        kind: WIKILINK_KIND.to_string(),
+                    }),
+                    WikiResolution::Skip => {}
                 }
             }
         }
@@ -352,6 +383,91 @@ fn relation_values(fm: &okf::Frontmatter, key: &str) -> Vec<String> {
         Some(v) => v.as_display_string().into_iter().collect(),
         None => Vec::new(),
     }
+}
+
+/// The outcome of resolving a wikilink target against the bundle.
+enum WikiResolution {
+    /// Points at an existing, visible concept.
+    Resolved(ConceptId),
+    /// Looks like an in-bundle reference but resolves to nothing (a dead link).
+    Dead,
+    /// Not a bundle edge (external, or unresolvable and not worth flagging).
+    Skip,
+}
+
+/// Bare concept name (lowercased) → the visible concepts with that name, sorted.
+/// Lets `[[Users]]` find `tables/users` the way Obsidian resolves by note name.
+fn name_index(bundle: &Bundle, hidden: &HashSet<ConceptId>) -> HashMap<String, Vec<ConceptId>> {
+    let mut map: HashMap<String, Vec<ConceptId>> = HashMap::new();
+    for c in bundle.concepts() {
+        if hidden.contains(&c.id) {
+            continue;
+        }
+        map.entry(c.id.name().to_lowercase())
+            .or_default()
+            .push(c.id.clone());
+    }
+    for ids in map.values_mut() {
+        ids.sort();
+    }
+    map
+}
+
+/// Resolves an Obsidian wikilink target (leniently, issue #5): a target with a
+/// `/` is treated as a path (bundle-root-absolute first, then relative to the
+/// source), and a bare name matches a concept's filename anywhere in the bundle,
+/// case-insensitively. An in-bundle reference that matches nothing is a dead
+/// link; anything that isn't a plausible bundle target is skipped.
+fn resolve_wikilink(
+    source: &ConceptId,
+    target: &str,
+    bundle: &Bundle,
+    hidden: &HashSet<ConceptId>,
+    names: &HashMap<String, Vec<ConceptId>>,
+) -> WikiResolution {
+    let exists = |id: &ConceptId| bundle.contains(id) && !hidden.contains(id);
+
+    if target.contains('/') {
+        // A path: prefer the vault-relative (from bundle root) reading Obsidian
+        // uses, then fall back to source-relative before declaring it dead.
+        for candidate in [resolve_from_root(target), resolve_relative(source, target)]
+            .into_iter()
+            .flatten()
+        {
+            if exists(&candidate) {
+                return WikiResolution::Resolved(candidate);
+            }
+        }
+        // A path that at least forms a valid in-bundle id is a dead link;
+        // one that escapes the bundle (`../..`) is simply out of scope.
+        if resolve_from_root(target).is_some() {
+            WikiResolution::Dead
+        } else {
+            WikiResolution::Skip
+        }
+    } else {
+        match names.get(&target.to_lowercase()) {
+            Some(ids) => WikiResolution::Resolved(ids[0].clone()),
+            None => WikiResolution::Dead,
+        }
+    }
+}
+
+/// Resolves a wikilink path read relative to the bundle root (how Obsidian reads
+/// `[[folder/note]]`), tolerating `.md`, `.`/`..`, and a leading `/`.
+fn resolve_from_root(value: &str) -> Option<ConceptId> {
+    let value = value.strip_suffix(".md").unwrap_or(value);
+    let mut segments: Vec<String> = Vec::new();
+    for part in value.split('/') {
+        match part {
+            "" | "." => {}
+            ".." => {
+                segments.pop()?;
+            }
+            p => segments.push(p.to_string()),
+        }
+    }
+    ConceptId::new(segments).ok()
 }
 
 /// Resolves a relation/link target written relative to `source`'s directory into

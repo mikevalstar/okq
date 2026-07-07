@@ -32,6 +32,7 @@ The Rust suite that drives these lives in [`tests/robustness.rs`](../../tests/ro
 | `duplicate-headings.md` | two identical headings | `get --section` → ambiguous (exit 5) |
 | `unicode-emoji.md` | multibyte/emoji/RTL in headings & body | valid; section slicing stays char-safe |
 | `headings-in-code-fence.md` | `#` lines inside a code fence | those are not sections |
+| `wikilinks-malformed.md` | unterminated / empty / nested / code-fenced `[[wikilinks]]` | valid; scanner extracts what it can, never panics |
 | `deeply/nested/concept.md` | multi-segment concept id | valid, nested |
 
 ## Note on bundle pollution

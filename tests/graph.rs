@@ -217,6 +217,85 @@ fn graph_commands_accept_partial_names() {
     assert_eq!(ids(&v), vec!["adrs/two"]);
 }
 
+/// A fixture whose only cross-links are Obsidian-style wikilinks, exercising the
+/// shapes okq resolves: bare name, alias, `#heading`, path, embed, and a dead
+/// bare-name link.
+fn wiki_fixture() -> TempDir {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path();
+
+    write(
+        root.join("hub.md"),
+        "---\ntype: doc\ntitle: Hub\n---\n\n# Hub\n\n\
+         Bare [[Leaf]], aliased [[Leaf|the leaf]], heading [[Leaf#Intro]],\n\
+         path [[notes/Deep]], embed ![[Leaf]], and a broken [[Missing]].\n",
+    );
+    write(
+        root.join("Leaf.md"),
+        "---\ntype: doc\ntitle: Leaf\n---\n\n# Leaf\n\n## Intro\n\nLeaf body.\n",
+    );
+    write(
+        root.join("notes/Deep.md"),
+        "---\ntype: doc\ntitle: Deep\n---\n\n# Deep\n\nNested note.\n",
+    );
+
+    dir
+}
+
+#[test]
+fn wikilinks_become_edges() {
+    let dir = wiki_fixture();
+    // hub reaches Leaf (bare/alias/heading/embed all collapse to one edge) and
+    // notes/Deep (path), deduped — the source is excluded.
+    let v = json(dir.path(), &["neighbors", "hub", "--direction", "out"]);
+    assert_eq!(ids(&v), vec!["Leaf", "notes/Deep"]);
+    assert!(
+        v["results"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|r| r["edge"] == "wikilink")
+    );
+}
+
+#[test]
+fn wikilinks_edge_filter_and_backlinks() {
+    let dir = wiki_fixture();
+    // Filtering to the wikilink kind keeps them; a made-up kind drops them.
+    let v = json(dir.path(), &["neighbors", "hub", "--edge", "wikilink"]);
+    assert_eq!(ids(&v), vec!["Leaf", "notes/Deep"]);
+    // Leaf's inbound view sees hub via the wikilink.
+    let b = json(dir.path(), &["backlinks", "Leaf"]);
+    assert_eq!(ids(&b), vec!["hub"]);
+    assert_eq!(b["results"][0]["edge"], "wikilink");
+}
+
+#[test]
+fn dead_wikilink_reported() {
+    let dir = wiki_fixture();
+    let v = json(dir.path(), &["deadlinks"]);
+    assert_eq!(v["count"], 1);
+    assert_eq!(v["results"][0]["source_id"], "hub");
+    assert_eq!(v["results"][0]["raw"], "Missing");
+    assert_eq!(v["results"][0]["edge"], "wikilink");
+}
+
+#[test]
+fn wikilink_resolves_case_insensitively() {
+    // Lenient bare-name matching: `[[leaf]]` finds `Leaf`.
+    let dir = tempfile::tempdir().unwrap();
+    write(
+        dir.path().join("a.md"),
+        "---\ntype: doc\ntitle: A\n---\n\n# A\n\nlink [[leaf]].\n",
+    );
+    write(
+        dir.path().join("Leaf.md"),
+        "---\ntype: doc\ntitle: Leaf\n---\n\n# Leaf\n",
+    );
+    let v = json(dir.path(), &["neighbors", "a", "--direction", "out"]);
+    assert_eq!(ids(&v), vec!["Leaf"]);
+}
+
 #[test]
 fn out_of_bundle_links_are_not_dead() {
     // A link escaping the bundle root is out of scope, not dead.
