@@ -50,7 +50,7 @@ knowledge base healthy?" into a command CI can run.
 ## The graph model (shared foundation)
 
 A bundle is a directed graph: nodes are concepts, edges are typed cross-links.
-okq draws edges from **two sources**, answering PLAN.md §8's "reuse depth of
+okq draws edges from **three sources**, answering PLAN.md §8's "reuse depth of
 okf's graph":
 
 1. **Inline links** — markdown links in a concept's body. **Reused from okf**
@@ -61,6 +61,10 @@ okf's graph":
    name. Values are resolved as a path relative to the source concept's directory
    (tolerating `.md` and `../`), then to a `ConceptId`; an unresolvable value is a
    typed dead link.
+3. **Wikilinks** — Obsidian-style `[[Note]]` / `![[embed]]` links in a concept's
+   body. **Built by okq** (okf understands only CommonMark links). Edge type:
+   `wikilink`. Bare names resolve by concept filename, case-insensitively; see
+   the [wikilinks](wikilinks.md) spec.
 
 The **default recognized relation keys** are `related`, `supersedes`,
 `superseded-by`, `depends-on` (plus inline `link`). The exact taxonomy — fixed
@@ -196,6 +200,7 @@ Edges pointing to missing/renamed concepts — from inline links (okf
 
 - [search](search.md) / [find](find.md) — the "where do I start" half; `search → neighbors → get` is the core loop
 - [get](get.md) — expands a node chosen from a graph result
+- [wikilinks](wikilinks.md) — the third edge source. This line also points at [[wikilinks]] as a live Obsidian-style link, so `okq --bundle docs neighbors graph --edge wikilink` demonstrates the feature on our own docs
 - [ADR-0002](../adrs/0002-library-stack.md) — `okf` link graph + `petgraph` for traversal
 - [ADR-0004](../adrs/0004-exit-code-taxonomy.md) — not-found/empty/`--check` exit codes these commands adopt
 - [PLAN.md](../guides/design-overview.md) — §3 graph differentiator, §5 command surface, §8 edge-taxonomy & graph-reuse open questions

@@ -141,6 +141,34 @@ fn scalar_tags_do_not_break_tag_filter() {
 }
 
 #[test]
+fn malformed_wikilinks_do_not_break_the_graph() {
+    // The wikilinks-malformed fixture holds unterminated / empty / nested /
+    // code-fenced `[[…]]`. The graph commands must still run cleanly (exit 0).
+    let out = okq("docs/tests")
+        .args(["deadlinks", "--json"])
+        .assert()
+        .success();
+    let json = String::from_utf8(out.get_output().stdout.clone()).unwrap();
+    // It parses as JSON (no panic, no torn output) and code-fenced / inline-code
+    // wikilinks never surface as dead links.
+    let v: serde_json::Value = serde_json::from_str(&json).unwrap();
+    let raws: Vec<&str> = v["results"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter_map(|r| r["raw"].as_str())
+        .collect();
+    assert!(!raws.iter().any(|r| r.contains("NotAScannedLink")));
+    assert!(!raws.iter().any(|r| r.contains("AlsoIgnoredInFence")));
+
+    // neighbors on the fixture also stays graceful.
+    okq("docs/tests")
+        .args(["neighbors", "wikilinks-malformed"])
+        .assert()
+        .success();
+}
+
+#[test]
 fn headings_inside_code_fence_are_not_sections() {
     // A real heading resolves...
     okq("docs/tests")

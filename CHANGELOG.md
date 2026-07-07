@@ -11,6 +11,20 @@ attaches prebuilt binaries to the GitHub Release.
 
 ## [Unreleased]
 
+## [0.3.2] — 2026-07-07
+
+### Added
+
+- Obsidian-style **wikilinks** are now a graph edge source. `[[Note]]`,
+  `[[Note|alias]]`, `[[Note#heading]]`, `[[Note#^block]]`, `[[folder/Note]]`, and
+  `![[embeds]]` in a concept body become `wikilink` edges, so Obsidian vaults (and
+  any `[[…]]`-linked bundle) are navigable with `neighbors`/`backlinks`/`path`/
+  `orphans`/`deadlinks`. Resolution is lenient: a bare name matches a concept's
+  filename anywhere in the bundle, case-insensitively; unresolved in-bundle
+  targets are reported by `deadlinks`. Filter with `--edge wikilink`. Resolves
+  [#5](https://github.com/mikevalstar/okq/issues/5). See
+  [`docs/features/wikilinks.md`](docs/features/wikilinks.md).
+
 ## [0.3.1] — 2026-07-07
 
 ### Changed

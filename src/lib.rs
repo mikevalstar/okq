@@ -14,6 +14,7 @@ pub mod model;
 pub mod sections;
 pub mod templates;
 pub mod view;
+pub mod wikilinks;
 pub mod yaml_json;
 
 use clap::Parser;
