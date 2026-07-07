@@ -15,13 +15,16 @@ Copy [`_template.md`](_template.md) to start a new one, or run
 | Title | File |
 |-------|------|
 | Feature name (often a command, e.g. "okq search") | [_template.md](_template.md) |
+| Aliases — resolve concepts by their frontmatter aliases | [aliases.md](aliases.md) |
 | Emoji & Unicode in file names | [emoji-filenames.md](emoji-filenames.md) |
 | okq find — filter concepts by predicate | [find.md](find.md) |
 | Optional frontmatter — infer title from filename | [frontmatter-optional-title.md](frontmatter-optional-title.md) |
 | okq get — expand one concept on demand | [get.md](get.md) |
 | okq graph navigation — neighbors / backlinks / path / orphans / deadlinks | [graph.md](graph.md) |
 | okq index | [index-command.md](index-command.md) |
+| Inline tags — Obsidian | [inline-tags.md](inline-tags.md) |
 | .okqignore — exclude files from a bundle | [okqignore.md](okqignore.md) |
+| Phantom vs broken links — deadlinks that understands Obsidian's unresolved notes | [phantom-links.md](phantom-links.md) |
 | okq init & new — scaffold and author OKF bundles | [scaffold.md](scaffold.md) |
 | okq schema — emit the JSON Schema for command output | [schema.md](schema.md) |
 | okq search — ranked full-text retrieval | [search.md](search.md) |

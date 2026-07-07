@@ -13,7 +13,7 @@ use crate::cli::{
     BacklinksArgs, DeadlinksArgs, DirectionArg, NeighborsArgs, OrphansArgs, PathArgs,
 };
 use crate::error::AppError;
-use crate::graph::{Direction, EdgeFilter, Graph, Reached};
+use crate::graph::{DeadClass, Direction, EdgeFilter, Graph, Reached};
 use crate::model::{self, ConceptRecord};
 use crate::view::Corpus;
 
@@ -102,8 +102,11 @@ pub struct DeadLinkRecord {
     pub line: usize,
     /// The link target as written.
     pub raw: String,
-    /// The edge kind (`link` or a relation key).
+    /// The edge kind (`link`, a relation key, or `wikilink`).
     pub edge: String,
+    /// How to read the miss: `broken` (should resolve but doesn't) or `phantom`
+    /// (a bare `[[wikilink]]` to a not-yet-created note). See phantom-links.md.
+    pub kind: String,
 }
 
 // ---- run functions -------------------------------------------------------
@@ -199,17 +202,32 @@ pub fn orphans(
     })
 }
 
-/// `okq deadlinks`.
+/// `okq deadlinks`. Broken links only by default; `--phantoms` adds phantoms
+/// (bare `[[wikilinks]]` to not-yet-created notes), `--phantoms-only` lists just
+/// those. See `docs/features/phantom-links.md`.
 pub fn deadlinks(
     bundle_dir: &Path,
-    _args: &DeadlinksArgs,
+    args: &DeadlinksArgs,
     no_ignore: bool,
 ) -> Result<DeadlinksOutput, AppError> {
     let corpus = Corpus::load(bundle_dir, no_ignore)?;
     let graph = Graph::build(corpus.bundle(), corpus.hidden());
+
+    let (want_broken, want_phantom) = if args.phantoms_only {
+        (false, true)
+    } else if args.phantoms {
+        (true, true)
+    } else {
+        (true, false)
+    };
+
     let results: Vec<DeadLinkRecord> = graph
         .dead_links()
         .iter()
+        .filter(|d| match d.class {
+            DeadClass::Broken => want_broken,
+            DeadClass::Phantom => want_phantom,
+        })
         .map(|d| {
             let (source_path, line) = source_location(corpus.bundle(), &d.source, &d.raw);
             DeadLinkRecord {
@@ -218,6 +236,7 @@ pub fn deadlinks(
                 line,
                 raw: d.raw.clone(),
                 edge: d.kind.clone(),
+                kind: d.class.as_str().to_string(),
             }
         })
         .collect();
@@ -339,9 +358,16 @@ pub fn render_deadlinks(
 ) -> std::io::Result<()> {
     let loc = loc_style(no_color);
     for d in &out.results {
+        // Broken rows read exactly as before; phantoms carry a trailing marker so
+        // a mixed `--phantoms` listing is legible.
+        let marker = if d.kind == "phantom" {
+            "  (phantom)"
+        } else {
+            ""
+        };
         writeln!(
             w,
-            "{loc}{}:{}{loc:#}  -[{}]->  {}",
+            "{loc}{}:{}{loc:#}  -[{}]->  {}{marker}",
             d.source_path, d.line, d.edge, d.raw
         )?;
     }

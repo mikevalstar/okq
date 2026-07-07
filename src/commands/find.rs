@@ -116,8 +116,13 @@ impl<'a> Predicate<'a> {
         let fm = &c.document.frontmatter;
 
         if !self.tags.is_empty() {
-            let tags = fm.tags();
-            if !self.tags.iter().all(|t| tags.iter().any(|x| x == t)) {
+            // Frontmatter `tags:` unified with inline body `#tags`, matched
+            // case-insensitively (Obsidian's tag namespace — inline-tags.md).
+            let tags = crate::model::concept_tags(c);
+            if !self.tags.iter().all(|t| {
+                let needle = t.to_lowercase();
+                tags.iter().any(|x| x.to_lowercase() == needle)
+            }) {
                 return false;
             }
         }

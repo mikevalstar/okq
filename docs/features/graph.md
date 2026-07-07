@@ -142,12 +142,20 @@ candidates.
 ### `okq deadlinks`
 
 Edges pointing to missing/renamed concepts — from inline links (okf
-`broken_links`) **and** unresolvable frontmatter relations.
+`broken_links`), unresolvable frontmatter relations, and unresolvable
+`[[wikilinks]]`. Each miss is classified **broken** (a concrete reference that
+should resolve but doesn't) or **phantom** (a bare `[[Note]]` to a note that
+doesn't exist yet — normal in an Obsidian vault); see
+[phantom-links](phantom-links.md).
 
-- `--check` — exit **3** if any dead links are found; default exit 0.
+- **Broken only by default.** `--phantoms` also lists phantoms; `--phantoms-only`
+  lists just them.
+- `--check` — exit **3** if any link in the listed set is found (broken by
+  default); default exit 0.
 - Output: `okq.deadlinks/v1` — `{ count, results: [ { source_id, source_path,
-  line, raw, edge } ] }`, where `raw` is the link target as written and `edge` is
-  its type. Ordered by `source_id` then `raw`.
+  line, raw, edge, kind } ] }`, where `raw` is the target as written, `edge` is
+  its type (`link` / a relation key / `wikilink`), and `kind` is
+  `broken`/`phantom`. Ordered by `source_id` then `raw`.
 
 ## Cross-cutting contracts this feature ratifies
 

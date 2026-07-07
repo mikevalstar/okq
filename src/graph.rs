@@ -71,6 +71,31 @@ pub struct DeadLink {
     pub raw: String,
     /// The edge kind (`link` or a relation key).
     pub kind: String,
+    /// Whether this is a genuinely *broken* reference or a *phantom* (a bare
+    /// `[[wikilink]]` to a not-yet-created note — normal in Obsidian).
+    pub class: DeadClass,
+}
+
+/// How an unresolved link should be read (phantom-links.md).
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum DeadClass {
+    /// A concrete reference that should resolve but doesn't — a rename/move left
+    /// it dangling, a bad path, an inline link to a missing file. Almost always
+    /// a real mistake.
+    Broken,
+    /// A bare `[[Note]]` matching no concept and no alias — an Obsidian
+    /// "unresolved" note you click to create later. Normal, not an error.
+    Phantom,
+}
+
+impl DeadClass {
+    /// The string form used in output (`broken`/`phantom`).
+    pub fn as_str(self) -> &'static str {
+        match self {
+            DeadClass::Broken => "broken",
+            DeadClass::Phantom => "phantom",
+        }
+    }
 }
 
 /// A node reached during a neighbors traversal.
@@ -115,8 +140,12 @@ impl Graph {
 
         // Index visible concepts by their bare name (case-insensitively) so a
         // wikilink like `[[Users]]` can resolve to `tables/users` the way an
-        // Obsidian vault would, not just by full path.
+        // Obsidian vault would, not just by full path. A second index maps
+        // frontmatter `aliases:` → concept, consulted only when the name index
+        // misses, so `[[Hooman]]` resolves to a note aliased "Hooman" but a real
+        // filename always wins (ADR-0011).
         let names = name_index(bundle, hidden);
+        let aliases = alias_index(bundle, hidden);
 
         for c in bundle.concepts() {
             if hidden.contains(&c.id) {
@@ -136,6 +165,9 @@ impl Graph {
                         source: c.id.clone(),
                         raw: link.raw.clone(),
                         kind: LINK_KIND.to_string(),
+                        // An explicit CommonMark link to a missing file is broken,
+                        // not a phantom (that concept is bare-name wikilinks only).
+                        class: DeadClass::Broken,
                     });
                 }
             }
@@ -151,6 +183,8 @@ impl Graph {
                             source: c.id.clone(),
                             raw: value,
                             kind: key.to_string(),
+                            // A frontmatter relation to a missing concept is broken.
+                            class: DeadClass::Broken,
                         }),
                         // None: external URL or a path that escapes the bundle — not an edge.
                         None => {}
@@ -166,14 +200,21 @@ impl Graph {
                 if !seen.insert(wl.target.clone()) {
                     continue;
                 }
-                match resolve_wikilink(&c.id, &wl.target, bundle, hidden, &names) {
+                match resolve_wikilink(&c.id, &wl.target, bundle, hidden, &names, &aliases) {
                     WikiResolution::Resolved(target) => {
                         push_edge(&mut out, &mut inn, &c.id, &target, WIKILINK_KIND);
                     }
-                    WikiResolution::Dead => dead.push(DeadLink {
+                    WikiResolution::Broken => dead.push(DeadLink {
                         source: c.id.clone(),
                         raw: wl.target,
                         kind: WIKILINK_KIND.to_string(),
+                        class: DeadClass::Broken,
+                    }),
+                    WikiResolution::Phantom => dead.push(DeadLink {
+                        source: c.id.clone(),
+                        raw: wl.target,
+                        kind: WIKILINK_KIND.to_string(),
+                        class: DeadClass::Phantom,
                     }),
                     WikiResolution::Skip => {}
                 }
@@ -305,9 +346,26 @@ impl Graph {
         ids
     }
 
-    /// All dead links in the bundle (inline + frontmatter), sorted.
+    /// All dead links in the bundle (inline + frontmatter + wikilink), sorted.
+    /// Includes both broken links and phantoms; callers filter by [`DeadLink::class`].
     pub fn dead_links(&self) -> &[DeadLink] {
         &self.dead
+    }
+
+    /// Count of genuinely *broken* dead links (excludes phantoms).
+    pub fn broken_count(&self) -> usize {
+        self.dead
+            .iter()
+            .filter(|d| d.class == DeadClass::Broken)
+            .count()
+    }
+
+    /// Count of *phantom* links — bare `[[wikilinks]]` to not-yet-created notes.
+    pub fn phantom_count(&self) -> usize {
+        self.dead
+            .iter()
+            .filter(|d| d.class == DeadClass::Phantom)
+            .count()
     }
 
     /// Total number of resolved edges (each directed edge counted once).
@@ -389,8 +447,12 @@ fn relation_values(fm: &okf::Frontmatter, key: &str) -> Vec<String> {
 enum WikiResolution {
     /// Points at an existing, visible concept.
     Resolved(ConceptId),
-    /// Looks like an in-bundle reference but resolves to nothing (a dead link).
-    Dead,
+    /// A concrete path/`.md` in-bundle reference that resolves to nothing — a
+    /// genuinely broken link (phantom-links.md).
+    Broken,
+    /// A bare name matching no concept and no alias — a phantom / not-yet-created
+    /// note, normal in an Obsidian vault (phantom-links.md).
+    Phantom,
     /// Not a bundle edge (external, or unresolvable and not worth flagging).
     Skip,
 }
@@ -413,17 +475,43 @@ fn name_index(bundle: &Bundle, hidden: &HashSet<ConceptId>) -> HashMap<String, V
     map
 }
 
+/// Frontmatter alias (lowercased) → the visible concepts declaring it, sorted.
+/// Lets `[[Hooman]]` resolve to a note whose frontmatter says `aliases: [Hooman]`
+/// (ADR-0011). Consulted only after the name index misses, so a real filename
+/// always wins over an alias.
+fn alias_index(bundle: &Bundle, hidden: &HashSet<ConceptId>) -> HashMap<String, Vec<ConceptId>> {
+    let mut map: HashMap<String, Vec<ConceptId>> = HashMap::new();
+    for c in bundle.concepts() {
+        if hidden.contains(&c.id) {
+            continue;
+        }
+        for alias in crate::model::concept_aliases(c) {
+            map.entry(alias.to_lowercase())
+                .or_default()
+                .push(c.id.clone());
+        }
+    }
+    for ids in map.values_mut() {
+        ids.sort();
+        ids.dedup();
+    }
+    map
+}
+
 /// Resolves an Obsidian wikilink target (leniently, issue #5): a target with a
 /// `/` is treated as a path (bundle-root-absolute first, then relative to the
-/// source), and a bare name matches a concept's filename anywhere in the bundle,
-/// case-insensitively. An in-bundle reference that matches nothing is a dead
-/// link; anything that isn't a plausible bundle target is skipped.
+/// source), and a bare name matches a concept's filename — or, failing that, a
+/// frontmatter alias — anywhere in the bundle, case-insensitively. An in-bundle
+/// path reference that matches nothing is *broken*; a bare name matching neither
+/// a filename nor an alias is a *phantom*; anything that isn't a plausible bundle
+/// target is skipped.
 fn resolve_wikilink(
     source: &ConceptId,
     target: &str,
     bundle: &Bundle,
     hidden: &HashSet<ConceptId>,
     names: &HashMap<String, Vec<ConceptId>>,
+    aliases: &HashMap<String, Vec<ConceptId>>,
 ) -> WikiResolution {
     let exists = |id: &ConceptId| bundle.contains(id) && !hidden.contains(id);
 
@@ -438,17 +526,19 @@ fn resolve_wikilink(
                 return WikiResolution::Resolved(candidate);
             }
         }
-        // A path that at least forms a valid in-bundle id is a dead link;
-        // one that escapes the bundle (`../..`) is simply out of scope.
+        // A path that at least forms a valid in-bundle id is broken; one that
+        // escapes the bundle (`../..`) is simply out of scope.
         if resolve_from_root(target).is_some() {
-            WikiResolution::Dead
+            WikiResolution::Broken
         } else {
             WikiResolution::Skip
         }
     } else {
-        match names.get(&target.to_lowercase()) {
+        let key = target.to_lowercase();
+        // Filename first, then alias — a real file always wins (ADR-0011).
+        match names.get(&key).or_else(|| aliases.get(&key)) {
             Some(ids) => WikiResolution::Resolved(ids[0].clone()),
-            None => WikiResolution::Dead,
+            None => WikiResolution::Phantom,
         }
     }
 }

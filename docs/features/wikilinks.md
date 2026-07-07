@@ -112,3 +112,8 @@ same `[[Note]]` written twice is one edge.
   points at [[graph]] as a live wikilink, so `okq --bundle docs neighbors
   wikilinks --edge wikilink` demonstrates the feature on our own docs.
 - [design overview](../guides/design-overview.md) — §8 edge-taxonomy / graph-reuse
+- **Follow-on Obsidian-compat specs** (draft) that build on this one:
+  [aliases](aliases.md) resolves `[[alias]]` targets by frontmatter `aliases:`,
+  [phantom-links](phantom-links.md) splits an unresolved `[[Note]]` into
+  *phantom* vs *broken*, and [inline-tags](inline-tags.md) reads body `#tags` the
+  way this spec reads body `[[links]]`.

@@ -44,7 +44,7 @@ Asking "which decisions are security-related?" or "what's `status: accepted` and
 
 | Flag | Repeatable | Matches a concept when… |
 |------|------------|--------------------------|
-| `--tag <t>` | yes | its frontmatter `tags` contains `<t>` |
+| `--tag <t>` | yes | its tags contain `<t>` (case-insensitively) — frontmatter `tags:` **and** inline body `#tags`, unified per [inline-tags](inline-tags.md) |
 | `--type <ty>` | yes | its frontmatter `type` equals `<ty>` |
 | `--where <field>=<value>` | yes | frontmatter `<field>` equals `<value>` (scalar), or contains it (sequence) |
 | `--match <pattern>` | no (v1) | its title or body contains `<pattern>` |
@@ -86,7 +86,7 @@ Order is **deterministic**: concept-id (path) order, since nothing is ranked. Co
 }
 ```
 
-Each `results` element is the **shared concept envelope** ratified by [get](get.md) (`id`/`type`/`title`/`path`/`line`), plus `tags`. `line` is the concept start (`1`) — `find` reports concepts, not match sites.
+Each `results` element is the **shared concept envelope** ratified by [get](get.md) (`id`/`type`/`title`/`path`/`line`), plus `tags` (the merged frontmatter + inline `#tag` set — [inline-tags](inline-tags.md)). `line` is the concept start (`1`) — `find` reports concepts, not match sites.
 
 ### Exit codes
 

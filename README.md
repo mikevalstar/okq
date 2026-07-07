@@ -120,7 +120,7 @@ Then invoke one with `/okq-explore`, `/okq-write-okf`, or `/okq-maintain`; `okq-
 | `okq backlinks <concept>` | Concepts that link to this one. |
 | `okq path <a> <b>` | Shortest link path between two concepts (`--undirected`). |
 | `okq orphans` | Concepts with no inbound links (`--check` for CI). |
-| `okq deadlinks` | Links pointing at missing concepts (`--check` for CI). |
+| `okq deadlinks` | Broken links pointing at missing concepts (`--check` for CI; `--phantoms` also lists bare `[[wikilinks]]` to not-yet-created notes). |
 | `okq stats` | Counts by type and tag, link density, edge types, hubs. |
 | `okq validate` | Check OKF conformance; report unparseable/untyped/malformed docs (alias `doctor`, `--check` for CI). |
 | `okq schema [<cmd>]` | JSON Schema for a command's `--json` output. |
@@ -160,6 +160,7 @@ Ignored files are treated as if they weren't in the bundle: they don't show up i
 - The graph is built from inline Markdown links, from frontmatter relations (`related`, `supersedes`, `depends-on`, …), and from Obsidian-style `[[wikilinks]]` / `![[embeds]]` in the body (edge type `wikilink`; bare names resolve by filename, case-insensitively). Filter to any of them with `--edge`.
 - Results are locations, not document dumps: ranked `path:line` plus a short snippet. You expand what you want with `get`.
 - Frontmatter is optional: a Markdown file with no frontmatter is still a concept, and its `title` falls back to the filename (so plain note folders are searchable and navigable too).
+- **Obsidian-friendly.** Frontmatter `aliases:` resolve a note by any of its alternate names (`okq get Hooman`, `[[Hooman]]`) — below filenames, so a real file always wins. Inline `#tags` in the body count as tags alongside frontmatter `tags:`, so `find --tag` and `stats` see a vault's real tag set. And `deadlinks` separates a genuinely **broken** link from a **phantom** — a bare `[[Note]]` to a note you simply haven't written yet — listing only broken ones by default so it isn't thousands of false alarms on a vault.
 - Parsing and the data model come from the [`okf`](https://crates.io/crates/okf) crate; okq adds the query and navigation layer on top.
 
 ## Exit codes

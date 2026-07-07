@@ -204,3 +204,51 @@ fn invalid_regex_exits_2() {
         .failure()
         .code(2);
 }
+
+#[test]
+fn inline_body_tags_are_findable() {
+    // Obsidian-style body `#tags` count as tags, unified with frontmatter.
+    let dir = tempfile::tempdir().unwrap();
+    write(
+        dir.path().join("note.md"),
+        "---\ntype: doc\ntitle: Note\ntags: [alpha]\n---\n\n# Note\n\nTagged inline #KGPortal and #area/work.\n",
+    );
+    write(
+        dir.path().join("other.md"),
+        "---\ntype: doc\ntitle: Other\n---\n\n# Other\n\nNo tags here.\n",
+    );
+
+    // Inline tag matches (case-insensitively), frontmatter tag still matches.
+    for tag in ["KGPortal", "kgportal", "area/work", "alpha"] {
+        let out = stdout(
+            okq(dir.path())
+                .args(["find", "--tag", tag])
+                .assert()
+                .success(),
+        );
+        assert!(out.contains("note.md"), "tag {tag:?} should match note.md");
+        assert!(
+            !out.contains("other.md"),
+            "tag {tag:?} should not match other.md"
+        );
+    }
+
+    // The merged tag list is exposed on the record (frontmatter first, then inline).
+    let out = stdout(
+        okq(dir.path())
+            .args(["find", "--type", "doc", "--json"])
+            .assert()
+            .success(),
+    );
+    let v: serde_json::Value = serde_json::from_str(&out).unwrap();
+    let note = v["results"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|r| r["id"] == "note")
+        .unwrap();
+    assert_eq!(
+        note["tags"],
+        serde_json::json!(["alpha", "kgportal", "area/work"])
+    );
+}

@@ -11,6 +11,56 @@ attaches prebuilt binaries to the GitHub Release.
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-07-07
+
+An Obsidian-parity release: three features that make okq read an Obsidian vault
+the way Obsidian does — resolving aliases, counting inline `#tags`, and telling a
+genuinely broken link apart from a not-yet-created one. Built on the wikilink
+support from 0.3.2; specs in `docs/features/{aliases,inline-tags,phantom-links}.md`
+and the resolution-contract decision in
+[ADR-0011](docs/adrs/0011-aliases-in-resolution.md).
+
+### Added
+
+- **Frontmatter aliases resolve concepts.** A note's `aliases:` (Obsidian's
+  alternate names — a YAML list or a single scalar) now resolve everywhere a
+  concept id does: `okq get Hooman`, `neighbors`, `backlinks`, and `path` accept
+  an alias (case-insensitively), and a bare `[[Hooman]]` wikilink forms a real
+  `wikilink` edge to the aliased note instead of a dead link. Aliases sit at the
+  **lowest** resolver priority, so a real filename is never shadowed by another
+  note's alias (ADR-0011); colliding aliases error as ambiguous. Spec:
+  `docs/features/aliases.md`.
+- **Inline `#tags` are first-class tags.** Obsidian-style `#tag` tokens in a
+  concept body now count as tags, unified with the frontmatter `tags:` list, so
+  `okq find --tag KGPortal` matches a note tagged only inline and `okq stats`
+  counts them. The scanner skips code fences/spans, ignores tag-shaped non-tags
+  (`#123`, `# heading`, URL fragments, `foo#bar`), supports nested `#area/work`,
+  and lowercases for case-insensitive matching. The `tags` array in
+  `get`/`find`/`search` output is the deduped union (frontmatter first, then
+  inline, author order preserved). Spec: `docs/features/inline-tags.md`.
+
+### Changed
+
+- **`deadlinks` distinguishes *phantom* from *broken*.** A bare `[[Note]]` to a
+  note that doesn't exist yet is a **phantom** — normal in an Obsidian vault,
+  where you write links before creating notes — not an error. Each
+  `okq.deadlinks/v1` record gains a `kind: "broken" | "phantom"` field, and
+  **`deadlinks` now lists broken links only by default** (so it isn't thousands
+  of false alarms on a vault); `--phantoms` includes phantoms and
+  `--phantoms-only` lists just them. `--check` gates on the listed set (broken by
+  default). ⚠️ Behavior change: the default `deadlinks` result set and default
+  `--check` are narrower than before. A bundle whose bare links all resolve (e.g.
+  okq's own `docs/`) is unaffected.
+- **`okq stats` splits the health line.** `dead_links` now counts **broken** links
+  only; a new `phantom_links` field (and a `Phantom links:` column in the human
+  output) counts phantoms. The `okq.stats/v1` schema gains `phantom_links`.
+
+### Notes
+
+- `deadlinks/v1` and `stats/v1` schemas gain fields additively; the *default
+  result set* of `deadlinks` narrows (see above). Everything else is backward
+  compatible.
+
 ## [0.4.0] — 2026-07-07
 
 The first tagged release since `v0.3.0`, so it ships everything below since then
