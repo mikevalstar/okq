@@ -11,7 +11,13 @@ attaches prebuilt binaries to the GitHub Release.
 
 ## [Unreleased]
 
-## [0.3.4] — 2026-07-07
+## [0.4.0] — 2026-07-07
+
+The first tagged release since `v0.3.0`, so it ships everything below since then
+— spaces (0.3.1), wikilinks (0.3.2), optional frontmatter (0.3.3), and the
+emoji/Unicode filenames + dependency bumps of this entry. okq depends on the
+temporary `okf` fork (ADR-0010), so this release is the GitHub Release + prebuilt
+binaries; the crates.io publish stays paused until the fork lands upstream.
 
 ### Added
 
