@@ -16,6 +16,22 @@ OKF is a small, vendor-neutral convention: one concept per Markdown file, a hand
 cargo install okq
 ```
 
+**Latest release (0.4.0+):** crates.io is paused at 0.3.0 while okq tracks a
+temporary [`okf` fork](docs/adrs/0010-okf-unicode-filenames-fork.md) — crates.io
+doesn't allow git dependencies, so `cargo install okq` will fetch 0.3.0 until the
+fork lands upstream. To get the latest, install from GitHub instead:
+
+```sh
+# build from source
+cargo install --git https://github.com/mikevalstar/okq
+
+# or grab a prebuilt binary (needs cargo-binstall)
+cargo binstall --git https://github.com/mikevalstar/okq okq
+```
+
+Prebuilt binaries for macOS, Linux, and Windows are also attached to each
+[GitHub release](https://github.com/mikevalstar/okq/releases/latest).
+
 Or with [mise](https://mise.jdx.dev):
 
 ```sh
