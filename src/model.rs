@@ -60,6 +60,19 @@ fn ends_with_segments(segments: &[String], needle: &[String]) -> bool {
     segments.len() >= needle.len() && segments[segments.len() - needle.len()..] == *needle
 }
 
+/// The concept's display title: the frontmatter `title` if present and
+/// non-empty, otherwise the concept's filename (its id's last segment),
+/// **verbatim** — no humanizing. Frontmatter-less files are valid OKF concepts
+/// (only `type` is required for conformance), and every concept has a non-empty
+/// id segment, so a title is always available. This is a display value only;
+/// the true frontmatter (see `get --frontmatter`) is never rewritten.
+pub fn concept_title(c: &Concept) -> String {
+    c.document
+        .frontmatter
+        .title()
+        .unwrap_or_else(|| c.id.name().to_string())
+}
+
 /// One concept as it appears in a shortlist: identity, location, and the
 /// frontmatter an agent needs to decide whether to expand it — never the body.
 #[derive(Debug, Serialize, JsonSchema)]
@@ -69,9 +82,8 @@ pub struct ConceptRecord {
     /// The frontmatter `type`, if present.
     #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
     pub type_: Option<String>,
-    /// The frontmatter `title`, if present.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub title: Option<String>,
+    /// The concept's title: the frontmatter `title`, or the filename if none.
+    pub title: String,
     /// The concept's path relative to the bundle root.
     pub path: String,
     /// 1-based line where the concept begins (always 1; match sites are `search`'s job).
@@ -87,7 +99,7 @@ impl ConceptRecord {
         ConceptRecord {
             id: c.id.to_string(),
             type_: c.document.frontmatter.type_(),
-            title: c.document.frontmatter.title(),
+            title: concept_title(c),
             path: rel.to_string_lossy().replace('\\', "/"),
             line: 1,
             tags: c.document.frontmatter.tags(),

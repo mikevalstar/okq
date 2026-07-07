@@ -47,9 +47,8 @@ pub struct SearchHit {
     /// The frontmatter `type`, if present.
     #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
     pub type_: Option<String>,
-    /// The frontmatter `title`, if present.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub title: Option<String>,
+    /// The concept's title: the frontmatter `title`, or the filename if none.
+    pub title: String,
     /// The concept's path relative to the bundle root.
     pub path: String,
     /// 1-based line of the matching section.
@@ -150,12 +149,12 @@ fn build_hit(
                 .replace('\\', "/");
             (
                 c.document.frontmatter.type_(),
-                c.document.frontmatter.title(),
+                crate::model::concept_title(c),
                 rel,
                 c.document.frontmatter.tags(),
             )
         }
-        None => (None, None, id.clone(), Vec::new()),
+        None => (None, id.clone(), id.clone(), Vec::new()),
     };
 
     let snippet = snippet_gen.snippet_from_doc(doc);

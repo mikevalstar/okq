@@ -249,7 +249,7 @@ fn record(bundle: &Bundle, id: &ConceptId) -> ConceptRecord {
         .unwrap_or_else(|| ConceptRecord {
             id: id.to_string(),
             type_: None,
-            title: None,
+            title: id.name().to_string(),
             path: id.to_string(),
             line: 1,
             tags: Vec::new(),
@@ -309,11 +309,10 @@ pub fn render_nodes(
 ) -> std::io::Result<()> {
     let loc = loc_style(no_color);
     for r in &out.results {
-        let title = r.concept.title.as_deref().unwrap_or("");
         writeln!(
             w,
-            "{loc}{}:{}{loc:#}  {} ({})  {title}",
-            r.concept.path, r.concept.line, r.edge, r.direction
+            "{loc}{}:{}{loc:#}  {} ({})  {}",
+            r.concept.path, r.concept.line, r.edge, r.direction, r.concept.title
         )?;
     }
     Ok(())
@@ -327,8 +326,7 @@ pub fn render_orphans(
 ) -> std::io::Result<()> {
     let loc = loc_style(no_color);
     for r in &out.results {
-        let title = r.title.as_deref().unwrap_or("");
-        writeln!(w, "{loc}{}:{}{loc:#}  {title}", r.path, r.line)?;
+        writeln!(w, "{loc}{}:{}{loc:#}  {}", r.path, r.line, r.title)?;
     }
     Ok(())
 }
@@ -354,7 +352,7 @@ pub fn render_deadlinks(
 pub fn render_path(w: &mut impl Write, out: &PathOutput, no_color: bool) -> std::io::Result<()> {
     let loc = loc_style(no_color);
     for (i, node) in out.path.iter().enumerate() {
-        let title = node.concept.title.as_deref().unwrap_or("");
+        let title = &node.concept.title;
         if i == 0 {
             writeln!(
                 w,

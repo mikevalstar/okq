@@ -174,11 +174,11 @@ fn build_block(children: &[&String], direct: &[ConceptRecord]) -> String {
         s.push_str("### Concepts\n\n| Title | File |\n|-------|------|\n");
         for rec in direct {
             let file = last_seg(&rec.path);
-            let title = rec
-                .title
-                .as_deref()
-                .filter(|t| !t.is_empty())
-                .unwrap_or(&rec.id);
+            let title = if rec.title.is_empty() {
+                &rec.id
+            } else {
+                &rec.title
+            };
             s.push_str(&format!("| {} | [{file}]({file}) |\n", escape_cell(title)));
         }
     }

@@ -244,3 +244,19 @@ fn walk(dir: &Path) -> Vec<std::path::PathBuf> {
     }
     out
 }
+
+/// A frontmatter-less file's inferred title (its filename) is indexed, so a
+/// query that matches only the filename still finds it (issue #6).
+#[test]
+fn inferred_title_is_searchable() {
+    let dir = tempfile::tempdir().unwrap();
+    // "zebra" appears only in the filename — not in any heading or body.
+    write(
+        dir.path().join("zebra-topic.md"),
+        "# Heading\n\nunrelated body text\n",
+    );
+    let v = search_json(dir.path(), "zebra");
+    assert_eq!(v["count"], 1, "matched via the inferred title");
+    assert_eq!(v["results"][0]["id"], "zebra-topic");
+    assert_eq!(v["results"][0]["title"], "zebra-topic");
+}

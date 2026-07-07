@@ -142,7 +142,7 @@ fn add_concepts(index: &Index, fields: &Fields, corpus: &Corpus) -> Result<(), A
     for c in corpus.concepts() {
         let raw = fs::read_to_string(&c.path)?;
         let start = sections::body_start_line(&raw);
-        let title = c.document.frontmatter.title().unwrap_or_default();
+        let title = crate::model::concept_title(c);
         let id = c.id.to_string();
 
         for sec in index_sections(&c.document.body, start, &title) {

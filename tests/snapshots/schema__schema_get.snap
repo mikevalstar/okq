@@ -85,11 +85,8 @@ expression: "stdout(&[\"schema\", \"get\"])"
       ]
     },
     "title": {
-      "description": "The frontmatter `title`, if present.",
-      "type": [
-        "string",
-        "null"
-      ]
+      "description": "The concept's title: the frontmatter `title`, or the filename if none.",
+      "type": "string"
     },
     "type": {
       "description": "The frontmatter `type`, if present.",
@@ -103,7 +100,8 @@ expression: "stdout(&[\"schema\", \"get\"])"
     "schema",
     "id",
     "path",
-    "line"
+    "line",
+    "title"
   ],
   "title": "GetOutput",
   "type": "object"

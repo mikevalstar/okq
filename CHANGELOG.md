@@ -11,6 +11,26 @@ attaches prebuilt binaries to the GitHub Release.
 
 ## [Unreleased]
 
+## [0.3.3] — 2026-07-07
+
+### Added
+
+- **Optional frontmatter.** A Markdown file with no YAML frontmatter is a
+  first-class concept: its `title` is inferred from the filename (the concept
+  id's last segment, verbatim — no humanizing), so plain note folders are
+  titled, searchable (the inferred title is indexed and boosted), and navigable
+  like any other bundle. `get --frontmatter` still shows the file's true
+  (empty) frontmatter — the inferred title is a display value, not a rewrite.
+  Resolves [#6](https://github.com/mikevalstar/okq/issues/6). See
+  [`docs/features/frontmatter-optional-title.md`](docs/features/frontmatter-optional-title.md).
+
+### Changed
+
+- The `title` field in the `get`, `find`, `search`, and `stats` `--json`
+  envelopes is now **always present** (a string, no longer nullable/omitted),
+  since every concept has an inferrable title. Consumers that special-cased a
+  missing `title` no longer need to.
+
 ## [0.3.2] — 2026-07-07
 
 ### Added

@@ -34,9 +34,8 @@ pub struct GetOutput {
     /// The frontmatter `type`, if present.
     #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
     pub type_: Option<String>,
-    /// The frontmatter `title`, if present.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub title: Option<String>,
+    /// The concept's title: the frontmatter `title`, or the filename if none.
+    pub title: String,
     /// Full frontmatter (well-known keys + producer extensions). Omitted unless requested.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub frontmatter: Option<serde_json::Value>,
@@ -132,7 +131,7 @@ pub fn run(bundle_dir: &Path, args: &GetArgs, no_ignore: bool) -> Result<Got, Ap
             path,
             line: 1,
             type_: frontmatter.type_(),
-            title: frontmatter.title(),
+            title: crate::model::concept_title(concept),
             frontmatter: frontmatter_json,
             body: want_body.then(|| body.clone()),
             sections,

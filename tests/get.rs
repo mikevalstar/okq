@@ -234,3 +234,60 @@ fn missing_concept_arg_is_usage_error() {
     let dir = fixture();
     okq(dir.path()).arg("get").assert().failure().code(2);
 }
+
+/// A file with no frontmatter is a valid concept; `get` reports its filename as
+/// the `title`, but the `frontmatter` object stays the file's true (empty) one —
+/// the inferred title never leaks into the frontmatter surface (issue #6).
+#[test]
+fn no_frontmatter_infers_title_from_filename() {
+    let dir = tempfile::tempdir().unwrap();
+    write(
+        dir.path().join("plain-note.md"),
+        "# A Heading\n\nBody text.\n",
+    );
+
+    let out = stdout(
+        okq(dir.path())
+            .args(["get", "plain-note", "--json"])
+            .assert()
+            .success(),
+    );
+    let v: serde_json::Value = serde_json::from_str(&out).unwrap();
+    assert_eq!(v["title"], "plain-note", "title inferred from filename");
+    assert_eq!(
+        v["frontmatter"],
+        serde_json::json!({}),
+        "frontmatter untouched"
+    );
+
+    // The human `--frontmatter` view shows the real (empty) block, not the title.
+    let human = stdout(
+        okq(dir.path())
+            .args(["get", "plain-note", "--frontmatter"])
+            .assert()
+            .success(),
+    );
+    assert!(human.contains("{}"), "empty frontmatter block");
+    assert!(
+        !human.contains("plain-note\n"),
+        "no inferred title in frontmatter"
+    );
+}
+
+/// An explicit frontmatter `title` still wins over the filename.
+#[test]
+fn explicit_title_wins_over_filename() {
+    let dir = tempfile::tempdir().unwrap();
+    write(
+        dir.path().join("slug.md"),
+        "---\ntype: note\ntitle: Real Title\n---\n\n# Body\n",
+    );
+    let out = stdout(
+        okq(dir.path())
+            .args(["get", "slug", "--json"])
+            .assert()
+            .success(),
+    );
+    let v: serde_json::Value = serde_json::from_str(&out).unwrap();
+    assert_eq!(v["title"], "Real Title");
+}

@@ -143,6 +143,7 @@ Ignored files are treated as if they weren't in the bundle: they don't show up i
 - Search uses a BM25 index (Tantivy), cached per-bundle under your XDG cache directory and rebuilt when files change. okq never writes into the bundle itself.
 - The graph is built from inline Markdown links, from frontmatter relations (`related`, `supersedes`, `depends-on`, …), and from Obsidian-style `[[wikilinks]]` / `![[embeds]]` in the body (edge type `wikilink`; bare names resolve by filename, case-insensitively). Filter to any of them with `--edge`.
 - Results are locations, not document dumps: ranked `path:line` plus a short snippet. You expand what you want with `get`.
+- Frontmatter is optional: a Markdown file with no frontmatter is still a concept, and its `title` falls back to the filename (so plain note folders are searchable and navigable too).
 - Parsing and the data model come from the [`okf`](https://crates.io/crates/okf) crate; okq adds the query and navigation layer on top.
 
 ## Exit codes
