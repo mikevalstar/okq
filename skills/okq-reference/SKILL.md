@@ -1,14 +1,14 @@
 ---
 name: okq-reference
-description: okq CLI contract — commands, --json output, and exit codes for querying OKF doc bundles. Background reference, loaded whenever okq or OKF is in use.
+description: okq CLI contract — commands, --json output, and exit codes for querying OKF bundles, Obsidian vaults, or any Markdown-with-frontmatter collection. Background reference, loaded whenever okq or OKF is in use.
 user-invocable: false
 allowed-tools: Bash
 ---
 
-`okq` is a fast, deterministic, local-first CLI for querying OKF bundles. No
-network, no embeddings, no API key — same bundle, same answer, every time. Use it
-instead of `grep`/`rg`/`yq` when working in a Markdown-with-frontmatter
-knowledge base.
+`okq` is a fast, deterministic, local-first CLI for querying OKF bundles, Obsidian
+vaults, or any Markdown-with-frontmatter collection. No network, no embeddings, no
+API key — same bundle, same answer, every time. Use it instead of `grep`/`rg`/`yq`
+when working in a Markdown-with-frontmatter knowledge base.
 
 ## Bundle basics
 
@@ -23,11 +23,11 @@ knowledge base.
 
 | Command | What it does |
 |---|---|
-| `search <query>` | Rank sections by relevance (BM25). `"quoted"` = phrase. `--limit N`. |
-| `find` | Filter concepts by exact predicate: `--tag`, `--type`, `--where field=value`, `--match <text>` (`--regex` to treat as regex). Repeatable flags AND (tags/where) or OR (type). |
+| `search <query>` | Rank sections by relevance (BM25); returns the most authoritative hit. `"quoted"` = phrase — quote a multi-word query or a keyword-dense note can outrank the real match. `--limit N`. |
+| `find` | Filter concepts by exact predicate: `--tag`, `--type`, `--where field=value`, `--match <text>` (literal substring, every match unranked; `--regex` to treat as regex). Repeatable flags AND (tags/where) or OR (type). |
 | `get <concept>` | Expand one concept. `--section <heading>`, `--frontmatter`, `--body`. |
 | `neighbors <concept>` | Adjacent concepts via the link graph. `--depth N`, `--direction in\|out\|both`, `--edge <type>`. |
-| `backlinks <concept>` | Concepts that link *to* this one. |
+| `backlinks <concept>` | Concepts that link *to* this one (graph edges only — use `find --match` for plain-text mentions). |
 | `path <from> <to>` | Shortest link path between two concepts. `--undirected`. |
 | `orphans` | Concepts with no inbound links (stale-doc candidates). `--check`. |
 | `deadlinks` | Links pointing at missing/renamed concepts. `--check`. |
@@ -44,7 +44,9 @@ knowledge base.
   snippet, never full bodies. Read those first; expand on demand with
   `get <id> --section <heading>`. Do not dump whole files into context.
 - Every command has a non-interactive path; nothing prompts.
-- Pipe JSON to `jq`: `okq search "auth" --json | jq -r '.results[].path'`.
+- `--json` is for programs. When *you* are the reader, use the human `path:line`
+  output — it's several times smaller. Reserve `--json` for piping to a consumer:
+  `okq search "auth" --json | jq -r '.results[].path'`.
 
 ## Exit codes
 
