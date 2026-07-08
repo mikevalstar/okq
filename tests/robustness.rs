@@ -153,6 +153,46 @@ fn scalar_tags_do_not_break_tag_filter() {
 }
 
 #[test]
+fn edge_case_aliases_and_tags_stay_graceful() {
+    // The aliases-tags-edge-cases fixture holds a valid alias, an empty alias,
+    // real inline tags, and several tag-shaped non-tags. Everything must degrade
+    // gracefully and the real signal must be queryable.
+
+    // A declared alias resolves to the concept (empty alias entry is ignored).
+    okq("docs/tests")
+        .args(["get", "Edge Alias"])
+        .assert()
+        .success()
+        .stdout(predicates::str::contains(
+            "Edge-case aliases and inline tags",
+        ));
+
+    // Real inline tags are findable; tag-shaped non-tags are not.
+    for real in ["fixture-tag", "area/robustness"] {
+        let out = okq("docs/tests")
+            .args(["find", "--tag", real, "--json"])
+            .assert()
+            .success();
+        let ids = ids(&String::from_utf8(out.get_output().stdout.clone()).unwrap());
+        assert!(
+            ids.iter().any(|id| id == "aliases-tags-edge-cases"),
+            "tag {real:?} should match the fixture"
+        );
+    }
+    for nontag in ["123", "section", "bar"] {
+        let out = okq("docs/tests")
+            .args(["find", "--tag", nontag, "--json"])
+            .assert()
+            .success();
+        let ids = ids(&String::from_utf8(out.get_output().stdout.clone()).unwrap());
+        assert!(
+            !ids.iter().any(|id| id == "aliases-tags-edge-cases"),
+            "{nontag:?} is not a tag and must not match"
+        );
+    }
+}
+
+#[test]
 fn malformed_wikilinks_do_not_break_the_graph() {
     // The wikilinks-malformed fixture holds unterminated / empty / nested /
     // code-fenced `[[…]]`. The graph commands must still run cleanly (exit 0).

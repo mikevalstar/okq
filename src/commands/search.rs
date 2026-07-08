@@ -151,7 +151,7 @@ fn build_hit(
                 c.document.frontmatter.type_(),
                 crate::model::concept_title(c),
                 rel,
-                c.document.frontmatter.tags(),
+                crate::model::concept_tags(c),
             )
         }
         None => (None, id.clone(), id.clone(), Vec::new()),

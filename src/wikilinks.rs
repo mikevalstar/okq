@@ -48,8 +48,9 @@ pub fn extract(body: &str) -> Vec<Wikilink> {
 }
 
 /// Returns the body's lines with fenced code blocks removed and inline code
-/// spans blanked out (mirrors okf's `links::code_free_lines`).
-fn code_free_lines(body: &str) -> Vec<String> {
+/// spans blanked out (mirrors okf's `links::code_free_lines`). Shared with
+/// [`crate::tags`], which scans the same code-free view of the body for `#tags`.
+pub(crate) fn code_free_lines(body: &str) -> Vec<String> {
     let mut out = Vec::new();
     let mut fence: Option<char> = None;
     for line in body.lines() {

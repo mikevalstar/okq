@@ -260,7 +260,8 @@ fn wiki_fixture() -> TempDir {
         root.join("hub.md"),
         "---\ntype: doc\ntitle: Hub\n---\n\n# Hub\n\n\
          Bare [[Leaf]], aliased [[Leaf|the leaf]], heading [[Leaf#Intro]],\n\
-         path [[notes/Deep]], embed ![[Leaf]], and a broken [[Missing]].\n",
+         path [[notes/Deep]], embed ![[Leaf]], a phantom [[Missing]],\n\
+         and a broken path [[notes/Gone]].\n",
     );
     write(
         root.join("Leaf.md"),
@@ -305,11 +306,33 @@ fn wikilinks_edge_filter_and_backlinks() {
 #[test]
 fn dead_wikilink_reported() {
     let dir = wiki_fixture();
+
+    // Default: broken only. `[[notes/Gone]]` is a path that forms a valid id but
+    // matches no file → broken. The bare `[[Missing]]` is a phantom, hidden here.
     let v = json(dir.path(), &["deadlinks"]);
     assert_eq!(v["count"], 1);
     assert_eq!(v["results"][0]["source_id"], "hub");
-    assert_eq!(v["results"][0]["raw"], "Missing");
+    assert_eq!(v["results"][0]["raw"], "notes/Gone");
     assert_eq!(v["results"][0]["edge"], "wikilink");
+    assert_eq!(v["results"][0]["kind"], "broken");
+
+    // `--phantoms` also lists the bare-name phantom.
+    let all = json(dir.path(), &["deadlinks", "--phantoms"]);
+    assert_eq!(all["count"], 2);
+    let phantom = all["results"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|r| r["raw"] == "Missing")
+        .expect("phantom listed with --phantoms");
+    assert_eq!(phantom["kind"], "phantom");
+    assert_eq!(phantom["source_id"], "hub");
+
+    // `--phantoms-only` lists just the phantom, not the broken link.
+    let only = json(dir.path(), &["deadlinks", "--phantoms-only"]);
+    assert_eq!(only["count"], 1);
+    assert_eq!(only["results"][0]["raw"], "Missing");
+    assert_eq!(only["results"][0]["kind"], "phantom");
 }
 
 #[test]
@@ -338,4 +361,90 @@ fn out_of_bundle_links_are_not_dead() {
     );
     let v = json(dir.path(), &["deadlinks"]);
     assert_eq!(v["count"], 0);
+}
+
+/// A bundle where `people/Hooman Bahador.md` declares `aliases: [Hooman, HB]`
+/// and another note links it three ways: by alias, by real name, and (for the
+/// precedence test) a `Report.md` whose alias collides with a real `Report.md`.
+fn alias_fixture() -> TempDir {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path();
+    write(
+        root.join("people/Hooman Bahador.md"),
+        "---\ntype: contact\ntitle: Hooman Bahador\naliases: [Hooman, HB]\n---\n\n# Hooman Bahador\n",
+    );
+    write(
+        root.join("daily.md"),
+        "---\ntype: doc\ntitle: Daily\n---\n\n# Daily\n\nMet [[Hooman]] and [[HB]] today.\n",
+    );
+    dir
+}
+
+#[test]
+fn get_resolves_by_alias() {
+    let dir = alias_fixture();
+    // `get` accepts an alias and returns the real concept (list-scalar shapes,
+    // case-insensitive).
+    for needle in ["Hooman", "hooman", "HB"] {
+        okq(dir.path())
+            .args(["get", needle])
+            .assert()
+            .success()
+            .stdout(predicates::str::contains("Hooman Bahador"));
+    }
+}
+
+#[test]
+fn wikilink_to_alias_forms_edge_not_phantom() {
+    let dir = alias_fixture();
+    // `[[Hooman]]`/`[[HB]]` resolve to the aliased note → a wikilink edge, and
+    // nothing is reported as a dead/phantom link.
+    let v = json(dir.path(), &["neighbors", "daily", "--direction", "out"]);
+    assert_eq!(ids(&v), vec!["people/Hooman Bahador"]);
+    assert_eq!(v["results"][0]["edge"], "wikilink");
+
+    let d = json(dir.path(), &["deadlinks", "--phantoms"]);
+    assert_eq!(
+        d["count"], 0,
+        "alias targets are neither broken nor phantom"
+    );
+}
+
+#[test]
+fn filename_beats_alias() {
+    // A real `Report.md` must win over another note's `aliases: [Report]`.
+    let dir = tempfile::tempdir().unwrap();
+    write(
+        dir.path().join("Report.md"),
+        "---\ntype: doc\ntitle: The Real Report\n---\n\n# The Real Report\n",
+    );
+    write(
+        dir.path().join("decoy.md"),
+        "---\ntype: doc\ntitle: Decoy\naliases: [Report]\n---\n\n# Decoy\n",
+    );
+    okq(dir.path())
+        .args(["get", "Report"])
+        .assert()
+        .success()
+        .stdout(predicates::str::contains("The Real Report"));
+}
+
+#[test]
+fn ambiguous_alias_errors_with_candidates() {
+    // Two notes claiming the same alias → an ambiguity error (exit 4,
+    // not-found/ambiguous), not a silent pick.
+    let dir = tempfile::tempdir().unwrap();
+    write(
+        dir.path().join("one.md"),
+        "---\ntype: doc\ntitle: One\naliases: [Dup]\n---\n\n# One\n",
+    );
+    write(
+        dir.path().join("two.md"),
+        "---\ntype: doc\ntitle: Two\naliases: [Dup]\n---\n\n# Two\n",
+    );
+    okq(dir.path())
+        .args(["get", "Dup"])
+        .assert()
+        .failure()
+        .code(4);
 }

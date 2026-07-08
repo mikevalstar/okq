@@ -5,7 +5,9 @@
 //! later), so a shortlist looks the same to an agent regardless of which
 //! command produced it. It mirrors the per-concept envelope `get` ratified.
 
-use okf::{Bundle, Concept, ConceptId};
+use std::collections::HashSet;
+
+use okf::{Bundle, Concept, ConceptId, Frontmatter, Value};
 use schemars::JsonSchema;
 use serde::Serialize;
 
@@ -28,26 +30,49 @@ pub fn parse_concept_id(input: &str) -> Result<ConceptId, AppError> {
 /// concept id (or `.md` path) always wins; otherwise a unique path-segment-
 /// aligned *suffix* matches (so `0002-foo` finds `adrs/0002-foo`, and `foo`
 /// finds a concept named `foo` in any directory). Matching is on `/` boundaries,
-/// never arbitrary substrings. A non-unique partial errors with the candidates.
+/// never arbitrary substrings. Failing all of that, a unique frontmatter
+/// **alias** matches (case-insensitively) — the lowest-priority resolver, so a
+/// real filename is never shadowed by another concept's alias (ADR-0011). A
+/// non-unique partial or alias errors with the candidates.
 pub fn resolve_concept(corpus: &Corpus, input: &str) -> Result<ConceptId, AppError> {
-    let parsed = parse_concept_id(input)?;
-    if corpus.contains(&parsed) {
-        return Ok(parsed);
+    // Filename resolution (exact id, then segment-suffix) always wins.
+    if let Ok(parsed) = parse_concept_id(input) {
+        if corpus.contains(&parsed) {
+            return Ok(parsed);
+        }
+        let needle = parsed.segments();
+        let mut matches: Vec<ConceptId> = corpus
+            .concepts()
+            .map(|c| c.id.clone())
+            .filter(|id| ends_with_segments(id.segments(), needle))
+            .collect();
+        matches.sort();
+        match matches.as_slice() {
+            [] => {} // no filename match — fall through to aliases
+            [one] => return Ok(one.clone()),
+            many => {
+                return Err(AppError::ConceptAmbiguous {
+                    input: input.to_string(),
+                    candidates: many.iter().map(ConceptId::to_string).collect(),
+                });
+            }
+        }
     }
 
-    let needle = parsed.segments();
-    let mut matches: Vec<ConceptId> = corpus
-        .concepts()
-        .map(|c| c.id.clone())
-        .filter(|id| ends_with_segments(id.segments(), needle))
-        .collect();
-    matches.sort();
-
-    match matches.as_slice() {
-        [] => Err(AppError::ConceptNotFound {
-            input: input.to_string(),
-        }),
+    // Alias fallback (ADR-0011): match the raw input against frontmatter aliases.
+    let mut aliased = alias_matches(corpus, input);
+    aliased.sort();
+    aliased.dedup();
+    match aliased.as_slice() {
         [one] => Ok(one.clone()),
+        [] => {
+            // Preserve the syntactic error if the input wasn't even a valid id;
+            // otherwise it's a well-formed id that simply doesn't exist.
+            parse_concept_id(input)?;
+            Err(AppError::ConceptNotFound {
+                input: input.to_string(),
+            })
+        }
         many => Err(AppError::ConceptAmbiguous {
             input: input.to_string(),
             candidates: many.iter().map(ConceptId::to_string).collect(),
@@ -58,6 +83,66 @@ pub fn resolve_concept(corpus: &Corpus, input: &str) -> Result<ConceptId, AppErr
 /// `true` if `segments` ends with `needle` (segment-aligned suffix).
 fn ends_with_segments(segments: &[String], needle: &[String]) -> bool {
     segments.len() >= needle.len() && segments[segments.len() - needle.len()..] == *needle
+}
+
+/// The ids of visible concepts whose frontmatter `aliases:` include `input`
+/// (case-insensitively). Empty input matches nothing.
+fn alias_matches(corpus: &Corpus, input: &str) -> Vec<ConceptId> {
+    let needle = input.trim().to_lowercase();
+    if needle.is_empty() {
+        return Vec::new();
+    }
+    corpus
+        .concepts()
+        .filter(|c| {
+            concept_aliases(c)
+                .iter()
+                .any(|a| a.to_lowercase() == needle)
+        })
+        .map(|c| c.id.clone())
+        .collect()
+}
+
+/// A concept's frontmatter `aliases:` — Obsidian's alternate note names. Accepts
+/// both a YAML list (`aliases: [a, b]`) and a single scalar (`aliases: a`);
+/// values are trimmed and empties dropped. These are resolution keys only, never
+/// display titles (ADR-0011). See `docs/features/aliases.md`.
+pub fn concept_aliases(c: &Concept) -> Vec<String> {
+    alias_values(&c.document.frontmatter)
+}
+
+fn alias_values(fm: &Frontmatter) -> Vec<String> {
+    let raw = match fm.get("aliases") {
+        Some(Value::Sequence(items)) => items.iter().filter_map(Value::as_display_string).collect(),
+        Some(v) => v.as_display_string().into_iter().collect::<Vec<_>>(),
+        None => Vec::new(),
+    };
+    raw.into_iter()
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+        .collect()
+}
+
+/// A concept's full tag set: frontmatter `tags:` (as written) unified with inline
+/// body `#tags` (lowercased by the scanner). Obsidian treats the two as one tag
+/// namespace; so does okq. Order is deterministic and author-faithful —
+/// frontmatter tags in declaration order, then inline tags in document order —
+/// deduplicated case-insensitively, so a frontmatter spelling wins over an inline
+/// duplicate. See `docs/features/inline-tags.md`.
+pub fn concept_tags(c: &Concept) -> Vec<String> {
+    let mut seen: HashSet<String> = HashSet::new();
+    let mut out: Vec<String> = Vec::new();
+    for t in c.document.frontmatter.tags() {
+        if seen.insert(t.to_lowercase()) {
+            out.push(t);
+        }
+    }
+    for t in crate::tags::extract(&c.document.body) {
+        if seen.insert(t.clone()) {
+            out.push(t);
+        }
+    }
+    out
 }
 
 /// The concept's display title: the frontmatter `title` if present and
@@ -102,7 +187,7 @@ impl ConceptRecord {
             title: concept_title(c),
             path: rel.to_string_lossy().replace('\\', "/"),
             line: 1,
-            tags: c.document.frontmatter.tags(),
+            tags: concept_tags(c),
         }
     }
 }

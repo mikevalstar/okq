@@ -29,8 +29,12 @@ pub struct StatsOutput {
     pub link_density: f64,
     /// Concepts with no inbound edges.
     pub orphans: usize,
-    /// Links pointing at missing concepts.
+    /// Genuinely *broken* links (a reference that should resolve but doesn't;
+    /// excludes phantoms). See `docs/features/phantom-links.md`.
     pub dead_links: usize,
+    /// *Phantom* links — bare `[[wikilinks]]` to notes that don't exist yet
+    /// (normal in an Obsidian vault; not counted as broken).
+    pub phantom_links: usize,
     /// Files okf could not parse.
     pub parse_errors: usize,
     /// Count of concepts by frontmatter `type` (untyped under `(untyped)`).
@@ -81,7 +85,7 @@ pub fn run(bundle_dir: &Path, args: &StatsArgs, no_ignore: bool) -> Result<Stats
             .type_()
             .unwrap_or_else(|| "(untyped)".to_string());
         *types.entry(type_).or_insert(0) += 1;
-        for tag in c.document.frontmatter.tags() {
+        for tag in crate::model::concept_tags(c) {
             *tags.entry(tag).or_insert(0) += 1;
         }
     }
@@ -114,7 +118,8 @@ pub fn run(bundle_dir: &Path, args: &StatsArgs, no_ignore: bool) -> Result<Stats
         edges,
         link_density,
         orphans: graph.orphans(bundle, corpus.hidden()).len(),
-        dead_links: graph.dead_links().len(),
+        dead_links: graph.broken_count(),
+        phantom_links: graph.phantom_count(),
         parse_errors: bundle
             .parse_errors()
             .iter()
@@ -170,8 +175,8 @@ pub fn render_human(
     )?;
     writeln!(
         w,
-        "Orphans: {}     Dead links: {}    Parse errors: {}",
-        out.orphans, out.dead_links, out.parse_errors
+        "Orphans: {}     Dead links: {}    Phantom links: {}    Parse errors: {}",
+        out.orphans, out.dead_links, out.phantom_links, out.parse_errors
     )?;
     writeln!(w)?;
     writeln!(w, "Types:  {}", distribution(&out.types, 0))?;

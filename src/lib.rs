@@ -12,6 +12,7 @@ pub mod ignore;
 pub mod index;
 pub mod model;
 pub mod sections;
+pub mod tags;
 pub mod templates;
 pub mod view;
 pub mod wikilinks;

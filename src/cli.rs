@@ -368,9 +368,21 @@ pub struct OrphansArgs {
 /// Arguments for `okq deadlinks`.
 #[derive(Args, Debug)]
 pub struct DeadlinksArgs {
-    /// Exit 3 if any dead links are found (for CI gating).
+    /// Exit 3 if any dead links are found (for CI gating). Considers the same
+    /// set that is listed: broken only by default, or the phantom set with
+    /// `--phantoms`/`--phantoms-only`.
     #[arg(long)]
     pub check: bool,
+
+    /// Also list phantom links — bare `[[wikilinks]]` to notes that don't exist
+    /// yet (normal in an Obsidian vault). By default only broken links are shown.
+    #[arg(long, conflicts_with = "phantoms_only")]
+    pub phantoms: bool,
+
+    /// List only phantom links (referenced-but-not-yet-created notes), not broken
+    /// ones — a "notes I still need to write" report.
+    #[arg(long = "phantoms-only")]
+    pub phantoms_only: bool,
 }
 
 /// Arguments for `okq stats`.

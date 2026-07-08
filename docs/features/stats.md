@@ -57,10 +57,11 @@ number you can watch over time or assert in CI.
 | `edges` | total typed edges that resolve in-bundle (inline `link` + frontmatter relations) |
 | `link_density` | `edges / concepts`, to 2 decimals (avg out-degree) |
 | `orphans` | concepts with no inbound edges (count; list via `okq orphans`) |
-| `dead_links` | links to missing concepts (count; list via `okq deadlinks`) |
+| `dead_links` | **broken** links to missing concepts (count; list via `okq deadlinks`) |
+| `phantom_links` | **phantom** links — bare `[[wikilinks]]` to not-yet-created notes (count; list via `okq deadlinks --phantoms-only`). See [phantom-links](phantom-links.md) |
 | `parse_errors` | files okf could not parse (count) |
 | `types` | map of frontmatter `type` → count (untyped concepts under `"(untyped)"`) |
-| `tags` | map of tag → count |
+| `tags` | map of tag → count (frontmatter `tags:` + inline `#tags`, per [inline-tags](inline-tags.md)) |
 | `edge_types` | map of edge kind (`link`/`related`/…) → count |
 | `hubs` | top-N concepts by inbound degree (the most-referenced docs) |
 
@@ -82,7 +83,7 @@ okq stats --top 5         # cap the hubs and tags lists at 5 (default 10)
 
 ```
 Concepts: 25    Edges: 80    Density: 3.20 edges/concept
-Orphans: 14     Dead links: 0    Parse errors: 6
+Orphans: 14     Dead links: 0    Phantom links: 3    Parse errors: 6
 
 Types:  adr 6, feature 5, fixture 1, (untyped) 13
 Edges:  link 60, related 18, supersedes 2
@@ -102,7 +103,7 @@ out_degree }` ordered by `in_degree` desc then `id`.
 {
   "schema": "okq.stats/v1",
   "concepts": 25, "edges": 80, "link_density": 3.20,
-  "orphans": 14, "dead_links": 0, "parse_errors": 6,
+  "orphans": 14, "dead_links": 0, "phantom_links": 3, "parse_errors": 6,
   "types": { "adr": 6, "feature": 5, "(untyped)": 13 },
   "tags": { "cli": 9, "search": 4 },
   "edge_types": { "link": 60, "related": 18, "supersedes": 2 },
