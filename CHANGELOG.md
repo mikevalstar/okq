@@ -11,6 +11,19 @@ attaches prebuilt binaries to the GitHub Release.
 
 ## [Unreleased]
 
+## [0.5.2] — 2026-07-25
+
+A dependency-maintenance release; no behaviour changes.
+
+### Changed
+
+- Dependencies: `clap` 4.6.1 → 4.6.4, `ignore` 0.4.27 → 0.4.30, `regex` 1.12.4 →
+  1.13.1, `serde` 1.0.228 → 1.0.229, `serde_json` 1.0.150 → 1.0.151, plus a
+  refreshed `Cargo.lock` for the transitive tree.
+- `--help` now says `[alias: doctor]` rather than `[aliases: doctor]` for
+  `validate`, following clap 4.6.2's singular/plural fix. Cosmetic only — the
+  alias itself is unchanged.
+
 ## [0.5.1] — 2026-07-25
 
 **okq is on crates.io again.** `cargo install okq` had been stuck at 0.3.0 since
@@ -235,7 +248,8 @@ dogfooded against this repo's own `docs/` bundle.
   taxonomy ([ADR-0004](docs/adrs/0004-exit-code-taxonomy.md)), and token-frugal
   `path:line` output.
 
-[Unreleased]: https://github.com/mikevalstar/okq/compare/v0.5.1...HEAD
+[Unreleased]: https://github.com/mikevalstar/okq/compare/v0.5.2...HEAD
+[0.5.2]: https://github.com/mikevalstar/okq/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/mikevalstar/okq/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/mikevalstar/okq/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/mikevalstar/okq/compare/v0.3.0...v0.4.0
