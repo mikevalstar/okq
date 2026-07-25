@@ -25,5 +25,6 @@ Copy [`_template.md`](_template.md) to start a new one, or run
 | ADR-0009 — Track a fork of okf until it allows spaces in file names | [0009-okf-spaces-fork.md](0009-okf-spaces-fork.md) |
 | ADR-0010 — Widen the okf fork to allow emoji and Unicode in file names | [0010-okf-unicode-filenames-fork.md](0010-okf-unicode-filenames-fork.md) |
 | ADR-0011 — Frontmatter aliases participate in concept resolution, below filename | [0011-aliases-in-resolution.md](0011-aliases-in-resolution.md) |
+| ADR-0012 — Depend on the published okf-permissive crate, not a git fork | [0012-okf-permissive-crate.md](0012-okf-permissive-crate.md) |
 | ADR-NNNN — Short title of the decision | [_template.md](_template.md) |
 <!-- okq:index:end -->

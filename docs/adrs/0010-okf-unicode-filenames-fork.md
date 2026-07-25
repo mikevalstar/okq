@@ -1,13 +1,14 @@
 ---
 type: adr
 title: ADR-0010 — Widen the okf fork to allow emoji and Unicode in file names
-status: accepted
+status: superseded
 created: 2026-07-07
-updated: 2026-07-07
+updated: 2026-07-25
 tags: [okf, dependencies, fork, filenames, concept-id, unicode, emoji]
 supersedes: "0009-okf-spaces-fork.md"
-superseded-by: null
+superseded-by: "0012-okf-permissive-crate.md"
 related:
+  - "0012-okf-permissive-crate.md"
   - "0009-okf-spaces-fork.md"
   - "0002-library-stack.md"
   - "../features/emoji-filenames.md"
@@ -16,6 +17,15 @@ related:
 ---
 
 # ADR-0010: Widen the okf fork to allow emoji and Unicode in file names
+
+> **Superseded by [ADR-0012](0012-okf-permissive-crate.md): the fork is published
+> as the `okf-permissive` crate and okq depends on it by version, not by git
+> revision.** The character rule decided below is exactly what that crate ships,
+> so the *filename* decision stands unchanged; what changes is the delivery
+> mechanism and the exit condition. Upstream okf went quiet after its
+> `0.1.0-alpha.1` release, so "revert to the crates.io release once upstream
+> ships this" is retired, and with the git pin gone okq can publish to crates.io
+> again.
 
 ## Context
 

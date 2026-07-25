@@ -11,6 +11,27 @@ attaches prebuilt binaries to the GitHub Release.
 
 ## [Unreleased]
 
+## [0.5.1] — 2026-07-25
+
+**okq is on crates.io again.** `cargo install okq` had been stuck at 0.3.0 since
+June: okq's data layer tracked a git-pinned fork of `okf`, and crates.io does not
+allow git dependencies, so 0.4.0 and 0.5.0 shipped to GitHub only. The fork is
+now published in its own right as
+[`okf-permissive`](https://crates.io/crates/okf-permissive), so the dependency is
+an ordinary versioned crate and the release path is unblocked.
+
+### Changed
+
+- **The `okf` git dependency is now `okf-permissive` 0.2.0 from crates.io.** It
+  is the same code — the spaces and emoji/Unicode fork branches merged, with the
+  library crate still named `okf` — so filename handling, resolution, and the
+  graph behave exactly as they did in 0.5.0. Upstream `okf` has been quiet since
+  its `0.1.0-alpha.1` release and our filename ticket is unanswered, so waiting
+  on it is retired as a plan; see
+  [ADR-0012](docs/adrs/0012-okf-permissive-crate.md), which supersedes ADR-0010.
+- The README's "install from GitHub instead" workaround is gone; `cargo install
+  okq`, `cargo binstall okq`, and `mise use cargo:okq` all get the latest again.
+
 ## [0.5.0] — 2026-07-07
 
 An Obsidian-parity release: three features that make okq read an Obsidian vault
@@ -214,7 +235,10 @@ dogfooded against this repo's own `docs/` bundle.
   taxonomy ([ADR-0004](docs/adrs/0004-exit-code-taxonomy.md)), and token-frugal
   `path:line` output.
 
-[Unreleased]: https://github.com/mikevalstar/okq/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/mikevalstar/okq/compare/v0.5.1...HEAD
+[0.5.1]: https://github.com/mikevalstar/okq/compare/v0.5.0...v0.5.1
+[0.5.0]: https://github.com/mikevalstar/okq/compare/v0.4.0...v0.5.0
+[0.4.0]: https://github.com/mikevalstar/okq/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/mikevalstar/okq/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/mikevalstar/okq/compare/v0.1.2...v0.2.0
 [0.1.2]: https://github.com/mikevalstar/okq/compare/v0.1.1...v0.1.2
