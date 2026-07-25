@@ -230,6 +230,96 @@ fn ambiguous_section_exits_5() {
 }
 
 #[test]
+fn field_json_narrows_frontmatter() {
+    let dir = fixture();
+    let out = stdout(
+        okq(dir.path())
+            .args(["get", "tables/users", "--field", "description", "--json"])
+            .assert()
+            .success(),
+    );
+    insta::assert_snapshot!("field_json", out);
+}
+
+/// The human view prints the bare value — a scalar verbatim (pipe-safe), a
+/// sequence as YAML — and nothing else from the concept.
+#[test]
+fn field_prints_bare_value() {
+    let dir = fixture();
+    let out = stdout(
+        okq(dir.path())
+            .args(["get", "tables/users", "--field", "title"])
+            .assert()
+            .success(),
+    );
+    assert!(out.ends_with("Users\n"), "bare scalar value: {out:?}");
+    assert!(!out.contains("---"), "no frontmatter fence");
+    assert!(!out.contains("## Schema"), "no body");
+
+    let tags = stdout(
+        okq(dir.path())
+            .args(["get", "tables/users", "--field", "tags"])
+            .assert()
+            .success(),
+    );
+    assert!(tags.contains("- pii"), "sequence as YAML: {tags:?}");
+}
+
+/// Keys match case-insensitively, with `-`/`_` treated as equivalent.
+#[test]
+fn field_matches_leniently() {
+    let dir = tempfile::tempdir().unwrap();
+    write(
+        dir.path().join("note.md"),
+        "---\ntype: note\ndepends-on: [a]\n---\n\n# Note\n",
+    );
+    okq(dir.path())
+        .args(["get", "note", "--field", "DEPENDS_ON"])
+        .assert()
+        .success()
+        .stdout(predicates::str::contains("- a"));
+}
+
+#[test]
+fn missing_field_exits_5() {
+    let dir = fixture();
+    okq(dir.path())
+        .args(["get", "tables/users", "--field", "nonexistent"])
+        .assert()
+        .failure()
+        .code(5);
+}
+
+/// Two keys differing only in case can't be told apart — exit 5 with candidates,
+/// mirroring an ambiguous `--section`.
+#[test]
+fn ambiguous_field_exits_5() {
+    let dir = tempfile::tempdir().unwrap();
+    write(
+        dir.path().join("dup.md"),
+        "---\ntype: note\nStatus: one\nstatus: two\n---\n\n# Dup\n",
+    );
+    okq(dir.path())
+        .args(["get", "dup", "--field", "STATUS"])
+        .assert()
+        .failure()
+        .code(5)
+        .stderr(predicates::str::contains("Status; status"));
+}
+
+/// A concept with no frontmatter has no fields — exit 5, not a panic.
+#[test]
+fn field_on_frontmatterless_concept_exits_5() {
+    let dir = tempfile::tempdir().unwrap();
+    write(dir.path().join("plain.md"), "# Heading\n\nBody.\n");
+    okq(dir.path())
+        .args(["get", "plain", "--field", "status"])
+        .assert()
+        .failure()
+        .code(5);
+}
+
+#[test]
 fn missing_concept_arg_is_usage_error() {
     let dir = fixture();
     okq(dir.path()).arg("get").assert().failure().code(2);

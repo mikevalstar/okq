@@ -835,7 +835,7 @@ checksum = "a62d0093f62dc13edd843f4b27c97af1b4d41147a020432722fa7c722f4da310"
 
 [[package]]
 name = "okq"
-version = "0.5.2"
+version = "0.5.3"
 dependencies = [
  "anstream",
  "anstyle",

@@ -25,7 +25,7 @@ when working in a Markdown-with-frontmatter knowledge base.
 |---|---|
 | `search <query>` | Rank sections by relevance (BM25); returns the most authoritative hit. `"quoted"` = phrase — quote a multi-word query or a keyword-dense note can outrank the real match. `--limit N`. |
 | `find` | Filter concepts by exact predicate: `--tag`, `--type`, `--where field=value`, `--match <text>` (literal substring, every match unranked; `--regex` to treat as regex). Repeatable flags AND (tags/where) or OR (type). |
-| `get <concept>` | Expand one concept. `--section <heading>`, `--frontmatter`, `--body`. |
+| `get <concept>` | Expand one concept. `--section <heading>`, `--field <key>`, `--frontmatter`, `--body`. |
 | `neighbors <concept>` | Adjacent concepts via the link graph. `--depth N`, `--direction in\|out\|both`, `--edge <type>`. |
 | `backlinks <concept>` | Concepts that link *to* this one (graph edges only — use `find --match` for plain-text mentions). |
 | `path <from> <to>` | Shortest link path between two concepts. `--undirected`. |
