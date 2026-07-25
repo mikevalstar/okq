@@ -1,8 +1,9 @@
 //! `okq get` — expand one concept on demand.
 //!
 //! Resolves a concept by identity (path-minus-`.md`, or a `.md` path), then
-//! emits the selected parts — frontmatter and/or body, or a single section —
-//! as human text or the `okq.get/v1` JSON envelope. See `docs/features/get.md`.
+//! emits the selected parts — frontmatter and/or body, or a single section or
+//! frontmatter field — as human text or the `okq.get/v1` JSON envelope. See
+//! `docs/features/get.md`.
 
 use std::path::Path;
 
@@ -36,7 +37,8 @@ pub struct GetOutput {
     pub type_: Option<String>,
     /// The concept's title: the frontmatter `title`, or the filename if none.
     pub title: String,
-    /// Full frontmatter (well-known keys + producer extensions). Omitted unless requested.
+    /// Frontmatter (well-known keys + producer extensions), narrowed to the one
+    /// key named by `--field` if given. Omitted unless requested.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub frontmatter: Option<serde_json::Value>,
     /// Full body markdown. Omitted unless requested.
@@ -79,8 +81,10 @@ impl From<&Section> for SectionOut {
 pub struct Got {
     /// The JSON envelope.
     pub output: GetOutput,
-    /// Frontmatter rendered as YAML, present iff frontmatter was requested.
+    /// Frontmatter rendered as YAML, present iff whole frontmatter was requested.
     pub frontmatter_yaml: Option<String>,
+    /// The selected field's value, rendered bare. Present only with `--field`.
+    pub field_yaml: Option<String>,
 }
 
 /// Runs `get` against the bundle at `bundle_dir`.
@@ -101,9 +105,17 @@ pub fn run(bundle_dir: &Path, args: &GetArgs, no_ignore: bool) -> Result<Got, Ap
     let body = &concept.document.body;
 
     // Selectors are additive; with none, default to frontmatter + full body.
-    let any_selector = args.frontmatter || args.body || args.section.is_some();
-    let want_frontmatter = args.frontmatter || !any_selector;
+    let any_selector =
+        args.frontmatter || args.body || args.section.is_some() || args.field.is_some();
+    // `--field` narrows the frontmatter surface to the one key it names, so it
+    // suppresses the whole-frontmatter rendering the way `--section` does the body.
+    let want_frontmatter = args.field.is_none() && (args.frontmatter || !any_selector);
     let want_body = args.body || !any_selector;
+
+    let field = match &args.field {
+        Some(query) => Some(select_field(frontmatter.as_mapping(), query, &path)?),
+        None => None,
+    };
 
     let sections = match &args.section {
         Some(query) => {
@@ -115,13 +127,25 @@ pub fn run(bundle_dir: &Path, args: &GetArgs, no_ignore: bool) -> Result<Got, Ap
         None => None,
     };
 
-    let frontmatter_json =
-        want_frontmatter.then(|| yaml_json::mapping_to_json(frontmatter.as_mapping()));
+    let frontmatter_json = match &field {
+        Some((key, value)) => {
+            let mut obj = serde_json::Map::new();
+            obj.insert(key.clone(), yaml_json::yaml_to_json(value));
+            Some(serde_json::Value::Object(obj))
+        }
+        None => want_frontmatter.then(|| yaml_json::mapping_to_json(frontmatter.as_mapping())),
+    };
     let frontmatter_yaml = want_frontmatter.then(|| {
         Value::Mapping(frontmatter.as_mapping().clone())
             .to_yaml_string()
             .trim_end()
             .to_string()
+    });
+    // A string field prints verbatim (so `--field title` is pipe-safe); anything
+    // else prints as YAML (a list as `- item` lines, a map as `key: value`).
+    let field_yaml = field.as_ref().map(|(_, value)| match value.as_str() {
+        Some(s) => s.to_string(),
+        None => value.to_yaml_string().trim_end().to_string(),
     });
 
     Ok(Got {
@@ -137,7 +161,46 @@ pub fn run(bundle_dir: &Path, args: &GetArgs, no_ignore: bool) -> Result<Got, Ap
             sections,
         },
         frontmatter_yaml,
+        field_yaml,
     })
+}
+
+/// Selects the one frontmatter key matching `query` by exact name, or
+/// case-insensitively with `-` and `_` treated as equivalent (`depends-on` ↔
+/// `depends_on`); zero or multiple matches are errors (exit 5).
+fn select_field<'a>(
+    mapping: &'a okf::Mapping,
+    query: &str,
+    concept: &str,
+) -> Result<(String, &'a Value), AppError> {
+    let q_norm = normalize_key(query);
+    let matches: Vec<(String, &Value)> = mapping
+        .iter()
+        .filter_map(|(k, v)| k.as_str().map(|k| (k.to_string(), v)))
+        .filter(|(k, _)| k == query || normalize_key(k) == q_norm)
+        .collect();
+
+    match matches.len() {
+        0 => Err(AppError::FieldNotFound {
+            concept: concept.to_string(),
+            query: query.to_string(),
+        }),
+        1 => Ok(matches
+            .into_iter()
+            .next()
+            .expect("length checked to be exactly one")),
+        _ => Err(AppError::FieldAmbiguous {
+            concept: concept.to_string(),
+            query: query.to_string(),
+            candidates: matches.into_iter().map(|(k, _)| k).collect(),
+        }),
+    }
+}
+
+/// Normalizes a frontmatter key for lenient matching: lowercased, with `_`
+/// folded to `-`.
+fn normalize_key(key: &str) -> String {
+    key.to_lowercase().replace('_', "-")
 }
 
 /// Selects the one section matching `query` by case-insensitive heading text or
@@ -191,6 +254,9 @@ pub fn render_human(w: &mut impl std::io::Write, got: &Got, no_color: bool) -> s
 
     if let Some(fm) = &got.frontmatter_yaml {
         writeln!(w, "---\n{fm}\n---")?;
+    }
+    if let Some(field) = &got.field_yaml {
+        writeln!(w, "{field}")?;
     }
     if let Some(body) = &got.output.body {
         writeln!(w, "\n{}", body.trim_end())?;

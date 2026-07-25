@@ -29,6 +29,9 @@ Options:
       --section <HEADING>
           Print only the named section (matched by heading text or slug)
 
+      --field <FIELD>
+          Print only the named frontmatter field's value (matched by key name)
+
       --no-ignore
           Ignore all .okqignore files; query the full tree, nothing excluded
 
@@ -44,3 +47,6 @@ Examples:
 
   # Only the frontmatter, as JSON
   okq get features/get --frontmatter --json
+
+  # Only one frontmatter field's value — script-friendly
+  okq get features/get --field status

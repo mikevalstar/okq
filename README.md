@@ -39,6 +39,9 @@ okq find --type adr --tag security
 # read one concept, or a single section of it
 okq get adrs/0002-library-stack --section Decision
 
+# read one frontmatter field's value
+okq get adrs/0002-library-stack --field status
+
 # follow the links
 okq neighbors adrs/0002-library-stack
 okq backlinks features/search
@@ -102,7 +105,7 @@ Then invoke one with `/okq-explore`, `/okq-write-okf`, or `/okq-maintain`; `okq-
 |---------|--------------|
 | `okq search <query>` | Ranked full-text search over section text (BM25). |
 | `okq find` | Filter concepts by `--tag`, `--type`, `--where field=value`, `--match` (`--regex`). |
-| `okq get <concept>` | Print a concept's frontmatter and/or body, or one `--section`. |
+| `okq get <concept>` | Print a concept's frontmatter and/or body, or one `--section` or `--field`. |
 | `okq neighbors <concept>` | Adjacent concepts via the link graph (`--depth`, `--direction`, `--edge`). |
 | `okq backlinks <concept>` | Concepts that link to this one. |
 | `okq path <a> <b>` | Shortest link path between two concepts (`--undirected`). |

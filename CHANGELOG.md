@@ -11,6 +11,18 @@ attaches prebuilt binaries to the GitHub Release.
 
 ## [Unreleased]
 
+## [0.5.3] — 2026-07-25
+
+### Added
+
+- `okq get <concept> --field <FIELD>` reads a single frontmatter field, the
+  counterpart to `--section` for the frontmatter surface. Human output is the
+  bare value (a string verbatim, so `$(okq get x --field title)` is pipe-safe;
+  anything else as YAML); `--json` narrows the envelope's `frontmatter` object to
+  that one key. Keys match case-insensitively with `-`/`_` treated as equivalent
+  (`depends-on` ↔ `DEPENDS_ON`). A missing or ambiguous field exits **5**, the
+  same code `--section` uses for the analogous cases (ADR-0004).
+
 ## [0.5.2] — 2026-07-25
 
 A dependency-maintenance release; no behaviour changes.
