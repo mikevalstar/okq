@@ -20,7 +20,7 @@ pub mod exit {
     pub const CHECK_FAILED: i32 = 3;
     /// Concept not found / not resolvable.
     pub const NOT_FOUND: i32 = 4;
-    /// Section not found / ambiguous within a resolved concept.
+    /// Section or frontmatter field not found / ambiguous within a resolved concept.
     pub const SECTION: i32 = 5;
 }
 
@@ -71,6 +71,22 @@ pub enum AppError {
         /// The matching headings, with their locations.
         candidates: Vec<String>,
     },
+    /// `--field` matched no frontmatter key in the resolved concept.
+    FieldNotFound {
+        /// The concept that was searched.
+        concept: String,
+        /// The requested field name.
+        query: String,
+    },
+    /// `--field` matched more than one frontmatter key.
+    FieldAmbiguous {
+        /// The concept that was searched.
+        concept: String,
+        /// The requested field name.
+        query: String,
+        /// The matching keys, as written in the frontmatter.
+        candidates: Vec<String>,
+    },
 }
 
 impl AppError {
@@ -82,7 +98,10 @@ impl AppError {
             AppError::InvalidConcept { .. }
             | AppError::ConceptNotFound { .. }
             | AppError::ConceptAmbiguous { .. } => exit::NOT_FOUND,
-            AppError::SectionNotFound { .. } | AppError::SectionAmbiguous { .. } => exit::SECTION,
+            AppError::SectionNotFound { .. }
+            | AppError::SectionAmbiguous { .. }
+            | AppError::FieldNotFound { .. }
+            | AppError::FieldAmbiguous { .. } => exit::SECTION,
         }
     }
 }
@@ -115,6 +134,18 @@ impl fmt::Display for AppError {
             } => write!(
                 f,
                 "section {query:?} is ambiguous in concept {concept:?}; candidates: {}",
+                candidates.join("; ")
+            ),
+            AppError::FieldNotFound { concept, query } => {
+                write!(f, "no frontmatter field {query:?} in concept {concept:?}")
+            }
+            AppError::FieldAmbiguous {
+                concept,
+                query,
+                candidates,
+            } => write!(
+                f,
+                "frontmatter field {query:?} is ambiguous in concept {concept:?}; candidates: {}",
                 candidates.join("; ")
             ),
         }

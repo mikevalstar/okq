@@ -3,7 +3,7 @@ type: feature
 title: okq get — expand one concept on demand
 status: active # draft | accepted | active | deprecated
 created: 2026-06-26
-updated: 2026-06-26
+updated: 2026-07-25
 tags: [cli, get, retrieval, json, sections, identity]
 milestone: M1
 command: "okq get"
@@ -27,7 +27,7 @@ The token-frugal contract (PLAN.md §3) says discovery commands return ranked `p
 ### In scope
 
 - Resolve **one** concept by its identity and print it.
-- Selectors: whole concept (default), `--frontmatter` only, `--body` only, `--section <heading>` only.
+- Selectors: whole concept (default), `--frontmatter` only, `--body` only, `--section <heading>` only, `--field <field>` (one frontmatter field) only.
 - Human output (default) and `--json` (one structured document on stdout).
 - `path:line` reporting for the concept and for the selected section.
 - Works on a conformant OKF bundle **and** on an OKF-*shaped* tree (any Markdown-with-frontmatter file), per the format-tolerance principle.
@@ -64,15 +64,17 @@ okq get tables/users --frontmatter   # frontmatter only
 okq get tables/users --body          # body only (no frontmatter)
 okq get tables/users --section "Schema"   # just the "Schema" section
 okq get tables/users --section schema --json
+okq get tables/users --field status        # just the `status` frontmatter value
 ```
 
-- **Selectors** (`--frontmatter`, `--body`, `--section`) are additive: if none are given, the default is **frontmatter + full body**. If any are given, only the requested parts are emitted. `--section` implies a body subset and may be combined with `--frontmatter`.
+- **Selectors** (`--frontmatter`, `--body`, `--section`, `--field`) are additive: if none are given, the default is **frontmatter + full body**. If any are given, only the requested parts are emitted. `--section` implies a body subset and may be combined with `--frontmatter`; `--field` is the frontmatter counterpart — it *narrows* the frontmatter surface, so it wins over `--frontmatter` rather than adding to it.
 - **`--section <heading>`** matches a heading by its text, **case-insensitively**, and also accepts a **slugified** form (`"Open questions"` ↔ `open-questions`). A section spans from its heading to the next heading of the same or higher level. Ambiguous matches (same heading text twice) are an error that lists the candidates with their `path:line`; no match is a distinct not-found (see exit codes).
+- **`--field <field>`** matches a frontmatter key by its exact name, or **case-insensitively with `-` and `_` treated as equivalent** (`depends-on` ↔ `DEPENDS_ON`) — the lenient second form that `--section`'s slug is for headings. Zero matches, or two keys distinguishable only by case, are errors on the same footing as an ambiguous `--section` (see exit codes). Human output is the **bare value** — a string verbatim (so `$(okq get x --field title)` is pipe-safe), anything else as YAML (a list as `- item` lines).
 - **Global flags** (shared across okq): `--bundle <dir>`, `--json`, `--no-color`. `get` honors the agent-runnable contract — it is fully non-interactive and never prompts.
 
 ### Output
 
-**Human (default):** the concept's source Markdown for the selected parts, preceded by a one-line `path:line` header so the location is always visible. Frontmatter is shown as-is (YAML). Color (heading/path emphasis) honors `--no-color`/`NO_COLOR`/non-TTY.
+**Human (default):** the concept's source Markdown for the selected parts, preceded by a one-line `path:line` header so the location is always visible. Frontmatter is shown as-is (YAML); a single `--field` is shown as its bare value, with no `---` fence. Color (heading/path emphasis) honors `--no-color`/`NO_COLOR`/non-TTY.
 
 **`--json`:** exactly one JSON document on stdout (logs/errors to stderr), carrying a versioned schema tag. Shape (illustrative):
 
@@ -91,7 +93,7 @@ okq get tables/users --section schema --json
 }
 ```
 
-- With `--frontmatter`, `sections`/`body` are omitted; with `--body`/`--section`, `frontmatter` is omitted; `--section` returns a single-element `sections` array.
+- With `--frontmatter`, `sections`/`body` are omitted; with `--body`/`--section`, `frontmatter` is omitted; `--section` returns a single-element `sections` array. `--field` reuses the `frontmatter` object, narrowed to the one selected key (`"frontmatter": {"status": "accepted"}`) — no new key, so the envelope shape is unchanged and `.frontmatter.status` reads the same either way.
 - `id`/`type`/`title`/`path`/`line` form the **shared concept envelope** reused by every other command's shortlist records — `get` is where its schema is fixed (and `schemars`-derived).
 
 ### Exit codes
@@ -101,7 +103,7 @@ okq get tables/users --section schema --json
 | 0 | Success — concept (and section, if requested) found and emitted |
 | 2 | Usage error (missing/invalid args) — clap-level |
 | 4 | Concept not found / not resolvable |
-| 5 | `--section` heading not found (or ambiguous) within a resolved concept |
+| 5 | `--section` heading, or `--field` frontmatter key, not found (or ambiguous) within a resolved concept |
 
 Codes 4/5 are distinct so a script/agent can tell "no such doc" from "doc exists, no such section." (This taxonomy is shared across commands — see Open questions / it likely graduates to an ADR.)
 
@@ -119,6 +121,7 @@ These are settled here once and inherited by `find`, `search`, and the graph com
 - [ ] `okq get <id>` resolves by concept ID and by `.md` path form, relative to `--bundle`.
 - [ ] Default output is frontmatter + full body with a `path:line` header.
 - [ ] `--frontmatter`, `--body`, `--section` each emit exactly their subset; combos behave as specified.
+- [x] `--field` emits one frontmatter field's bare value (narrowed `frontmatter` object under `--json`); lenient key matching; missing/ambiguous → exit 5.
 - [ ] `--section` matches by case-insensitive heading text and by slug; ambiguous → exit 5 listing candidates; missing → exit 5.
 - [ ] `--json` emits exactly one document on stdout with `schema: "okq.get/v1"` and the shared envelope; logs/errors go to stderr.
 - [ ] Reserved `index.md`/`log.md` are not concept-addressable (exit 4).

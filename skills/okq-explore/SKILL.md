@@ -29,7 +29,7 @@ relevant concepts, read only what you need, and follow the link graph. See the
 
 3. **Read on demand** — never the whole file:
    - One section: `okq get <id> --section "<heading>"`
-   - Just metadata: `okq get <id> --frontmatter`
+   - Just metadata: `okq get <id> --frontmatter` (one field: `okq get <id> --field status`)
 
 4. **Follow the graph** to find what `search` missed by vocabulary:
    - `okq neighbors <id>` (add `--depth 2`, `--direction in|out`, `--edge related`)

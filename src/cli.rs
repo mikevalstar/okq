@@ -54,7 +54,10 @@ Examples:
   okq get adrs/0002-library-stack --section Decision
 
   # Only the frontmatter, as JSON
-  okq get features/get --frontmatter --json";
+  okq get features/get --frontmatter --json
+
+  # Only one frontmatter field's value — script-friendly
+  okq get features/get --field status";
 
 const FIND_EXAMPLES: &str = "\
 Examples:
@@ -506,6 +509,10 @@ pub struct GetArgs {
     /// Print only the named section (matched by heading text or slug).
     #[arg(long, value_name = "HEADING")]
     pub section: Option<String>,
+
+    /// Print only the named frontmatter field's value (matched by key name).
+    #[arg(long, value_name = "FIELD")]
+    pub field: Option<String>,
 }
 
 /// Arguments for `okq find`.

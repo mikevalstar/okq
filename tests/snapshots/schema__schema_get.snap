@@ -54,7 +54,7 @@ expression: "stdout(&[\"schema\", \"get\"])"
       ]
     },
     "frontmatter": {
-      "description": "Full frontmatter (well-known keys + producer extensions). Omitted unless requested."
+      "description": "Frontmatter (well-known keys + producer extensions), narrowed to the one\nkey named by `--field` if given. Omitted unless requested."
     },
     "id": {
       "description": "The concept id (path minus `.md`).",

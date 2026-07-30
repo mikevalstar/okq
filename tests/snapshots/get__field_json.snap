@@ -1,0 +1,15 @@
+---
+source: tests/get.rs
+expression: out
+---
+{
+  "schema": "okq.get/v1",
+  "id": "tables/users",
+  "path": "tables/users.md",
+  "line": 1,
+  "type": "table",
+  "title": "Users",
+  "frontmatter": {
+    "description": "The users table."
+  }
+}
