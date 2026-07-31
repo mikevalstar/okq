@@ -11,7 +11,7 @@ attaches prebuilt binaries to the GitHub Release.
 
 ## [Unreleased]
 
-## [0.5.3] — 2026-07-25
+## [0.6.0] — 2026-07-31
 
 ### Added
 
@@ -260,7 +260,8 @@ dogfooded against this repo's own `docs/` bundle.
   taxonomy ([ADR-0004](docs/adrs/0004-exit-code-taxonomy.md)), and token-frugal
   `path:line` output.
 
-[Unreleased]: https://github.com/mikevalstar/okq/compare/v0.5.2...HEAD
+[Unreleased]: https://github.com/mikevalstar/okq/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/mikevalstar/okq/compare/v0.5.2...v0.6.0
 [0.5.2]: https://github.com/mikevalstar/okq/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/mikevalstar/okq/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/mikevalstar/okq/compare/v0.4.0...v0.5.0
