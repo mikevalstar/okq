@@ -240,17 +240,24 @@ pub fn to_json(got: &Got) -> String {
 }
 
 /// Writes the human-readable rendering to `w`. Color is applied unless `no_color`.
+///
+/// Every selector prints a leading `path:line` header so the location is always
+/// visible — except `--field`, whose whole point is to yield one value. Emitting
+/// the header there would put a second line on stdout and break
+/// `$(okq get x --field title)`; the location stays available via `--json`.
 pub fn render_human(w: &mut impl std::io::Write, got: &Got, no_color: bool) -> std::io::Result<()> {
     let header = if no_color {
         anstyle::Style::new()
     } else {
         anstyle::Style::new().bold()
     };
-    writeln!(
-        w,
-        "{header}{}:{}{header:#}",
-        got.output.path, got.output.line
-    )?;
+    if got.field_yaml.is_none() {
+        writeln!(
+            w,
+            "{header}{}:{}{header:#}",
+            got.output.path, got.output.line
+        )?;
+    }
 
     if let Some(fm) = &got.frontmatter_yaml {
         writeln!(w, "---\n{fm}\n---")?;

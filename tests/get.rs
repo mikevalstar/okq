@@ -252,7 +252,11 @@ fn field_prints_bare_value() {
             .assert()
             .success(),
     );
-    assert!(out.ends_with("Users\n"), "bare scalar value: {out:?}");
+    // Exact equality, not `ends_with`: the whole point of `--field` is that
+    // stdout holds the value and nothing else, so `$(okq get x --field title)`
+    // captures it cleanly. A leading `path:line` header would satisfy a
+    // suffix check while still breaking every caller.
+    assert_eq!(out, "Users\n", "stdout is the bare value alone");
     assert!(!out.contains("---"), "no frontmatter fence");
     assert!(!out.contains("## Schema"), "no body");
 
@@ -263,6 +267,45 @@ fn field_prints_bare_value() {
             .success(),
     );
     assert!(tags.contains("- pii"), "sequence as YAML: {tags:?}");
+}
+
+/// `--field` suppresses the `path:line` header that every other selector
+/// prints. The location is still reachable via `--json`.
+#[test]
+fn field_omits_the_path_line_header() {
+    let dir = fixture();
+    let field = stdout(
+        okq(dir.path())
+            .args(["get", "tables/users", "--field", "title"])
+            .assert()
+            .success(),
+    );
+    assert!(
+        !field.contains("tables/users.md:"),
+        "no location header with --field: {field:?}"
+    );
+
+    // ...but the default view still carries it, so this is a --field-only
+    // narrowing rather than a change to `get`'s human output at large.
+    let whole = stdout(
+        okq(dir.path())
+            .args(["get", "tables/users"])
+            .assert()
+            .success(),
+    );
+    assert!(
+        whole.contains("tables/users.md:"),
+        "default view keeps the header: {whole:?}"
+    );
+
+    // The location remains available in the structured view.
+    let json = stdout(
+        okq(dir.path())
+            .args(["get", "tables/users", "--field", "title", "--json"])
+            .assert()
+            .success(),
+    );
+    assert!(json.contains("\"path\""), "--json still reports path/line");
 }
 
 /// Keys match case-insensitively, with `-`/`_` treated as equivalent.

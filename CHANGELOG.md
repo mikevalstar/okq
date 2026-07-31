@@ -11,15 +11,28 @@ attaches prebuilt binaries to the GitHub Release.
 
 ## [Unreleased]
 
+## [0.6.1] — 2026-07-31
+
+### Fixed
+
+- `okq get --field <FIELD>` no longer prints the `path:line` header above the
+  value. It was going to **stdout**, so `$(okq get x --field title)` captured
+  two lines and not the value — the opposite of what 0.6.0 advertised. `--field`
+  is now the one selector that omits the header; every other view keeps it, and
+  `--json` still reports `path`/`line` when you want the value *and* its
+  location. The regression test asserted with `ends_with`, which a leading
+  header satisfies; it now asserts stdout exactly.
+
 ## [0.6.0] — 2026-07-31
 
 ### Added
 
 - `okq get <concept> --field <FIELD>` reads a single frontmatter field, the
   counterpart to `--section` for the frontmatter surface. Human output is the
-  bare value (a string verbatim, so `$(okq get x --field title)` is pipe-safe;
-  anything else as YAML); `--json` narrows the envelope's `frontmatter` object to
-  that one key. Keys match case-insensitively with `-`/`_` treated as equivalent
+  bare value (a string verbatim; anything else as YAML); `--json` narrows the
+  envelope's `frontmatter` object to that one key. **Note:** this release also
+  printed a `path:line` header to stdout, so the bare value was not in fact
+  pipe-safe as described here — fixed in 0.6.1. Keys match case-insensitively with `-`/`_` treated as equivalent
   (`depends-on` ↔ `DEPENDS_ON`). A missing or ambiguous field exits **5**, the
   same code `--section` uses for the analogous cases (ADR-0004).
 
@@ -260,7 +273,8 @@ dogfooded against this repo's own `docs/` bundle.
   taxonomy ([ADR-0004](docs/adrs/0004-exit-code-taxonomy.md)), and token-frugal
   `path:line` output.
 
-[Unreleased]: https://github.com/mikevalstar/okq/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/mikevalstar/okq/compare/v0.6.1...HEAD
+[0.6.1]: https://github.com/mikevalstar/okq/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/mikevalstar/okq/compare/v0.5.2...v0.6.0
 [0.5.2]: https://github.com/mikevalstar/okq/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/mikevalstar/okq/compare/v0.5.0...v0.5.1
