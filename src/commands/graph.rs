@@ -193,7 +193,7 @@ pub fn orphans(
         .orphans(corpus.bundle(), corpus.hidden())
         .iter()
         .filter_map(|id| corpus.get(id))
-        .map(|c| ConceptRecord::from_concept(corpus.bundle(), c))
+        .map(|c| ConceptRecord::from_concept(corpus.bundle(), c, okf::Date::today_utc()))
         .collect();
     Ok(OrphansOutput {
         schema: "okq.orphans/v1",
@@ -264,7 +264,7 @@ fn direction(arg: DirectionArg) -> Direction {
 fn record(bundle: &Bundle, id: &ConceptId) -> ConceptRecord {
     bundle
         .get(id)
-        .map(|c| ConceptRecord::from_concept(bundle, c))
+        .map(|c| ConceptRecord::from_concept(bundle, c, okf::Date::today_utc()))
         .unwrap_or_else(|| ConceptRecord {
             id: id.to_string(),
             type_: None,
@@ -272,6 +272,8 @@ fn record(bundle: &Bundle, id: &ConceptId) -> ConceptRecord {
             path: id.to_string(),
             line: 1,
             tags: Vec::new(),
+            // A phantom target has no document, so nothing to derive from.
+            trust: crate::trust::ConceptTrust::default(),
         })
 }
 

@@ -41,6 +41,12 @@ pub struct StatsOutput {
     pub types: BTreeMap<String, usize>,
     /// Count of concepts by tag.
     pub tags: BTreeMap<String, usize>,
+    /// Count of concepts by derived trust tier. Every concept is counted:
+    /// one with no `verified` key is `unverified` (`docs/features/trust.md`).
+    pub trust: BTreeMap<String, usize>,
+    /// Count of concepts by lifecycle `status`; an absent key counts as
+    /// `stable`.
+    pub statuses: BTreeMap<String, usize>,
     /// Count of edges by kind.
     pub edge_types: BTreeMap<String, usize>,
     /// The most linked-to concepts (in-degree desc, id tie-break), capped by `--top`.
@@ -78,10 +84,11 @@ pub fn run(bundle_dir: &Path, args: &StatsArgs, no_ignore: bool) -> Result<Stats
 
     let mut types: BTreeMap<String, usize> = BTreeMap::new();
     let mut tags: BTreeMap<String, usize> = BTreeMap::new();
+    let mut trust: BTreeMap<String, usize> = BTreeMap::new();
+    let mut statuses: BTreeMap<String, usize> = BTreeMap::new();
     for c in corpus.concepts() {
-        let type_ = c
-            .document
-            .frontmatter
+        let fm = &c.document.frontmatter;
+        let type_ = fm
             .type_()
             .map(|t| t.into_owned())
             .unwrap_or_else(|| "(untyped)".to_string());
@@ -89,6 +96,13 @@ pub fn run(bundle_dir: &Path, args: &StatsArgs, no_ignore: bool) -> Result<Stats
         for tag in crate::model::concept_tags(c) {
             *tags.entry(tag).or_insert(0) += 1;
         }
+        // Both distributions count every concept, defaults included, so the
+        // totals add up to `concepts` and a bundle that ignores trust
+        // frontmatter reads as "all unverified, all stable" rather than empty.
+        *trust
+            .entry(crate::trust::tier_name(fm.trust_tier()).to_string())
+            .or_insert(0) += 1;
+        *statuses.entry(fm.status().to_string()).or_insert(0) += 1;
     }
 
     let mut ranked: Vec<Hub> = corpus
@@ -127,6 +141,8 @@ pub fn run(bundle_dir: &Path, args: &StatsArgs, no_ignore: bool) -> Result<Stats
             .filter(|(path, _)| !corpus.ignore().is_ignored(path))
             .count(),
         types,
+        trust,
+        statuses,
         tags,
         edge_types: graph.edge_kind_counts(),
         hubs: ranked,
@@ -183,6 +199,8 @@ pub fn render_human(
     writeln!(w, "Types:  {}", distribution(&out.types, 0))?;
     writeln!(w, "Edges:  {}", distribution(&out.edge_types, 0))?;
     writeln!(w, "Tags:   {}", distribution(&out.tags, top))?;
+    writeln!(w, "Trust:  {}", distribution(&out.trust, 0))?;
+    writeln!(w, "Status: {}", distribution(&out.statuses, 0))?;
 
     if !out.hubs.is_empty() {
         writeln!(w, "\nHubs (most linked-to):")?;

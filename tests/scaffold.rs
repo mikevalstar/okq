@@ -127,7 +127,11 @@ fn new_adr_auto_numbers_and_prints_path() {
     let content = fs::read_to_string(path.trim()).unwrap();
     assert!(content.contains("type: adr"));
     assert!(content.contains("title: Adopt Tantivy"));
-    assert!(content.contains("timestamp:"));
+    // v0.2 trust keys, not the superseded v0.1 `timestamp` that lint flags
+    // (L5) — a scaffolded doc must pass okq's own lint (features/trust.md).
+    assert!(content.contains("status: draft"));
+    assert!(content.contains("generated: { by: okq/"));
+    assert!(!content.contains("timestamp:"));
 
     // The next one increments.
     let path3 = stdout(

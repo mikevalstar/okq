@@ -111,8 +111,11 @@ okq new adr                              # title omitted -> prompts? no — see 
 - **Placement & naming:** `adr` → `adrs/NNNN-<slug>.md`, **auto-numbered** from the
   existing highest ADR; `feature` → `features/<slug>.md`. `<slug>` is the slugified
   title.
-- **Frontmatter pre-filled** to OKF conventions: `type`, `title`, `description`
-  (placeholder), `tags: []`, `timestamp` (today, ISO-8601), plus a body skeleton
+- **Frontmatter pre-filled** to OKF v0.2 conventions: `type`, `title`,
+  `description` (placeholder), `tags: []`, `status: draft`, and
+  `generated: { by: okq/<version>, at: <today> }` — the §7 agent form, recording
+  okq honestly as the writer of the stub. The v0.1 `timestamp` key is **not**
+  emitted: v0.2 supersedes it and okq's own [lint](lint.md) flags it (L5). Plus a body skeleton
   appropriate to the type (ADR: Status/Context/Decision/Consequences; feature:
   Summary/Motivation/Scope/…).
 - Prints the path of the created file to stdout (so it's pipeable: `$(okq new …)`).
@@ -145,7 +148,7 @@ creating only what's missing and refreshing the README block.
   markers without altering the rest; re-running is idempotent.
 - [ ] `okq init` never overwrites an existing concept.
 - [ ] `okq new adr "<title>"` creates an auto-numbered `adrs/NNNN-<slug>.md` with
-  OKF frontmatter (`type: adr`, title, timestamp) and a body skeleton; prints the path.
+  OKF frontmatter (`type: adr`, title, `status`, `generated`) and a body skeleton; prints the path.
 - [ ] `okq new feature "<title>"` creates `features/<slug>.md` similarly.
 - [ ] `okq new <unknown-type>` → exit 2 listing known types; missing title → exit 2.
 - [ ] Created docs pass okq's own load (no parse errors) and appear in `find`/`search`.
@@ -156,9 +159,11 @@ creating only what's missing and refreshing the README block.
 - **index.md generation** — `init` seeds `index.md` listings, but they go stale as
   docs are added. A dedicated `okq index` (generate/synthesize OKF directory
   listings) is the natural companion — in M3.5 or later? (Distinct from `okq schema`.)
-- **`timestamp` source** — `new` fills today's date; needs a date source (a small
-  `time`/`jiff` dep, or compute from `SystemTime`). Authoring may use the clock —
-  the determinism principle binds queries, not writes.
+- **A scaffolded bundle isn't lint-clean until `okq index` runs.** `init` seeds
+  `index.md` files but doesn't populate their listings, so a fresh bundle trips
+  [lint](lint.md) L16 (index out of sync) and L15 (the concepts read as orphans);
+  both clear after `okq index`. Having `init` generate the listings itself would
+  fix it, at the cost of changing `init`'s report shape. Worth doing.
 - **Template override** — embedded-only for v1; when/how to honor `.okq/templates/`,
   and keeping `new`'s output in lockstep with the OKF version (PLAN.md §8).
 - **Type→folder mapping** — fixed (`adr`→`adrs/`, `feature`→`features/`) vs.

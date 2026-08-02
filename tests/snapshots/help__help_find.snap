@@ -34,6 +34,18 @@ Options:
       --regex
           Treat `--match` as a regular expression instead of a literal substring
 
+      --status <STATUS>
+          Require this lifecycle `status` (repeatable; any matches — OR)
+
+      --trust <TIER>
+          Require this derived trust tier (repeatable; any matches — OR)
+
+      --stale
+          Keep only concepts past their `stale_after` date
+
+      --today <YYYY-MM-DD>
+          Evaluate staleness against this ISO date instead of today (reproducible)
+
   -h, --help
           Print help (see a summary with '-h')
 

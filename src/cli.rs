@@ -167,6 +167,29 @@ Examples:
   # Include info-level findings (e.g. unresolved links), as JSON
   okq validate --severity info --json";
 
+const LINT_EXAMPLES: &str = "\
+Examples:
+  # Every hygiene finding (warnings and info)
+  okq lint
+
+  # Fail CI if anything is found
+  okq lint --check
+
+  # Drop the info-level rules (unverified, draft, self-link)
+  okq lint --severity warning
+
+  # Only the orphan and stale-index rules
+  okq lint --rule L15 --rule L16
+
+  # Everything except \"no verified events\" and \"status: draft\"
+  okq lint --ignore L4 --ignore L12
+
+  # Reproducible staleness, as JSON
+  okq lint --today 2026-08-02 --json
+
+Lint is an opinion, not conformance: it never reports an error and never
+changes what `okq validate` calls conformant.";
+
 const INDEX_EXAMPLES: &str = "\
 Examples:
   # Regenerate every directory's index.md listing
@@ -275,6 +298,10 @@ pub enum Command {
     /// Check OKF conformance: report unparseable, untyped, or malformed docs.
     #[command(visible_alias = "doctor", after_help = VALIDATE_EXAMPLES, after_long_help = VALIDATE_EXAMPLES)]
     Validate(ValidateArgs),
+
+    /// Lint bundle hygiene: coded checks beyond conformance (orphans, drift, staleness).
+    #[command(after_help = LINT_EXAMPLES, after_long_help = LINT_EXAMPLES)]
+    Lint(LintArgs),
 
     /// Print the JSON Schema for a command's --json output (the agent contract).
     #[command(after_help = SCHEMA_EXAMPLES, after_long_help = SCHEMA_EXAMPLES)]
@@ -396,14 +423,16 @@ pub struct StatsArgs {
     pub top: usize,
 }
 
-/// Minimum severity to display in `okq validate`.
+/// Minimum severity to display, shared by `okq validate` and `okq lint`. The
+/// wording stays neutral because the two have different defaults and `lint`
+/// never reports an error.
 #[derive(Clone, Copy, Debug, clap::ValueEnum)]
 pub enum SeverityArg {
-    /// Conformance errors only.
+    /// Errors only (`lint` never reports any).
     Error,
-    /// Warnings and errors (default).
+    /// Warnings and errors.
     Warning,
-    /// Everything, including info-level findings (e.g. unresolved links).
+    /// Everything, including info-level findings.
     Info,
 }
 
@@ -417,6 +446,30 @@ pub struct ValidateArgs {
     /// Minimum severity to display.
     #[arg(long, value_enum, default_value_t = SeverityArg::Warning, value_name = "LEVEL")]
     pub severity: SeverityArg,
+}
+
+/// Arguments for `okq lint`.
+#[derive(Args, Debug)]
+pub struct LintArgs {
+    /// Exit 3 if any finding survives the filters. For CI gating.
+    #[arg(long)]
+    pub check: bool,
+
+    /// Minimum severity to display.
+    #[arg(long, value_enum, default_value_t = SeverityArg::Info, value_name = "LEVEL")]
+    pub severity: SeverityArg,
+
+    /// Report only this rule (repeatable, e.g. L15); conflicts with --ignore.
+    #[arg(long, value_name = "CODE")]
+    pub rule: Vec<String>,
+
+    /// Suppress this rule (repeatable, e.g. L4); conflicts with --rule.
+    #[arg(long, value_name = "CODE")]
+    pub ignore: Vec<String>,
+
+    /// Evaluate staleness (L11) against this ISO date instead of today.
+    #[arg(long, value_name = "YYYY-MM-DD")]
+    pub today: Option<String>,
 }
 
 /// Arguments for `okq schema`.
@@ -537,6 +590,22 @@ pub struct FindArgs {
     /// Treat `--match` as a regular expression instead of a literal substring.
     #[arg(long, requires = "match_")]
     pub regex: bool,
+
+    /// Require this lifecycle `status` (repeatable; any matches — OR).
+    #[arg(long, value_name = "STATUS")]
+    pub status: Vec<String>,
+
+    /// Require this derived trust tier (repeatable; any matches — OR).
+    #[arg(long, value_name = "TIER")]
+    pub trust: Vec<String>,
+
+    /// Keep only concepts past their `stale_after` date.
+    #[arg(long)]
+    pub stale: bool,
+
+    /// Evaluate staleness against this ISO date instead of today (reproducible).
+    #[arg(long, value_name = "YYYY-MM-DD")]
+    pub today: Option<String>,
 }
 
 /// Arguments for `okq search`.

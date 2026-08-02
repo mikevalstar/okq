@@ -23,6 +23,7 @@ Commands:
   deadlinks  Links pointing to missing/renamed concepts (inline + frontmatter)
   stats      Bundle overview: counts, distributions, link density, and hubs
   validate   Check OKF conformance: report unparseable, untyped, or malformed docs [alias: doctor]
+  lint       Lint bundle hygiene: coded checks beyond conformance (orphans, drift, staleness)
   schema     Print the JSON Schema for a command's --json output (the agent contract)
   init       Scaffold a new OKF bundle (adrs/ + features/, seed docs, README)
   new        Create one concept from a template (adr | feature)

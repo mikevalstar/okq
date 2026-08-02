@@ -15,7 +15,8 @@ expression: out
       "tags": [
         "rust",
         "lang"
-      ]
+      ],
+      "status": "accepted"
     },
     {
       "id": "adrs/0002-pick-tantivy",
@@ -26,7 +27,8 @@ expression: out
       "tags": [
         "rust",
         "search"
-      ]
+      ],
+      "status": "draft"
     }
   ]
 }

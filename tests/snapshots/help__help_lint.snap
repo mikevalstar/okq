@@ -1,0 +1,67 @@
+---
+source: tests/help.rs
+expression: "help(&[\"lint\", \"--help\"])"
+---
+Lint bundle hygiene: coded checks beyond conformance (orphans, drift, staleness)
+
+Usage: okq lint [OPTIONS]
+
+Options:
+      --bundle <DIR>
+          Bundle directory to query [default: current directory]
+
+      --check
+          Exit 3 if any finding survives the filters. For CI gating
+
+      --json
+          Emit machine-readable JSON on stdout instead of human-readable text
+
+      --severity <LEVEL>
+          Minimum severity to display
+
+          Possible values:
+          - error:   Errors only (`lint` never reports any)
+          - warning: Warnings and errors
+          - info:    Everything, including info-level findings
+          
+          [default: info]
+
+      --no-color
+          Disable colored output (also honors NO_COLOR)
+
+      --rule <CODE>
+          Report only this rule (repeatable, e.g. L15); conflicts with --ignore
+
+      --ignore <CODE>
+          Suppress this rule (repeatable, e.g. L4); conflicts with --rule
+
+      --no-ignore
+          Ignore all .okqignore files; query the full tree, nothing excluded
+
+      --today <YYYY-MM-DD>
+          Evaluate staleness (L11) against this ISO date instead of today
+
+  -h, --help
+          Print help (see a summary with '-h')
+
+Examples:
+  # Every hygiene finding (warnings and info)
+  okq lint
+
+  # Fail CI if anything is found
+  okq lint --check
+
+  # Drop the info-level rules (unverified, draft, self-link)
+  okq lint --severity warning
+
+  # Only the orphan and stale-index rules
+  okq lint --rule L15 --rule L16
+
+  # Everything except "no verified events" and "status: draft"
+  okq lint --ignore L4 --ignore L12
+
+  # Reproducible staleness, as JSON
+  okq lint --today 2026-08-02 --json
+
+Lint is an opinion, not conformance: it never reports an error and never
+changes what `okq validate` calls conformant.

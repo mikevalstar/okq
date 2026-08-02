@@ -24,17 +24,31 @@ when working in a Markdown-with-frontmatter knowledge base.
 | Command | What it does |
 |---|---|
 | `search <query>` | Rank sections by relevance (BM25); returns the most authoritative hit. `"quoted"` = phrase — quote a multi-word query or a keyword-dense note can outrank the real match. `--limit N`. |
-| `find` | Filter concepts by exact predicate: `--tag`, `--type`, `--where field=value`, `--match <text>` (literal substring, every match unranked; `--regex` to treat as regex). Repeatable flags AND (tags/where) or OR (type). |
+| `find` | Filter concepts by exact predicate: `--tag`, `--type`, `--where field=value`, `--match <text>` (literal substring, every match unranked; `--regex` to treat as regex), `--status`, `--trust`, `--stale`. Repeatable flags AND (tags/where) or OR (type/status/trust). |
 | `get <concept>` | Expand one concept. `--section <heading>`, `--field <key>`, `--frontmatter`, `--body`. |
 | `neighbors <concept>` | Adjacent concepts via the link graph. `--depth N`, `--direction in\|out\|both`, `--edge <type>`. |
 | `backlinks <concept>` | Concepts that link *to* this one (graph edges only — use `find --match` for plain-text mentions). |
 | `path <from> <to>` | Shortest link path between two concepts. `--undirected`. |
 | `orphans` | Concepts with no inbound links (stale-doc candidates). `--check`. |
 | `deadlinks` | Links pointing at missing/renamed concepts. `--check`. |
-| `stats` | Bundle overview: counts, distributions, link density, hubs. `--top N`. |
+| `stats` | Bundle overview: counts, distributions (type, tag, trust, status), link density, hubs. `--top N`. |
+| `validate` | OKF conformance: unparseable, untyped, or malformed docs. `--check`, `--severity`. |
+| `lint` | Bundle hygiene beyond conformance, 16 coded rules (L1–L16). `--check`, `--rule`, `--ignore`, `--today`. Never an error, never affects conformance. |
 | `schema <command>` | JSON Schema for a command's `--json` output (the agent contract). |
 | `new <type> [title]` | Create one concept from a template (`adr` \| `feature`). `--list`. |
 | `init` | Scaffold a new OKF bundle (idempotent). |
+
+## Trust & lifecycle
+
+Concept records carry `status` (draft/stable/deprecated), `trust`
+(unverified/machine-confirmed/human-reviewed, **derived** from `verified`), and
+`stale`. Each is **omitted when at its default** — absent `status` means
+`stable`, absent `trust` means `unverified`, absent `stale` means not stale. Do
+not read absence as unknown.
+
+Prefer verified, non-stale sources when assembling context:
+`okq find --trust human-reviewed`. `get` shows the `generated`/`verified` events
+behind the tier.
 
 ## Output discipline
 
@@ -55,7 +69,7 @@ when working in a Markdown-with-frontmatter knowledge base.
 | 0 | success (zero results is success, not an error) |
 | 1 | other (bad bundle, I/O, index) |
 | 2 | usage (bad flag, invalid regex/query) |
-| 3 | `--check` gate tripped (orphans/deadlinks found) — for CI |
+| 3 | `--check` gate tripped (orphans/deadlinks/lint/validate) — for CI |
 | 4 | concept not found / not resolvable |
 | 5 | section not found / ambiguous |
 

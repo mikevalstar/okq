@@ -34,6 +34,8 @@ The Rust suite that drives these lives in [`tests/robustness.rs`](../../tests/ro
 | `headings-in-code-fence.md` | `#` lines inside a code fence | those are not sections |
 | `wikilinks-malformed.md` | unterminated / empty / nested / code-fenced `[[wikilinks]]` | valid; scanner extracts what it can, never panics |
 | `deeply/nested/concept.md` | multi-segment concept id | valid, nested |
+| `trust-shapes.md` | mixed `verified` list (human, process, empty id, non-mapping); unknown `status` | valid; tier `human-reviewed`, status verbatim |
+| `trust-malformed.md` | `generated`/`verified`/`stale_after` all the wrong shape | valid; trust values degrade to defaults |
 
 ## Note on bundle pollution
 

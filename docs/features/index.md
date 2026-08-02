@@ -23,6 +23,7 @@ Copy [`_template.md`](_template.md) to start a new one, or run
 | okq graph navigation — neighbors / backlinks / path / orphans / deadlinks | [graph.md](graph.md) |
 | okq index | [index-command.md](index-command.md) |
 | Inline tags — Obsidian | [inline-tags.md](inline-tags.md) |
+| okq lint — opinionated bundle hygiene beyond conformance | [lint.md](lint.md) |
 | .okqignore — exclude files from a bundle | [okqignore.md](okqignore.md) |
 | Phantom vs broken links — deadlinks that understands Obsidian's unresolved notes | [phantom-links.md](phantom-links.md) |
 | okq init & new — scaffold and author OKF bundles | [scaffold.md](scaffold.md) |
@@ -31,6 +32,7 @@ Copy [`_template.md`](_template.md) to start a new one, or run
 | okq skills (install / list) | [skills-install.md](skills-install.md) |
 | Agent skills (okq-* suite) | [skills.md](skills.md) |
 | okq stats — bundle overview & health metrics | [stats.md](stats.md) |
+| Trust & lifecycle — status, trust tier, and staleness | [trust.md](trust.md) |
 | okq validate (alias doctor) | [validate.md](validate.md) |
 | Wikilinks — Obsidian-style [[links]] as graph edges | [wikilinks.md](wikilinks.md) |
 <!-- okq:index:end -->
