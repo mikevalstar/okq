@@ -207,7 +207,7 @@ fn dispatch(cli: &Cli) -> Result<i32, AppError> {
             Ok(exit::SUCCESS)
         }
         Command::Init(_) => {
-            let report = commands::scaffold::init(&cli.bundle)?;
+            let report = commands::scaffold::init(&cli.bundle, cli.no_ignore)?;
             for action in &report {
                 eprintln!("  {:>7}  {}", action.verb, action.path);
             }
@@ -229,7 +229,11 @@ fn dispatch(cli: &Cli) -> Result<i32, AppError> {
                 AppError::Usage(format!("a title is required: okq new {type_} \"<title>\""))
             })?;
             let path = commands::scaffold::new(&cli.bundle, type_, title)?;
+            // stdout stays the path alone (pipeable); the nudge goes to stderr.
+            // `new` deliberately doesn't rewrite index.md itself — writing files
+            // the caller didn't name is a surprise in a scripted context.
             println!("{}", path.display());
+            eprintln!("Run `okq index` to add it to the directory listing.");
             Ok(exit::SUCCESS)
         }
         Command::Skills(args) => match &args.action {

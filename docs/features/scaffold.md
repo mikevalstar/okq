@@ -14,7 +14,7 @@ related: ["get.md", "stats.md", "../adrs/0001-documentation-first-okf-shaped.md"
 
 ## Summary
 
-`okq init` scaffolds a minimal, **OKF v0.1-conformant** bundle in a directory;
+`okq init` scaffolds a minimal, **OKF v0.2-conformant** bundle in a directory;
 `okq new <type> [title]` adds one concept from an embedded template with
 frontmatter pre-filled. Together they close the loop — okq can now *create* the
 bundles it queries — and they lower the adoption barrier by answering "what does
@@ -48,13 +48,19 @@ Scaffolds into `--bundle <dir>` (default: cwd), creating only absent files:
 ```
 <bundle>/
 ├── README.md          # base README, or okq section injected into an existing one
-├── index.md           # root listing + `okf_version: "0.1"` (OKF §6/§11)
+├── index.md           # root listing + `okf_version: "0.2"` (OKF §6/§11)
 ├── adrs/
 │   ├── index.md        # "Architecture Decision Records" directory listing
 │   └── 0001-record-architecture-decisions.md   # canonical seed ADR
 └── features/
     └── index.md        # "Features" directory listing
 ```
+
+`init` finishes by generating the `index.md` listings (the same work `okq index`
+does), so what it leaves behind is a *complete* bundle rather than a nearly
+complete one. Seeding listing-less indexes used to leave a fresh bundle tripping
+okq's own [lint](lint.md) — L16 for the out-of-sync index, and L15 for the seeded
+concepts, which read as orphans while no index listed them.
 
 Each piece earns its place:
 - **`adrs/` and `features/`** — the two folders, plus the README handling below.
@@ -118,7 +124,9 @@ okq new adr                              # title omitted -> prompts? no — see 
   emitted: v0.2 supersedes it and okq's own [lint](lint.md) flags it (L5). Plus a body skeleton
   appropriate to the type (ADR: Status/Context/Decision/Consequences; feature:
   Summary/Motivation/Scope/…).
-- Prints the path of the created file to stdout (so it's pipeable: `$(okq new …)`).
+- Prints the path of the created file to stdout (so it's pipeable: `$(okq new …)`),
+  and a "run `okq index`" nudge to **stderr** — `new` does not rewrite the
+  directory listing itself.
 - **Non-interactive** (agent-runnable): a missing required title is a usage error
   naming the flag, never a prompt.
 
@@ -147,6 +155,12 @@ creating only what's missing and refreshing the README block.
 - [ ] `okq init` in a dir with an existing README injects the okq block between
   markers without altering the rest; re-running is idempotent.
 - [ ] `okq init` never overwrites an existing concept.
+- [ ] `okq init` generates the `index.md` listings, so a freshly scaffolded
+  bundle passes `okq lint --check --rule L15 --rule L16`.
+- [ ] `okq init` reports each path once, even though a seeded `index.md` is
+  written twice (template, then listing).
+- [ ] `okq new` leaves `index.md` untouched, keeps stdout to the path alone, and
+  points at `okq index` on stderr.
 - [ ] `okq new adr "<title>"` creates an auto-numbered `adrs/NNNN-<slug>.md` with
   OKF frontmatter (`type: adr`, title, `status`, `generated`) and a body skeleton; prints the path.
 - [ ] `okq new feature "<title>"` creates `features/<slug>.md` similarly.
@@ -159,11 +173,11 @@ creating only what's missing and refreshing the README block.
 - **index.md generation** — `init` seeds `index.md` listings, but they go stale as
   docs are added. A dedicated `okq index` (generate/synthesize OKF directory
   listings) is the natural companion — in M3.5 or later? (Distinct from `okq schema`.)
-- **A scaffolded bundle isn't lint-clean until `okq index` runs.** `init` seeds
-  `index.md` files but doesn't populate their listings, so a fresh bundle trips
-  [lint](lint.md) L16 (index out of sync) and L15 (the concepts read as orphans);
-  both clear after `okq index`. Having `init` generate the listings itself would
-  fix it, at the cost of changing `init`'s report shape. Worth doing.
+- **Should `new` refresh the listings too?** It deliberately doesn't: `new`
+  prints the created path to stdout so it's pipeable, and writing files the
+  caller didn't name is a surprise in a scripted context. It prints a nudge to
+  stderr instead. If that proves annoying in practice, a `--index` flag is the
+  smaller change; making it implicit is the one that needs evidence.
 - **Template override** — embedded-only for v1; when/how to honor `.okq/templates/`,
   and keeping `new`'s output in lockstep with the OKF version (PLAN.md §8).
 - **Type→folder mapping** — fixed (`adr`→`adrs/`, `feature`→`features/`) vs.

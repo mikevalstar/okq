@@ -11,6 +11,29 @@ attaches prebuilt binaries to the GitHub Release.
 
 ## [Unreleased]
 
+## [0.7.1] — 2026-08-02
+
+### Fixed
+
+- **`okq init` now generates the `index.md` listings it seeds.** A freshly
+  scaffolded bundle tripped okq's own lint: L16 (index out of sync with its
+  directory) and, downstream of it, L15 (the seeded concepts read as orphans
+  because nothing linked to them and no index listed them). `init` finishes by
+  doing the same work `okq index` does, so a fresh bundle passes
+  `okq lint --check --rule L15 --rule L16`.
+- `init` reports each path **once**. A seeded `index.md` is written twice — from
+  the template, then filled with its listing — and listing it twice read like a
+  bug. The strongest verb wins (created > updated > exists).
+- The `scaffold` spec said `init` targets OKF **v0.1**; it has targeted v0.2
+  since 0.7.0.
+
+### Changed
+
+- `okq new` prints a "run `okq index`" nudge to **stderr**. It deliberately does
+  not rewrite the listing itself: stdout stays the created path alone (so
+  `$(okq new …)` keeps working), and writing files the caller didn't name is a
+  surprise in a scripted context.
+
 ## [0.7.0] — 2026-08-02
 
 ### Added
