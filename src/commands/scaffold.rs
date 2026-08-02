@@ -5,6 +5,7 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use crate::cli::IndexArgs;
 use crate::error::AppError;
 use crate::sections::slugify;
 use crate::templates;
@@ -57,7 +58,14 @@ pub fn new(bundle_dir: &Path, type_: &str, title: &str) -> Result<PathBuf, AppEr
 
 /// `okq init`: scaffold a Full-OKF skeleton; returns a per-file report. Creates
 /// only absent files; the README is updated non-destructively.
-pub fn init(bundle_dir: &Path) -> Result<Vec<Action>, AppError> {
+///
+/// Finishes by generating the `index.md` listings, so the bundle it leaves
+/// behind is *complete* rather than nearly complete. Seeding a listing-less
+/// `index.md` used to leave a fresh bundle tripping okq's own lint — L16
+/// (index out of sync) and, downstream of it, L15 (the seeded concepts read as
+/// orphans, since nothing links to them and no index lists them). See
+/// `docs/features/scaffold.md`.
+pub fn init(bundle_dir: &Path, no_ignore: bool) -> Result<Vec<Action>, AppError> {
     let name = bundle_name(bundle_dir);
     let date = templates::today_iso();
     let mut report = Vec::new();
@@ -92,7 +100,54 @@ pub fn init(bundle_dir: &Path) -> Result<Vec<Action>, AppError> {
     }
 
     report.push(ensure_readme(bundle_dir, &name)?);
-    Ok(report)
+
+    // Last, so the listings include the seed ADR and the README written above.
+    report.extend(generate_listings(bundle_dir, no_ignore)?);
+    Ok(collapse(report))
+}
+
+/// One line per path. A seeded `index.md` is touched twice — created from the
+/// template, then filled with its listing — and reporting it twice reads like a
+/// bug. The strongest verb wins (created > updated > exists), keeping
+/// first-seen order.
+fn collapse(report: Vec<Action>) -> Vec<Action> {
+    fn rank(verb: &str) -> u8 {
+        match verb {
+            "created" => 2,
+            "updated" => 1,
+            _ => 0,
+        }
+    }
+    let mut out: Vec<Action> = Vec::with_capacity(report.len());
+    for action in report {
+        match out.iter_mut().find(|a| a.path == action.path) {
+            Some(existing) if rank(action.verb) > rank(existing.verb) => {
+                existing.verb = action.verb;
+            }
+            Some(_) => {}
+            None => out.push(action),
+        }
+    }
+    out
+}
+
+/// Runs the same listing generation as `okq index`, mapped into `init`'s report
+/// vocabulary. `index`'s `unchanged` becomes `exists`: both mean "this file is
+/// already what it should be", and one vocabulary reads better in one report.
+fn generate_listings(bundle_dir: &Path, no_ignore: bool) -> Result<Vec<Action>, AppError> {
+    let out = crate::commands::index::run(bundle_dir, &IndexArgs { check: false }, no_ignore)?;
+    Ok(out
+        .files
+        .into_iter()
+        .map(|f| Action {
+            path: f.path,
+            verb: if f.verb == "unchanged" {
+                "exists"
+            } else {
+                f.verb
+            },
+        })
+        .collect())
 }
 
 /// Writes `rel` with `content` if absent; records the outcome.

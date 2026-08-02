@@ -201,3 +201,88 @@ fn new_list_shows_types() {
     assert!(out.contains("adr"));
     assert!(out.contains("feature"));
 }
+
+#[test]
+fn init_leaves_a_bundle_that_passes_its_own_lint() {
+    // A scaffolded bundle used to trip L16 (index.md out of sync) and, downstream
+    // of it, L15 (the seeded concepts read as orphans because nothing links to
+    // them and no index listed them). `init` now generates the listings itself.
+    let dir = tempfile::tempdir().unwrap();
+    okq(dir.path()).arg("init").assert().success();
+    okq(dir.path())
+        .args(["lint", "--check", "--rule", "L15", "--rule", "L16"])
+        .assert()
+        .success();
+}
+
+#[test]
+fn init_reports_each_path_once() {
+    // A seeded index.md is written twice (template, then listing); reporting it
+    // twice reads like a bug.
+    let dir = tempfile::tempdir().unwrap();
+    let out = okq(dir.path()).arg("init").assert().success();
+    let stderr = String::from_utf8(out.get_output().stderr.clone()).unwrap();
+    let paths: Vec<&str> = stderr
+        .lines()
+        .filter_map(|l| l.split_whitespace().nth(1))
+        .filter(|p| p.ends_with(".md"))
+        .collect();
+    let mut unique = paths.clone();
+    unique.sort_unstable();
+    unique.dedup();
+    assert_eq!(paths.len(), unique.len(), "duplicate paths in {paths:?}");
+}
+
+#[test]
+fn init_listings_include_the_seed_adr() {
+    let dir = tempfile::tempdir().unwrap();
+    okq(dir.path()).arg("init").assert().success();
+    let index = fs::read_to_string(dir.path().join("adrs/index.md")).unwrap();
+    assert!(
+        index.contains("<!-- okq:index:begin -->"),
+        "no listing block"
+    );
+    assert!(
+        index.contains("0001-record-architecture-decisions.md"),
+        "seed ADR missing from its listing:\n{index}"
+    );
+}
+
+#[test]
+fn init_stays_idempotent_with_listing_generation() {
+    let dir = tempfile::tempdir().unwrap();
+    okq(dir.path()).arg("init").assert().success();
+    let first = fs::read_to_string(dir.path().join("adrs/index.md")).unwrap();
+    okq(dir.path()).arg("init").assert().success();
+    let second = fs::read_to_string(dir.path().join("adrs/index.md")).unwrap();
+    assert_eq!(first, second);
+    assert_eq!(second.matches("<!-- okq:index:begin -->").count(), 1);
+}
+
+#[test]
+fn new_points_at_okq_index_without_writing_it() {
+    // `new` keeps stdout to the path alone (pipeable) and doesn't rewrite files
+    // the caller didn't name; the nudge goes to stderr.
+    let dir = tempfile::tempdir().unwrap();
+    okq(dir.path()).arg("init").assert().success();
+    let before = fs::read_to_string(dir.path().join("adrs/index.md")).unwrap();
+
+    let out = okq(dir.path())
+        .args(["new", "adr", "Something New"])
+        .assert()
+        .success();
+    let stdout = String::from_utf8(out.get_output().stdout.clone()).unwrap();
+    let stderr = String::from_utf8(out.get_output().stderr.clone()).unwrap();
+
+    assert_eq!(stdout.lines().count(), 1, "stdout must stay pipe-safe");
+    assert!(stdout.trim().ends_with("0002-something-new.md"));
+    assert!(
+        stderr.contains("okq index"),
+        "no nudge on stderr: {stderr:?}"
+    );
+    assert_eq!(
+        before,
+        fs::read_to_string(dir.path().join("adrs/index.md")).unwrap(),
+        "new should not rewrite the listing"
+    );
+}
