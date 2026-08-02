@@ -26,5 +26,6 @@ Copy [`_template.md`](_template.md) to start a new one, or run
 | ADR-0010 — Widen the okf fork to allow emoji and Unicode in file names | [0010-okf-unicode-filenames-fork.md](0010-okf-unicode-filenames-fork.md) |
 | ADR-0011 — Frontmatter aliases participate in concept resolution, below filename | [0011-aliases-in-resolution.md](0011-aliases-in-resolution.md) |
 | ADR-0012 — Depend on the published okf-permissive crate, not a git fork | [0012-okf-permissive-crate.md](0012-okf-permissive-crate.md) |
+| ADR-0013 — Back to upstream okf; retire the okf-permissive fork | [0013-back-to-upstream-okf.md](0013-back-to-upstream-okf.md) |
 | ADR-NNNN — Short title of the decision | [_template.md](_template.md) |
 <!-- okq:index:end -->

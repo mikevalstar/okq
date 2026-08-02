@@ -1,13 +1,14 @@
 ---
 type: adr
 title: ADR-0012 — Depend on the published okf-permissive crate, not a git fork
-status: accepted
+status: superseded
 created: 2026-07-25
-updated: 2026-07-25
+updated: 2026-08-02
 tags: [okf, dependencies, fork, filenames, publishing, crates-io]
 supersedes: "0010-okf-unicode-filenames-fork.md"
-superseded-by: null
+superseded-by: "0013-back-to-upstream-okf.md"
 related:
+  - "0013-back-to-upstream-okf.md"
   - "0010-okf-unicode-filenames-fork.md"
   - "0009-okf-spaces-fork.md"
   - "0002-library-stack.md"
@@ -16,6 +17,14 @@ related:
 ---
 
 # ADR-0012: Depend on the published okf-permissive crate, not a git fork
+
+> **Superseded by [ADR-0013](0013-back-to-upstream-okf.md): okq depends on
+> upstream `okf` again, and the fork is retired.** Two days after this was
+> written, upstream shipped `okf` 0.2 — implementing OKF spec v0.2 and adopting
+> a permissive concept-id rule wider than the fork's, plus percent-decoded link
+> targets. The premise below ("upstream has gone quiet, so the wait is
+> unbounded") no longer holds, and with it the reason to own a data layer. The
+> `okf-permissive` crate stays published and unyanked, but okq no longer uses it.
 
 ## Context
 

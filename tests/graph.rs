@@ -448,3 +448,32 @@ fn ambiguous_alias_errors_with_candidates() {
         .failure()
         .code(4);
 }
+
+#[test]
+fn percent_encoded_links_resolve_to_spaced_and_emoji_filenames() {
+    // The capability the okf-permissive fork existed to protect, now that okq
+    // depends on upstream okf again (ADR-0013). A concept file named with a
+    // space or an emoji is linked from markdown percent-encoded; okq decodes
+    // the target itself, so the edge must resolve and not read as a dead link.
+    let dir = tempfile::tempdir().unwrap();
+    write(
+        dir.path().join("hub.md"),
+        "---\ntype: doc\ntitle: Hub\n---\n\n# Hub\n\n\
+         See [QR](Quarterly%20Report.md) and [L](%F0%9F%9A%80%20launch.md).\n",
+    );
+    write(
+        dir.path().join("Quarterly Report.md"),
+        "---\ntype: doc\ntitle: Quarterly Report\n---\n\n# Quarterly Report\n",
+    );
+    write(
+        dir.path().join("🚀 launch.md"),
+        "---\ntype: doc\ntitle: Launch\n---\n\n# Launch\n",
+    );
+
+    let out = json(dir.path(), &["neighbors", "hub"]);
+    let mut got = ids(&out);
+    got.sort();
+    assert_eq!(got, vec!["Quarterly Report", "🚀 launch"]);
+
+    okq(dir.path()).arg("deadlinks").assert().success();
+}

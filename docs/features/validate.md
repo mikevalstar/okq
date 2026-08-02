@@ -3,7 +3,7 @@ type: feature
 title: okq validate (alias doctor)
 status: active # draft | accepted | active | deprecated
 created: 2026-06-27
-updated: 2026-06-27
+updated: 2026-08-02
 tags: [cli, health, conformance, validate, ci]
 milestone: null # milestones retired — see CHANGELOG.md
 command: okq validate
@@ -52,7 +52,12 @@ It's also cheap and honest to build: the upstream `okf` crate already ships
 - Warnings: missing recommended fields (`title`, `description`, `timestamp`),
   non-ISO-8601 `timestamp`, reserved-file structure issues (`index.md` carrying
   frontmatter, root `index.md` declaring more than `okf_version`, bad `log.md`
-  dates).
+  dates), and **concept-id portability** — a file name outside
+  `[A-Za-z0-9_][A-Za-z0-9_.-]*` (spaces, emoji, `:`) loads fine and the bundle
+  stays conformant, but it needs `<…>` or percent-encoding to link and may not
+  survive every filesystem. From upstream okf 0.2
+  ([ADR-0013](../adrs/0013-back-to-upstream-okf.md)); see
+  [emoji-filenames.md](./emoji-filenames.md).
 - Severity filtering and a `--check` mode for CI.
 - The `doctor` alias as a friendlier name for the same command.
 
@@ -148,4 +153,6 @@ Shared taxonomy ([ADR-0004](../adrs/0004-exit-code-taxonomy.md)):
 - [graph.md](./graph.md) — `deadlinks`/`orphans`, the focused health views `validate` complements
 - [find.md](./find.md) — records the "surface skipped malformed docs" open question this resolves
 - [scaffold.md](./scaffold.md) — `init`/`new`; a future `validate --fix` would round-trip with these
+- [emoji-filenames.md](./emoji-filenames.md) — the names that draw a portability warning
 - [ADR-0004](../adrs/0004-exit-code-taxonomy.md) — the exit-code contract (`--check` → 3)
+- [ADR-0013](../adrs/0013-back-to-upstream-okf.md) — upstream okf 0.2, which added the portability lint

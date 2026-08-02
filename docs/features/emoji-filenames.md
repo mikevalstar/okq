@@ -3,11 +3,12 @@ type: feature
 title: Emoji & Unicode in file names
 status: active # draft | accepted | active | deprecated
 created: 2026-07-07
-updated: 2026-07-07
+updated: 2026-08-02
 tags: [filenames, unicode, emoji, okf, concept-id, deadlinks, graph, robustness]
 milestone: null
 command: null # cross-cutting: a data-layer widening plus one graph fix
 related:
+  - "../adrs/0013-back-to-upstream-okf.md"
   - "../adrs/0010-okf-unicode-filenames-fork.md"
   - "../adrs/0009-okf-spaces-fork.md"
   - "graph.md"
@@ -32,9 +33,14 @@ This continues the [spaces work](../adrs/0009-okf-spaces-fork.md): file names in
 real, human-authored bundles are not ASCII. The upstream reference id rule
 (`[A-Za-z0-9_][A-Za-z0-9_.\-]*`) rejects every emoji, accent, and CJK character,
 so those files are dropped by the `okf` loader and okq can't surface what it never
-loads. [ADR-0010](../adrs/0010-okf-unicode-filenames-fork.md) widens the fork's
-one validation gate to a permissive denylist, which fixes the load path in the
-data layer where it belongs.
+loads. [ADR-0010](../adrs/0010-okf-unicode-filenames-fork.md) widened that one
+validation gate to a permissive denylist in our fork, which fixed the load path
+in the data layer where it belongs.
+
+Upstream `okf` 0.2 has since adopted the same posture, slightly wider, so okq
+gets this from the ordinary crates.io release and the fork is retired
+([ADR-0013](../adrs/0013-back-to-upstream-okf.md)). The capability below is
+unchanged; only its source is.
 
 The spaces work left one asymmetry: a *working* `%20` link resolved (`okf` decodes
 it), but a *broken* one — a typo like `Quarterly%20Reprot.md` — was silently
@@ -46,9 +52,12 @@ in the same hole. That is the one okq-side fix this feature carries.
 
 ### In scope
 
-- **Loading** concepts with emoji/Unicode file names (via the ADR-0010 fork
-  re-pin). The denylist rejects only control chars, `/`, `\`, `: * ? " < > |`, a
-  leading `.`/`-`, and a leading/trailing space; a leading emoji is allowed.
+- **Loading** concepts with emoji/Unicode file names, from upstream `okf` 0.2.
+  Its denylist rejects only control chars, `/`, `\`, and the empty/`.`/`..`
+  cases; a leading emoji is allowed. Names that are legal but awkward to link or
+  to move between filesystems (`:`, `*`, `?`, a leading `.`, an edge space) load
+  and are reported by [`validate`](validate.md) as a portability **warning**, not
+  an error — the spec does not forbid them, so neither does the loader.
 - **Dead-link decode fix.** The graph decodes a percent-encoded link target
   before classifying it, so a broken encoded link is reported as a dead link
   instead of dismissed as out-of-scope. Working encoded links continue to resolve
@@ -64,7 +73,7 @@ in the same hole. That is the one okq-side fix this feature carries.
   stored and displayed verbatim, as [title inference](frontmatter-optional-title.md)
   already does for filenames.
 - **Re-implementing the character rule in okq.** The gate lives in `okf`
-  (ADR-0002); okq consumes it. The re-pin is mechanical.
+  (ADR-0002); okq consumes it.
 - **Search tokenization of emoji.** Emoji aren't word tokens; a concept is still
   found by its title (its file name) and body text as usual. No special ranking.
 
@@ -92,13 +101,16 @@ in the same hole. That is the one okq-side fix this feature carries.
       (`neighbors` / `backlinks` traverse it).
 - [ ] A **broken** percent-encoded link (`%20`- or `%F0%9F…`-encoded) is reported by
       `okq deadlinks`; `--check` exits 3.
-- [ ] A name with a path-hostile character (`/`, control, `: * ? " < > |`) or a
-      leading/trailing space is still rejected by the data layer (not a panic — a
-      skipped parse error, surfaced by `validate`).
+- [ ] A name with a path separator (`/`, `\`) or a control character is still
+      rejected by the data layer (not a panic — a skipped parse error, surfaced
+      by `validate`).
+- [ ] A legal-but-unportable name (`report:2026.md`, `-draft.md`) loads and draws
+      a `validate` warning, and the bundle stays conformant.
 - [ ] Malformed input still degrades gracefully (no panic).
 
 ## Related
 
+- [ADR-0013 — back to upstream okf, which now ships this rule](../adrs/0013-back-to-upstream-okf.md)
 - [ADR-0010 — widen the okf fork to emoji/Unicode](../adrs/0010-okf-unicode-filenames-fork.md)
 - [ADR-0009 — the spaces fork this builds on](../adrs/0009-okf-spaces-fork.md)
 - [okq graph — deadlinks](graph.md), [okq get](get.md), [okq find](find.md), [okq search](search.md)

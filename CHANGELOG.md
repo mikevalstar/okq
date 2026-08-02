@@ -11,6 +11,26 @@ attaches prebuilt binaries to the GitHub Release.
 
 ## [Unreleased]
 
+## [0.6.2] — 2026-08-02
+
+### Changed
+
+- okq depends on **upstream `okf` 0.2.1** again, and the `okf-permissive` fork
+  is retired ([ADR-0013](docs/adrs/0013-back-to-upstream-okf.md)). Upstream
+  shipped OKF v0.2 on 2026-07-27 with a permissive concept-id rule — wider than
+  the fork's — plus percent-decoded link targets, so the fork had nothing left
+  to carry. Spaces, emoji, accents, and CJK in file names behave exactly as
+  before; the change is where the data layer comes from.
+- `okq validate` reports a new **portability warning** for a concept-id segment
+  outside `[A-Za-z0-9_][A-Za-z0-9_.-]*` — such a name needs `<…>` or
+  percent-encoding to link and may not survive every filesystem. It is a
+  warning, never an error: the bundle stays conformant and exit codes are
+  unchanged.
+- File names okq used to reject now load with that warning instead: `:`, `*`,
+  `?`, `"`, `<`, `>`, `|`, a leading `.` or `-`, and leading/trailing spaces.
+  Only path separators (`/`, `\`), control characters, and `.`/`..` are still
+  refused.
+
 ## [0.6.1] — 2026-07-31
 
 ### Fixed

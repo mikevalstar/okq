@@ -155,6 +155,7 @@ pub fn concept_title(c: &Concept) -> String {
     c.document
         .frontmatter
         .title()
+        .map(|t| t.into_owned())
         .unwrap_or_else(|| c.id.name().to_string())
 }
 
@@ -183,7 +184,7 @@ impl ConceptRecord {
         let rel = c.path.strip_prefix(bundle.root()).unwrap_or(&c.path);
         ConceptRecord {
             id: c.id.to_string(),
-            type_: c.document.frontmatter.type_(),
+            type_: c.document.frontmatter.type_().map(|t| t.into_owned()),
             title: concept_title(c),
             path: rel.to_string_lossy().replace('\\', "/"),
             line: 1,
