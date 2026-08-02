@@ -73,7 +73,8 @@ pub struct TrustEvents {
 /// One `{by, at}` event, with both fields as written.
 #[derive(Debug, Serialize, JsonSchema)]
 pub struct TrustEvent {
-    /// The actor, in the §7 convention (`human:mike`, `agent:okq@0.6`).
+    /// The actor, in the §7 convention: `human:<id>`, `process:<id>`, or the
+    /// agent form `<producer>/<version>` (e.g. `okq/0.7.0`).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub by: Option<String>,
     /// The timestamp exactly as written in the frontmatter.
@@ -363,13 +364,15 @@ fn render_trust_events(
     }
     rows.extend(events.verified.iter().map(|v| ("verified", v)));
 
-    let widest = rows
-        .iter()
-        .filter_map(|(_, e)| e.by.as_deref().map(str::len))
-        .max()
-        .unwrap_or(0);
+    // An absent *or empty* `by` renders as `-`; a blank column reads as a bug
+    // rather than as the missing value it is.
+    let actor = |e: &TrustEvent| match e.by.as_deref() {
+        Some(by) if !by.trim().is_empty() => by.to_string(),
+        _ => "-".to_string(),
+    };
+    let widest = rows.iter().map(|(_, e)| actor(e).len()).max().unwrap_or(0);
     for (label, e) in rows {
-        let by = e.by.as_deref().unwrap_or("-");
+        let by = actor(e);
         match &e.at {
             Some(at) => writeln!(w, "{dim}{label:<9}  {by:<widest$}  {at}{dim:#}")?,
             None => writeln!(w, "{dim}{label:<9}  {by}{dim:#}")?,

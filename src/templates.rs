@@ -1,8 +1,16 @@
 //! Embedded templates and content generators for `okq init` / `okq new`.
 //!
-//! Frontmatter follows the Google OKF well-known keys (`type`/`title`/
-//! `description`/`tags`/`timestamp`); we don't impose this repo's own extensions
-//! (status/created/updated) on adopters. See `docs/features/scaffold.md`.
+//! Frontmatter follows the Google OKF v0.2 well-known keys — `type`/`title`/
+//! `description`/`tags`, plus the trust keys `generated` and `status` (§5.2,
+//! §5.4). We don't impose this repo's own extensions (created/updated) on
+//! adopters.
+//!
+//! The v0.1 `timestamp` key is deliberately **not** emitted: v0.2 supersedes it
+//! with `generated: { by, at }`, and okq's own lint flags it (L5). A scaffolded
+//! bundle should pass `okq lint` on the rules it can control. `generated.by`
+//! records okq honestly — it did write this stub — in the §7 agent form
+//! `<producer>/<version>`; an author replaces it when the content becomes
+//! theirs. See `docs/features/scaffold.md` and `docs/features/trust.md`.
 
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -16,7 +24,7 @@ pub const INDEX_BEGIN: &str = "<!-- okq:index:begin -->";
 /// Closing marker for the generated `index.md` listing.
 pub const INDEX_END: &str = "<!-- okq:index:end -->";
 
-/// Today's date as ISO-8601 `YYYY-MM-DD` (UTC), for frontmatter `timestamp`.
+/// Today's date as ISO-8601 `YYYY-MM-DD` (UTC), for frontmatter `generated.at`.
 /// Authoring may read the clock — the determinism principle binds queries, not writes.
 pub fn today_iso() -> String {
     let secs = SystemTime::now()
@@ -25,6 +33,12 @@ pub fn today_iso() -> String {
         .unwrap_or(0);
     let (y, m, d) = civil_from_days(secs.div_euclid(86_400));
     format!("{y:04}-{m:02}-{d:02}")
+}
+
+/// okq's own actor string in the §7 agent form, `<producer>/<version>` — the
+/// honest `generated.by` for a stub okq generated.
+pub fn okq_actor() -> String {
+    format!("okq/{}", env!("CARGO_PKG_VERSION"))
 }
 
 /// Howard Hinnant's days-from-civil inverse: days since 1970-01-01 → (year, month, day).
@@ -49,7 +63,8 @@ pub fn adr(title: &str, date: &str) -> String {
          title: {title}\n\
          description: One-line summary of the decision.\n\
          tags: []\n\
-         timestamp: {date}\n\
+         status: draft\n\
+         generated: {{ by: {actor}, at: {date} }}\n\
          ---\n\
          \n\
          # {title}\n\
@@ -68,7 +83,8 @@ pub fn adr(title: &str, date: &str) -> String {
          \n\
          ## Consequences\n\
          \n\
-         What becomes easier, what becomes harder.\n"
+         What becomes easier, what becomes harder.\n",
+        actor = okq_actor()
     )
 }
 
@@ -80,7 +96,8 @@ pub fn feature(title: &str, date: &str) -> String {
          title: {title}\n\
          description: One-line summary of the capability.\n\
          tags: []\n\
-         timestamp: {date}\n\
+         status: draft\n\
+         generated: {{ by: {actor}, at: {date} }}\n\
          ---\n\
          \n\
          # {title}\n\
@@ -103,7 +120,8 @@ pub fn feature(title: &str, date: &str) -> String {
          \n\
          ## Open questions\n\
          \n\
-         - Anything unresolved.\n"
+         - Anything unresolved.\n",
+        actor = okq_actor()
     )
 }
 
@@ -115,7 +133,8 @@ pub fn seed_adr(date: &str) -> String {
          title: Record architecture decisions\n\
          description: Use ADRs to capture significant, hard-to-reverse decisions.\n\
          tags: [process]\n\
-         timestamp: {date}\n\
+         status: stable\n\
+         generated: {{ by: {actor}, at: {date} }}\n\
          ---\n\
          \n\
          # Record architecture decisions\n\
@@ -140,7 +159,8 @@ pub fn seed_adr(date: &str) -> String {
          \n\
          The rationale behind decisions is preserved and queryable\n\
          (`okq find --type adr`). One lightweight step is added when making a\n\
-         significant decision.\n"
+         significant decision.\n",
+        actor = okq_actor()
     )
 }
 
@@ -148,7 +168,7 @@ pub fn seed_adr(date: &str) -> String {
 pub fn root_index(name: &str) -> String {
     format!(
         "---\n\
-         okf_version: \"0.1\"\n\
+         okf_version: \"0.2\"\n\
          ---\n\
          \n\
          # {name}\n\

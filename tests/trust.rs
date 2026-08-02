@@ -20,13 +20,13 @@ fn fixture() -> TempDir {
     );
     write(
         root.join("machine.md"),
-        "---\ntype: doc\ntitle: Machine\ngenerated: { by: 'agent:writer@1.0', at: 2026-05-01 }\n\
-         verified:\n  - { by: 'agent:nightly', at: 2026-06-01 }\n---\n\n# Machine\n",
+        "---\ntype: doc\ntitle: Machine\ngenerated: { by: 'writer/1.0', at: 2026-05-01 }\n\
+         verified:\n  - { by: 'process:nightly', at: 2026-06-01 }\n---\n\n# Machine\n",
     );
     write(
         root.join("human.md"),
         "---\ntype: doc\ntitle: Human\nstatus: draft\n\
-         generated: { by: 'agent:writer@1.0', at: 2026-05-01 }\n\
+         generated: { by: 'writer/1.0', at: 2026-05-01 }\n\
          verified: { by: 'human:mike', at: 2026-07-14 }\n---\n\n# Human\n",
     );
     write(
@@ -233,7 +233,7 @@ fn get_reports_the_events_the_tier_was_derived_from() {
     let out = json(dir.path(), &["get", "human"]);
     assert_eq!(out["trust"], "human-reviewed");
     assert_eq!(out["status"], "draft");
-    assert_eq!(out["provenance"]["generated"]["by"], "agent:writer@1.0");
+    assert_eq!(out["provenance"]["generated"]["by"], "writer/1.0");
     assert_eq!(out["provenance"]["verified"][0]["by"], "human:mike");
     assert_eq!(out["provenance"]["verified"][0]["at"], "2026-07-14");
 

@@ -91,6 +91,12 @@ The tier is derived, not stored: **any** `verified` entry by a `human:<id>`
 actor makes it `human-reviewed`; entries by non-human actors only make it
 `machine-confirmed`; no entries at all is `unverified`.
 
+Actors follow the §7 convention: `human:<id>` for a person, `process:<id>` for
+an automated process, and `<producer>/<version>` for an agent or tool
+(`okq/0.7.0`). Only the `human:` prefix moves the tier. Anything else is kept
+verbatim rather than rejected — the spec itself uses forms like
+`team:ga4-docs`.
+
 An unknown `status` value is reported verbatim rather than coerced — §5.4
 defines three values but requires consumers to accept others.
 
@@ -139,8 +145,8 @@ runbooks/deploy.md:1  Deploying to production  [draft, human-reviewed, stale]
 may want the evidence:
 
 ```
-generated  agent:okq-writer@0.6  2026-04-01
-verified   human:mike            2026-07-14
+generated  writer/1.0   2026-04-01
+verified   human:mike   2026-07-14
 ```
 
 ### Exit codes

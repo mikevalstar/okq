@@ -45,6 +45,14 @@ attaches prebuilt binaries to the GitHub Release.
   - Lint is an **opinion, not conformance**: it never reports an error severity
     and never changes what `okq validate` calls conformant.
 
+### Documentation
+
+- The four `docs/*/_template.md` templates carry the trust keys as commented
+  examples, and two new `docs/tests` fixtures pin the behavior: `trust-shapes.md`
+  (a mixed `verified` list — human, process, empty id, and a bare string where a
+  mapping belongs — plus a producer-defined `status`) and `trust-malformed.md`
+  (every trust key the wrong shape, degrading to defaults).
+
 ### Changed
 
 - The shared concept envelope grew its first fields since `tags`. They are
@@ -53,6 +61,12 @@ attaches prebuilt binaries to the GitHub Release.
   so a bundle carrying no trust frontmatter emits byte-identical JSON to 0.6.2
   and existing agent parsers are unaffected
   ([ADR-0014](docs/adrs/0014-surfacing-okf-v02-semantics.md)).
+- **`okq init` and `okq new` emit v0.2 trust frontmatter.** Scaffolded concepts
+  now carry `status: draft` (or `stable` for the seed ADR) and
+  `generated: { by: okq/<version>, at: <today> }` in the §7 agent form, and the
+  root `index.md` declares `okf_version: "0.2"`. The v0.1 `timestamp` key is
+  **no longer written**: v0.2 supersedes it and okq's own lint flagged it (L5) —
+  the scaffold was failing the tool's own hygiene check.
 - `--severity`'s help text is now neutral between `validate` and `lint`, which
   have different defaults (`warning` and `info`).
 - Dependency refresh: clap 4.6.5, schemars 1.2.2, rustls 0.23.43, http 1.5.0,

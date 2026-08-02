@@ -5,6 +5,12 @@ status: draft # draft | active | deprecated
 created: 2026-06-26
 updated: 2026-06-26
 tags: []
+# Trust & lifecycle (OKF v0.2, §5.2–§5.5) — all optional; absence means
+# `status: stable`, trust tier `unverified`, never stale. Fill `verified` in when
+# a person has actually reviewed this; `okq find --trust human-reviewed` reads it.
+# generated: { by: human:<your-id>, at: 2026-06-26 }   # or an agent: okq/0.7.0
+# verified: [{ by: human:<reviewer>, at: <YYYY-MM-DD> }]
+# stale_after: <YYYY-MM-DD>   # when this stops being safe to trust
 actors: [user] # who/what participates: user, agent, okq, ci
 related: [] # paths to related docs
 ---

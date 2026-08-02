@@ -142,14 +142,14 @@ mod tests {
     #[test]
     fn human_verifier_outranks_machine() {
         let machine = ConceptTrust::from_frontmatter(
-            &fm("type: doc\nverified:\n  - { by: 'agent:nightly', at: 2026-07-01 }"),
+            &fm("type: doc\nverified:\n  - { by: 'process:nightly', at: 2026-07-01 }"),
             today(),
         );
         assert_eq!(machine.trust.as_deref(), Some("machine-confirmed"));
 
         let mixed = ConceptTrust::from_frontmatter(
             &fm(
-                "type: doc\nverified:\n  - { by: 'agent:nightly', at: 2026-07-01 }\n  - { by: 'human:mike', at: 2026-07-02 }",
+                "type: doc\nverified:\n  - { by: 'process:nightly', at: 2026-07-01 }\n  - { by: 'human:mike', at: 2026-07-02 }",
             ),
             today(),
         );

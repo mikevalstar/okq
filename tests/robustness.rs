@@ -47,6 +47,8 @@ fn malformed_bundle_loads_and_skips_bad_docs() {
         "empty",
         "unicode-emoji",
         "🚀 launch",
+        "trust-shapes",
+        "trust-malformed",
     ] {
         assert!(
             ids.iter().any(|id| id == good),
@@ -238,4 +240,41 @@ fn headings_inside_code_fence_are_not_sections() {
         .assert()
         .failure()
         .code(5);
+}
+
+#[test]
+fn mixed_verified_entries_derive_the_tier_without_panicking() {
+    // One `human:` verifier wins, even alongside a process actor, an empty id,
+    // and a bare string where a mapping belongs (docs/tests/trust-shapes.md).
+    okq("docs/tests")
+        .args(["get", "trust-shapes", "--json"])
+        .assert()
+        .success()
+        .stdout(predicates::str::contains("\"trust\": \"human-reviewed\""))
+        // §5.4: a producer-defined status is kept, never coerced.
+        .stdout(predicates::str::contains("\"status\": \"percolating\""));
+}
+
+#[test]
+fn malformed_trust_frontmatter_reads_as_defaults() {
+    // Wrong-shaped trust values must degrade, not drop the concept (§11).
+    let out = okq("docs/tests")
+        .args(["get", "trust-malformed", "--json"])
+        .assert()
+        .success();
+    let json: serde_json::Value = serde_json::from_slice(&out.get_output().stdout).unwrap();
+    assert!(
+        json.get("trust").is_none(),
+        "tier should default to unverified"
+    );
+    assert!(
+        json.get("stale").is_none(),
+        "unparseable stale_after is never stale"
+    );
+    assert!(json.get("provenance").is_none(), "no readable events");
+}
+
+#[test]
+fn trust_fixtures_lint_without_panicking() {
+    okq("docs/tests").arg("lint").assert().success();
 }

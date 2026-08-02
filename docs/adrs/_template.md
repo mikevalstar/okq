@@ -5,6 +5,12 @@ status: draft # draft | accepted | superseded
 created: 2026-06-26
 updated: 2026-06-26
 tags: []
+# Trust & lifecycle (OKF v0.2, §5.2–§5.5) — all optional; absence means
+# `status: stable`, trust tier `unverified`, never stale. Fill `verified` in when
+# a person has actually reviewed this; `okq find --trust human-reviewed` reads it.
+# generated: { by: human:<your-id>, at: 2026-06-26 }   # or an agent: okq/0.7.0
+# verified: [{ by: human:<reviewer>, at: <YYYY-MM-DD> }]
+# stale_after: <YYYY-MM-DD>   # when this stops being safe to trust
 supersedes: null # e.g. "0003" if this replaces an earlier ADR
 superseded-by: null # filled in later if this ADR gets replaced
 related: [] # paths to related docs (features/guides/other ADRs)
