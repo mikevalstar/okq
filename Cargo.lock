@@ -828,14 +828,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "okf-permissive"
-version = "0.2.0"
+name = "okf"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a62d0093f62dc13edd843f4b27c97af1b4d41147a020432722fa7c722f4da310"
+checksum = "09252027b55db2ccb133b9bcf2aec57bf0a99c5a1cdee9e08722bce20d522314"
 
 [[package]]
 name = "okq"
-version = "0.6.1"
+version = "0.6.2"
 dependencies = [
  "anstream",
  "anstyle",
@@ -844,7 +844,7 @@ dependencies = [
  "dirs",
  "ignore",
  "insta",
- "okf-permissive",
+ "okf",
  "predicates",
  "pulldown-cmark",
  "regex",

@@ -162,6 +162,9 @@ impl From<okf::BundleError> for AppError {
 
 impl From<std::io::Error> for AppError {
     fn from(e: std::io::Error) -> Self {
-        AppError::Bundle(okf::BundleError::Io(e))
+        AppError::Bundle(okf::BundleError::Io {
+            kind: e.kind(),
+            message: e.to_string(),
+        })
     }
 }

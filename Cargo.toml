@@ -1,6 +1,6 @@
 [package]
 name = "okq"
-version = "0.6.1"
+version = "0.6.2"
 edition = "2024"
 rust-version = "1.85"
 description = "A fast, deterministic CLI for searching and navigating Open Knowledge Format (OKF) document bundles — for humans and AI agents."
@@ -39,10 +39,10 @@ anstyle = "1.0.14"
 clap = { version = "4.6.4", features = ["derive"] }
 dirs = "6.0.0"
 ignore = "0.4.30"
-# okf-permissive is our published fork of okf: same data layer, but concept file
-# names may contain spaces, emoji, and Unicode. The *library* crate is still
-# `okf`, so the code below is unchanged. See docs/adrs/0012-okf-permissive-crate.md.
-okf = { package = "okf-permissive", version = "0.2.0" }
+# Upstream okf, back on the crates.io release: 0.2 accepts spaces, emoji, and
+# Unicode in concept file names, so our okf-permissive fork has nothing left to
+# carry. See docs/adrs/0013-back-to-upstream-okf.md.
+okf = "0.2.1"
 pulldown-cmark = "0.13.4"
 regex = "1.13.1"
 schemars = "1.2.1"

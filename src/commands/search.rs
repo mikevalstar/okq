@@ -148,7 +148,7 @@ fn build_hit(
                 .to_string_lossy()
                 .replace('\\', "/");
             (
-                c.document.frontmatter.type_(),
+                c.document.frontmatter.type_().map(|t| t.into_owned()),
                 crate::model::concept_title(c),
                 rel,
                 crate::model::concept_tags(c),

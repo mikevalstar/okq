@@ -154,7 +154,7 @@ pub fn run(bundle_dir: &Path, args: &GetArgs, no_ignore: bool) -> Result<Got, Ap
             id: id.to_string(),
             path,
             line: 1,
-            type_: frontmatter.type_(),
+            type_: frontmatter.type_().map(|t| t.into_owned()),
             title: crate::model::concept_title(concept),
             frontmatter: frontmatter_json,
             body: want_body.then(|| body.clone()),

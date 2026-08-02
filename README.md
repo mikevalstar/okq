@@ -151,7 +151,7 @@ Ignored files are treated as if they weren't in the bundle: they don't show up i
 - Results are locations, not document dumps: ranked `path:line` plus a short snippet. You expand what you want with `get`.
 - Frontmatter is optional: a Markdown file with no frontmatter is still a concept, and its `title` falls back to the filename (so plain note folders are searchable and navigable too).
 - **Obsidian-friendly.** Frontmatter `aliases:` resolve a note by any of its alternate names (`okq get Hooman`, `[[Hooman]]`) — below filenames, so a real file always wins. Inline `#tags` in the body count as tags alongside frontmatter `tags:`, so `find --tag` and `stats` see a vault's real tag set. And `deadlinks` separates a genuinely **broken** link from a **phantom** — a bare `[[Note]]` to a note you simply haven't written yet — listing only broken ones by default so it isn't thousands of false alarms on a vault.
-- Parsing and the data model come from the [`okf-permissive`](https://crates.io/crates/okf-permissive) crate — our maintained fork of [`okf`](https://crates.io/crates/okf), which also accepts spaces, emoji, and Unicode in file names ([ADR-0012](docs/adrs/0012-okf-permissive-crate.md)). okq adds the query and navigation layer on top.
+- Parsing and the data model come from the [`okf`](https://crates.io/crates/okf) crate (OKF v0.2), which accepts spaces, emoji, and Unicode in file names ([ADR-0013](docs/adrs/0013-back-to-upstream-okf.md)). okq adds the query and navigation layer on top.
 
 ## Exit codes
 
@@ -166,4 +166,4 @@ Ignored files are treated as if they weren't in the bundle: they don't show up i
 
 ## License
 
-[Apache-2.0](LICENSE), matching OKF and the `okf`/`okf-permissive` crates.
+[Apache-2.0](LICENSE), matching OKF and the `okf` crate.

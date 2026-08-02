@@ -83,6 +83,7 @@ pub fn run(bundle_dir: &Path, args: &StatsArgs, no_ignore: bool) -> Result<Stats
             .document
             .frontmatter
             .type_()
+            .map(|t| t.into_owned())
             .unwrap_or_else(|| "(untyped)".to_string());
         *types.entry(type_).or_insert(0) += 1;
         for tag in crate::model::concept_tags(c) {
