@@ -41,6 +41,53 @@ expression: "stdout(&[\"schema\", \"get\"])"
         "body"
       ],
       "type": "object"
+    },
+    "TrustEvent": {
+      "description": "One `{by, at}` event, with both fields as written.",
+      "properties": {
+        "at": {
+          "description": "The timestamp exactly as written in the frontmatter.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "by": {
+          "description": "The actor, in the §7 convention (`human:mike`, `agent:okq@0.6`).",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "TrustEvents": {
+      "description": "The evidence behind a derived trust tier: who produced the content and who\nhas confirmed it. Reported so the derivation is auditable rather than magic\n(ADR-0014).",
+      "properties": {
+        "generated": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TrustEvent"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "`generated: {by, at}` — who wrote the current content, and when."
+        },
+        "verified": {
+          "description": "`verified: [{by, at}]` — every confirmation, in frontmatter order.",
+          "items": {
+            "$ref": "#/$defs/TrustEvent"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "verified"
+      ],
+      "type": "object"
     }
   },
   "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -70,6 +117,17 @@ expression: "stdout(&[\"schema\", \"get\"])"
       "description": "The concept's path relative to the bundle root.",
       "type": "string"
     },
+    "provenance": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/TrustEvents"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "The `generated` and `verified` events the trust tier was derived from.\nOmitted when the concept carries neither."
+    },
     "schema": {
       "description": "Schema tag (`okq.get/v1`).",
       "type": "string"
@@ -84,9 +142,30 @@ expression: "stdout(&[\"schema\", \"get\"])"
         "null"
       ]
     },
+    "stale": {
+      "description": "`true` when `stale_after` has passed, omitted otherwise. Evaluated\nagainst `--today` when given, else the system date.",
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "status": {
+      "description": "Lifecycle `status`, omitted when `stable` (the default when the key is\nabsent). A producer-defined value outside draft/stable/deprecated is\nreported verbatim — §5.4 requires consumers to tolerate it.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "title": {
       "description": "The concept's title: the frontmatter `title`, or the filename if none.",
       "type": "string"
+    },
+    "trust": {
+      "description": "Derived trust tier, omitted when `unverified` (the default when there is\nno `verified` key). Never stored in frontmatter: it is computed from the\n`verified` actors — any `human:` verifier yields `human-reviewed`,\nnon-human verifiers alone yield `machine-confirmed`.",
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "type": {
       "description": "The frontmatter `type`, if present.",

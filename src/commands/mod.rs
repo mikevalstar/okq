@@ -4,6 +4,7 @@ pub mod find;
 pub mod get;
 pub mod graph;
 pub mod index;
+pub mod lint;
 pub mod scaffold;
 pub mod schema;
 pub mod search;

@@ -54,7 +54,9 @@ pub fn run(bundle_dir: &Path, args: &IndexArgs, no_ignore: bool) -> Result<Index
     dirs.insert(String::new()); // the root always gets an index
 
     for concept in corpus.concepts() {
-        let rec = ConceptRecord::from_concept(bundle, concept);
+        // `None`: an index.md is written to disk, so nothing date-dependent
+        // may leak into it.
+        let rec = ConceptRecord::from_concept(bundle, concept, None);
         let dir = parent_dir(&rec.path);
         by_dir.entry(dir.clone()).or_default().push(rec);
         for ancestor in ancestors(&dir) {

@@ -52,6 +52,11 @@ okq deadlinks
 okq orphans
 okq stats
 okq validate          # OKF conformance report (alias: okq doctor)
+okq lint              # hygiene beyond conformance: orphans, drift, staleness
+
+# trust: what's still in progress, and what a human signed off on
+okq find --status draft
+okq find --trust human-reviewed
 ```
 
 You don't need the full path. A unique suffix is enough: `okq get 0002-library-stack`.
@@ -104,15 +109,16 @@ Then invoke one with `/okq-explore`, `/okq-write-okf`, or `/okq-maintain`; `okq-
 | Command | What it does |
 |---------|--------------|
 | `okq search <query>` | Ranked full-text search over section text (BM25). |
-| `okq find` | Filter concepts by `--tag`, `--type`, `--where field=value`, `--match` (`--regex`). |
+| `okq find` | Filter concepts by `--tag`, `--type`, `--where field=value`, `--match` (`--regex`), `--status`, `--trust`, `--stale`. |
 | `okq get <concept>` | Print a concept's frontmatter and/or body, or one `--section` or `--field`. |
 | `okq neighbors <concept>` | Adjacent concepts via the link graph (`--depth`, `--direction`, `--edge`). |
 | `okq backlinks <concept>` | Concepts that link to this one. |
 | `okq path <a> <b>` | Shortest link path between two concepts (`--undirected`). |
 | `okq orphans` | Concepts with no inbound links (`--check` for CI). |
 | `okq deadlinks` | Broken links pointing at missing concepts (`--check` for CI; `--phantoms` also lists bare `[[wikilinks]]` to not-yet-created notes). |
-| `okq stats` | Counts by type and tag, link density, edge types, hubs. |
+| `okq stats` | Counts by type, tag, trust tier and status; link density, edge types, hubs. |
 | `okq validate` | Check OKF conformance; report unparseable/untyped/malformed docs (alias `doctor`, `--check` for CI). |
+| `okq lint` | Bundle hygiene beyond conformance: 16 coded rules (`--rule`/`--ignore`, `--check` for CI). Never affects conformance. |
 | `okq schema [<cmd>]` | JSON Schema for a command's `--json` output. |
 | `okq init` | Scaffold a new bundle: `adrs/` + `features/`, a seed ADR, a README. |
 | `okq new <type> [title]` | Add one concept from a template (`adr` numbers itself, `feature` slugifies). |

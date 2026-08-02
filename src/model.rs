@@ -7,11 +7,12 @@
 
 use std::collections::HashSet;
 
-use okf::{Bundle, Concept, ConceptId, Frontmatter, Value};
+use okf::{Bundle, Concept, ConceptId, Date, Frontmatter, Value};
 use schemars::JsonSchema;
 use serde::Serialize;
 
 use crate::error::AppError;
+use crate::trust::ConceptTrust;
 use crate::view::Corpus;
 
 /// Parses a caller-supplied identity into a [`ConceptId`] *syntactically*: a
@@ -176,11 +177,20 @@ pub struct ConceptRecord {
     pub line: usize,
     /// The concept's tags (empty if none).
     pub tags: Vec<String>,
+    /// Trust & lifecycle values, each omitted when at its default (see
+    /// [`ConceptTrust`] and `docs/features/trust.md`).
+    #[serde(flatten)]
+    pub trust: ConceptTrust,
 }
 
 impl ConceptRecord {
     /// Builds a record from a loaded concept, with a bundle-relative path.
-    pub fn from_concept(bundle: &Bundle, c: &Concept) -> Self {
+    ///
+    /// `today` is the day staleness is evaluated against; `None` skips the
+    /// staleness check. It is an explicit parameter rather than a clock read so
+    /// that a caller can pin it (`find --today`) and get a reproducible answer
+    /// (ADR-0014).
+    pub fn from_concept(bundle: &Bundle, c: &Concept, today: Option<Date>) -> Self {
         let rel = c.path.strip_prefix(bundle.root()).unwrap_or(&c.path);
         ConceptRecord {
             id: c.id.to_string(),
@@ -189,6 +199,7 @@ impl ConceptRecord {
             path: rel.to_string_lossy().replace('\\', "/"),
             line: 1,
             tags: concept_tags(c),
+            trust: ConceptTrust::of(c, today),
         }
     }
 }

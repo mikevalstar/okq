@@ -20,9 +20,9 @@ Options:
           Minimum severity to display
 
           Possible values:
-          - error:   Conformance errors only
-          - warning: Warnings and errors (default)
-          - info:    Everything, including info-level findings (e.g. unresolved links)
+          - error:   Errors only (`lint` never reports any)
+          - warning: Warnings and errors
+          - info:    Everything, including info-level findings
           
           [default: warning]
 

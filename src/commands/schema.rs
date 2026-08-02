@@ -8,7 +8,7 @@ use crate::error::AppError;
 
 /// The commands that produce a `--json` envelope, in stable order. `neighbors`
 /// and `backlinks` share an output type (and therefore a schema).
-pub const COMMANDS: [&str; 11] = [
+pub const COMMANDS: [&str; 12] = [
     "get",
     "find",
     "search",
@@ -19,6 +19,7 @@ pub const COMMANDS: [&str; 11] = [
     "deadlinks",
     "stats",
     "validate",
+    "lint",
     "index",
 ];
 
@@ -33,6 +34,7 @@ fn schema_for_command(command: &str) -> Option<serde_json::Value> {
         "deadlinks" => schema_for!(crate::commands::graph::DeadlinksOutput),
         "stats" => schema_for!(crate::commands::stats::StatsOutput),
         "validate" => schema_for!(crate::commands::validate::ValidateOutput),
+        "lint" => schema_for!(crate::commands::lint::LintOutput),
         "index" => schema_for!(crate::commands::index::IndexOutput),
         _ => return None,
     };

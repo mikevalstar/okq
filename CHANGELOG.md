@@ -11,6 +11,53 @@ attaches prebuilt binaries to the GitHub Release.
 
 ## [Unreleased]
 
+## [0.7.0] — 2026-08-02
+
+### Added
+
+- **Trust & lifecycle on every concept** ([trust.md](docs/features/trust.md)).
+  Concept records now carry the OKF v0.2 answer to "should I believe this, and
+  is it still current": the lifecycle `status`, the **derived** trust tier
+  (`unverified` / `machine-confirmed` / `human-reviewed`, computed from the
+  `verified` actors — any `human:` verifier wins), and whether the concept is
+  past its `stale_after` date.
+  - `okq find --status <STATUS>`, `--trust <TIER>` (both repeatable, OR within a
+    flag and AND across flags), and `--stale`.
+  - `--today <YYYY-MM-DD>` pins the day staleness is evaluated against, so a
+    stale query is reproducible; it defaults to the system date.
+  - `okq get` prints the `generated` and `verified` events the tier was derived
+    from, so the derivation is auditable; `--json` carries them under
+    `provenance`.
+  - `okq stats` gains trust-tier and status distributions.
+  - A producer-defined `status` outside draft/stable/deprecated is reported
+    **verbatim**, as §5.4 requires.
+- **`okq lint`** ([lint.md](docs/features/lint.md)) — bundle hygiene beyond
+  conformance, wrapping okf 0.2's 16 coded rules (L1–L16): orphans no index
+  lists, verifications older than the content they cover, links into deprecated
+  concepts, stale `index.md` listings, leftover v0.1 `timestamp`/`# Citations`
+  blocks, duplicate titles, and more.
+  - `--rule` / `--ignore` filter by code (case-insensitively); passing both, or
+    an unknown code, is a usage error rather than a silent no-op.
+  - `--check` exits **3** when findings survive the filters, joining the shared
+    `--check` gate. `--severity` and `--today` work as they do elsewhere.
+  - okq lifts okf's `[Lnn] ` message prefix into a structured `rule` field, so
+    CI and agents can pin a rule without regexing prose.
+  - Lint is an **opinion, not conformance**: it never reports an error severity
+    and never changes what `okq validate` calls conformant.
+
+### Changed
+
+- The shared concept envelope grew its first fields since `tags`. They are
+  **omitted when at their spec-defined default** — absent `status` means
+  `stable`, absent `trust` means `unverified`, absent `stale` means not stale —
+  so a bundle carrying no trust frontmatter emits byte-identical JSON to 0.6.2
+  and existing agent parsers are unaffected
+  ([ADR-0014](docs/adrs/0014-surfacing-okf-v02-semantics.md)).
+- `--severity`'s help text is now neutral between `validate` and `lint`, which
+  have different defaults (`warning` and `info`).
+- Dependency refresh: clap 4.6.5, schemars 1.2.2, rustls 0.23.43, http 1.5.0,
+  and 4 other transitive bumps.
+
 ## [0.6.2] — 2026-08-02
 
 ### Changed

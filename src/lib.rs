@@ -14,6 +14,7 @@ pub mod model;
 pub mod sections;
 pub mod tags;
 pub mod templates;
+pub mod trust;
 pub mod view;
 pub mod wikilinks;
 pub mod yaml_json;
@@ -183,6 +184,22 @@ fn dispatch(cli: &Cli) -> Result<i32, AppError> {
                 );
             }
             Ok(check_code(args.check, out.errors))
+        }
+        Command::Lint(args) => {
+            let out = commands::lint::run(&cli.bundle, args, cli.no_ignore)?;
+            if cli.json {
+                println!("{}", commands::lint::to_json(&out));
+            } else {
+                if !out.diagnostics.is_empty() {
+                    let mut w = anstream::stdout().lock();
+                    commands::lint::render_human(&mut w, &out, cli.no_color)?;
+                }
+                eprintln!(
+                    "{} finding(s): {} warning(s), {} info(s).",
+                    out.findings, out.warnings, out.infos
+                );
+            }
+            Ok(check_code(args.check, out.findings))
         }
         Command::Schema(args) => {
             let value = commands::schema::run(args)?;

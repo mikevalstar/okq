@@ -37,6 +37,14 @@ pub struct GetOutput {
     pub type_: Option<String>,
     /// The concept's title: the frontmatter `title`, or the filename if none.
     pub title: String,
+    /// Trust & lifecycle values, each omitted when at its default
+    /// (`docs/features/trust.md`).
+    #[serde(flatten)]
+    pub trust: crate::trust::ConceptTrust,
+    /// The `generated` and `verified` events the trust tier was derived from.
+    /// Omitted when the concept carries neither.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub provenance: Option<TrustEvents>,
     /// Frontmatter (well-known keys + producer extensions), narrowed to the one
     /// key named by `--field` if given. Omitted unless requested.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -47,6 +55,30 @@ pub struct GetOutput {
     /// The selected section(s). Present only with `--section`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sections: Option<Vec<SectionOut>>,
+}
+
+/// The evidence behind a derived trust tier: who produced the content and who
+/// has confirmed it. Reported so the derivation is auditable rather than magic
+/// (ADR-0014).
+#[derive(Debug, Serialize, JsonSchema)]
+pub struct TrustEvents {
+    /// `generated: {by, at}` — who wrote the current content, and when.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub generated: Option<TrustEvent>,
+    /// `verified: [{by, at}]` — every confirmation, in frontmatter order.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub verified: Vec<TrustEvent>,
+}
+
+/// One `{by, at}` event, with both fields as written.
+#[derive(Debug, Serialize, JsonSchema)]
+pub struct TrustEvent {
+    /// The actor, in the §7 convention (`human:mike`, `agent:okq@0.6`).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub by: Option<String>,
+    /// The timestamp exactly as written in the frontmatter.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub at: Option<String>,
 }
 
 /// A section as it appears in the JSON envelope.
@@ -156,12 +188,38 @@ pub fn run(bundle_dir: &Path, args: &GetArgs, no_ignore: bool) -> Result<Got, Ap
             line: 1,
             type_: frontmatter.type_().map(|t| t.into_owned()),
             title: crate::model::concept_title(concept),
+            trust: crate::trust::ConceptTrust::from_frontmatter(
+                frontmatter,
+                okf::Date::today_utc(),
+            ),
+            provenance: trust_events(frontmatter),
             frontmatter: frontmatter_json,
             body: want_body.then(|| body.clone()),
             sections,
         },
         frontmatter_yaml,
         field_yaml,
+    })
+}
+
+/// Collects the `generated`/`verified` events, or `None` when there are none —
+/// so a concept with no trust frontmatter carries no extra keys at all.
+fn trust_events(fm: &okf::Frontmatter) -> Option<TrustEvents> {
+    let generated = fm.generated().map(|g| TrustEvent {
+        by: g.by.map(|a| a.as_str().to_string()),
+        at: g.at.map(|d| d.raw),
+    });
+    let verified: Vec<TrustEvent> = fm
+        .verified()
+        .into_iter()
+        .map(|v| TrustEvent {
+            by: v.by.map(|a| a.as_str().to_string()),
+            at: v.at.map(|d| d.raw),
+        })
+        .collect();
+    (generated.is_some() || !verified.is_empty()).then_some(TrustEvents {
+        generated,
+        verified,
     })
 }
 
@@ -251,12 +309,25 @@ pub fn render_human(w: &mut impl std::io::Write, got: &Got, no_color: bool) -> s
     } else {
         anstyle::Style::new().bold()
     };
+    // `--field` prints the value alone (pipe-safe), so neither the header nor
+    // the trust block appears with it.
     if got.field_yaml.is_none() {
-        writeln!(
+        let labels = got.output.trust.labels();
+        let dim = if no_color {
+            anstyle::Style::new()
+        } else {
+            anstyle::Style::new().dimmed()
+        };
+        write!(
             w,
             "{header}{}:{}{header:#}",
             got.output.path, got.output.line
         )?;
+        if !labels.is_empty() {
+            write!(w, "  {dim}[{}]{dim:#}", labels.join(", "))?;
+        }
+        writeln!(w)?;
+        render_trust_events(w, got.output.provenance.as_ref(), dim)?;
     }
 
     if let Some(fm) = &got.frontmatter_yaml {
@@ -271,6 +342,37 @@ pub fn render_human(w: &mut impl std::io::Write, got: &Got, no_color: bool) -> s
     if let Some(sections) = &got.output.sections {
         for s in sections {
             writeln!(w, "\n{}", s.body.trim_end())?;
+        }
+    }
+    Ok(())
+}
+
+/// The `generated`/`verified` evidence lines, aligned. Prints nothing when the
+/// concept carries no trust events.
+fn render_trust_events(
+    w: &mut impl std::io::Write,
+    events: Option<&TrustEvents>,
+    dim: anstyle::Style,
+) -> std::io::Result<()> {
+    let Some(events) = events else {
+        return Ok(());
+    };
+    let mut rows: Vec<(&str, &TrustEvent)> = Vec::new();
+    if let Some(g) = &events.generated {
+        rows.push(("generated", g));
+    }
+    rows.extend(events.verified.iter().map(|v| ("verified", v)));
+
+    let widest = rows
+        .iter()
+        .filter_map(|(_, e)| e.by.as_deref().map(str::len))
+        .max()
+        .unwrap_or(0);
+    for (label, e) in rows {
+        let by = e.by.as_deref().unwrap_or("-");
+        match &e.at {
+            Some(at) => writeln!(w, "{dim}{label:<9}  {by:<widest$}  {at}{dim:#}")?,
+            None => writeln!(w, "{dim}{label:<9}  {by}{dim:#}")?,
         }
     }
     Ok(())
