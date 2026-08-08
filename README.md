@@ -16,14 +16,16 @@ OKF is a small, vendor-neutral convention: one concept per Markdown file, a hand
 cargo install okq
 ```
 
-Prebuilt binaries for macOS, Linux, and Windows are also attached to each
-[GitHub release](https://github.com/mikevalstar/okq/releases/latest).
-
-Or with [mise](https://mise.jdx.dev):
+Or with [mise](https://mise.jdx.dev) — build from crates.io, or install the
+prebuilt binary from GitHub releases:
 
 ```sh
-mise use -g cargo:okq
+mise use -g cargo:okq                # compile via cargo
+mise use -g github:mikevalstar/okq   # prebuilt binary
 ```
+
+Prebuilt binaries for macOS, Linux, and Windows are also attached to each
+[GitHub release](https://github.com/mikevalstar/okq/releases/latest).
 
 ## Usage
 
