@@ -11,6 +11,29 @@ attaches prebuilt binaries to the GitHub Release.
 
 ## [Unreleased]
 
+## [0.8.0] — 2026-08-08
+
+### Added
+
+- **`okq spec` — the OKF specification, from the binary.** Prints a
+  byte-exact, vendored copy of the upstream OKF v0.2 `SPEC.md`
+  ([ADR-0015](docs/adrs/0015-embed-the-okf-spec-text-in-the-binary.md)), so
+  the format rules this build implements are available offline, with no bundle
+  required. `--section <heading>` narrows to one section (same heading/slug
+  matching as `get --section`, misses exit `5`); `--json` emits an
+  `okq.spec/v1` envelope with `okf_version`, provenance, and license,
+  registered in `okq schema`. The copy is pinned to an upstream commit;
+  provenance and the update procedure live in `spec/README.md`.
+
+### Fixed
+
+- **`okq index` stamped a fresh root `index.md` with `okf_version: "0.1"`**
+  while `okq init` wrote `"0.2"` — the index-command path now writes `"0.2"`
+  too. Swept the remaining OKF v0.1 leftovers while there: stale v0.1 section
+  numbers cited in code comments and feature specs (index files are §8,
+  conformance §11, versioning §12 in v0.2), and this repo's own
+  `docs/index.md` version marker.
+
 ## [0.7.1] — 2026-08-02
 
 ### Fixed
@@ -377,7 +400,10 @@ dogfooded against this repo's own `docs/` bundle.
   taxonomy ([ADR-0004](docs/adrs/0004-exit-code-taxonomy.md)), and token-frugal
   `path:line` output.
 
-[Unreleased]: https://github.com/mikevalstar/okq/compare/v0.6.1...HEAD
+[Unreleased]: https://github.com/mikevalstar/okq/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/mikevalstar/okq/compare/v0.7.1...v0.8.0
+[0.7.1]: https://github.com/mikevalstar/okq/compare/v0.7.0...v0.7.1
+[0.7.0]: https://github.com/mikevalstar/okq/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/mikevalstar/okq/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/mikevalstar/okq/compare/v0.5.2...v0.6.0
 [0.5.2]: https://github.com/mikevalstar/okq/compare/v0.5.1...v0.5.2

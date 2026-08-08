@@ -24,6 +24,7 @@ Copy [`_template.md`](_template.md) to start a new one, or run
 | okq index | [index-command.md](index-command.md) |
 | Inline tags — Obsidian | [inline-tags.md](inline-tags.md) |
 | okq lint — opinionated bundle hygiene beyond conformance | [lint.md](lint.md) |
+| okq spec | [okq-spec.md](okq-spec.md) |
 | .okqignore — exclude files from a bundle | [okqignore.md](okqignore.md) |
 | Phantom vs broken links — deadlinks that understands Obsidian's unresolved notes | [phantom-links.md](phantom-links.md) |
 | okq init & new — scaffold and author OKF bundles | [scaffold.md](scaffold.md) |

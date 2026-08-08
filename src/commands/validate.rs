@@ -21,7 +21,7 @@ pub const SCHEMA: &str = "okq.validate/v1";
 pub struct ValidateOutput {
     /// Schema tag (`okq.validate/v1`).
     pub schema: &'static str,
-    /// True when the bundle has no error-severity diagnostics (§9 conformant).
+    /// True when the bundle has no error-severity diagnostics (§11 conformant).
     pub conformant: bool,
     /// Total error-severity diagnostics (independent of the `--severity` floor).
     pub errors: usize,

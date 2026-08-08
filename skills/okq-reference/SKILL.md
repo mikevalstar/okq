@@ -35,6 +35,7 @@ when working in a Markdown-with-frontmatter knowledge base.
 | `validate` | OKF conformance: unparseable, untyped, or malformed docs. `--check`, `--severity`. |
 | `lint` | Bundle hygiene beyond conformance, 16 coded rules (L1–L16). `--check`, `--rule`, `--ignore`, `--today`. Never an error, never affects conformance. |
 | `schema <command>` | JSON Schema for a command's `--json` output (the agent contract). |
+| `spec` | Print the OKF specification this build implements (v0.2, verbatim, embedded — works offline, no bundle needed). `--section <heading>`. |
 | `new <type> [title]` | Create one concept from a template (`adr` \| `feature`). `--list`. |
 | `init` | Scaffold a new OKF bundle (idempotent). |
 

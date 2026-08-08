@@ -1,0 +1,43 @@
+---
+source: tests/help.rs
+expression: "help(&[\"spec\", \"--help\"])"
+---
+Print the OKF specification this build implements (v0.2, verbatim)
+
+Usage: okq spec [OPTIONS]
+
+Options:
+      --bundle <DIR>
+          Bundle directory to query [default: current directory]
+
+      --section <HEADING>
+          Print only the named section (matched by heading text or slug)
+
+      --json
+          Emit machine-readable JSON on stdout instead of human-readable text
+
+      --no-color
+          Disable colored output (also honors NO_COLOR)
+
+      --no-ignore
+          Ignore all .okqignore files; query the full tree, nothing excluded
+
+  -h, --help
+          Print help (see a summary with '-h')
+
+Examples:
+  # The exact OKF v0.2 specification text this okq build implements
+  okq spec
+
+  # Read it comfortably
+  okq spec | less
+
+  # Just one section, by heading text or slug
+  okq spec --section "5.3 Trust tiers"
+  okq spec --section 11-conformance
+
+  # Machine-readable, with version and provenance
+  okq spec --json | jq -r .okf_version
+
+The text is embedded in the binary — an exact, offline copy of the upstream
+spec (github.com/GoogleCloudPlatform/knowledge-catalog), Apache-2.0.

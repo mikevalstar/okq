@@ -22,7 +22,7 @@ there.
 
 ## Motivation
 
-OKF only *requires* a non-empty `type` for spec conformance (§9), and the `okf`
+OKF only *requires* a non-empty `type` for spec conformance (§11), and the `okf`
 loader is permissive: a file that doesn't begin with a `---` delimiter parses
 with an **empty frontmatter and the whole text as the body** — it is not a parse
 error and already loads as a concept. But okq read `title` straight from the

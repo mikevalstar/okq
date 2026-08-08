@@ -206,7 +206,7 @@ fn inject(existing: &str, block: &str) -> String {
 }
 
 /// A fresh `index.md` for a directory that has none. The root carries
-/// `okf_version` (OKF §11); subdirectory indexes carry no frontmatter (§6).
+/// `okf_version` (OKF §12); subdirectory indexes carry no frontmatter (§8).
 fn scaffold(dir: &str, root: &Path, block: &str) -> String {
     if dir.is_empty() {
         let name = root
@@ -214,7 +214,7 @@ fn scaffold(dir: &str, root: &Path, block: &str) -> String {
             .map(|n| n.to_string_lossy().to_string())
             .filter(|n| !n.is_empty())
             .unwrap_or_else(|| "Knowledge base".to_string());
-        format!("---\nokf_version: \"0.1\"\n---\n\n# {name}\n\n{block}\n")
+        format!("---\nokf_version: \"0.2\"\n---\n\n# {name}\n\n{block}\n")
     } else {
         format!("# {}\n\n{block}\n", last_seg(dir))
     }

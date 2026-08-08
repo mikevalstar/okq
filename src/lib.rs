@@ -206,6 +206,17 @@ fn dispatch(cli: &Cli) -> Result<i32, AppError> {
             println!("{}", commands::schema::to_json(&value));
             Ok(exit::SUCCESS)
         }
+        Command::Spec(args) => {
+            let out = commands::spec::run(args)?;
+            if cli.json {
+                println!("{}", commands::spec::to_json(&out));
+            } else {
+                // Verbatim: the promise is the exact spec text, so no added
+                // header/footer and no println-appended newline.
+                print!("{}", out.text);
+            }
+            Ok(exit::SUCCESS)
+        }
         Command::Init(_) => {
             let report = commands::scaffold::init(&cli.bundle, cli.no_ignore)?;
             for action in &report {

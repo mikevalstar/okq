@@ -48,7 +48,7 @@ Scaffolds into `--bundle <dir>` (default: cwd), creating only absent files:
 ```
 <bundle>/
 ├── README.md          # base README, or okq section injected into an existing one
-├── index.md           # root listing + `okf_version: "0.2"` (OKF §6/§11)
+├── index.md           # root listing + `okf_version: "0.2"` (OKF §8/§12)
 ├── adrs/
 │   ├── index.md        # "Architecture Decision Records" directory listing
 │   └── 0001-record-architecture-decisions.md   # canonical seed ADR
@@ -64,8 +64,8 @@ concepts, which read as orphans while no index listed them.
 
 Each piece earns its place:
 - **`adrs/` and `features/`** — the two folders, plus the README handling below.
-- **Root `index.md`** carries `okf_version: "0.1"` (the spec's bundle-version
-  marker, §11) and doubles as the root directory listing (§6).
+- **Root `index.md`** carries `okf_version: "0.2"` (the spec's bundle-version
+  marker, §12) and doubles as the root directory listing (§8).
 - **Per-folder `index.md`** are real OKF directory listings — and keep the dirs
   non-empty so git tracks them.
 - **Seed `adrs/0001-record-architecture-decisions.md`** — Michael Nygard's

@@ -263,8 +263,9 @@ fn normalize_key(key: &str) -> String {
 }
 
 /// Selects the one section matching `query` by case-insensitive heading text or
-/// slug; zero or multiple matches are errors (exit 5).
-fn select_section<'a>(
+/// slug; zero or multiple matches are errors (exit 5). `concept` names the
+/// document searched, for the error message (also reused by `okq spec`).
+pub(crate) fn select_section<'a>(
     sections: &'a [Section],
     query: &str,
     concept: &str,

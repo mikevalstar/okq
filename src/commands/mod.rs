@@ -9,5 +9,6 @@ pub mod scaffold;
 pub mod schema;
 pub mod search;
 pub mod skills;
+pub mod spec;
 pub mod stats;
 pub mod validate;

@@ -25,6 +25,7 @@ Commands:
   validate   Check OKF conformance: report unparseable, untyped, or malformed docs [alias: doctor]
   lint       Lint bundle hygiene: coded checks beyond conformance (orphans, drift, staleness)
   schema     Print the JSON Schema for a command's --json output (the agent contract)
+  spec       Print the OKF specification this build implements (v0.2, verbatim)
   init       Scaffold a new OKF bundle (adrs/ + features/, seed docs, README)
   new        Create one concept from a template (adr | feature)
   index      Regenerate the directory-listing index.md files from the bundle's concepts

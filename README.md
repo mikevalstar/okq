@@ -120,6 +120,7 @@ Then invoke one with `/okq-explore`, `/okq-write-okf`, or `/okq-maintain`; `okq-
 | `okq validate` | Check OKF conformance; report unparseable/untyped/malformed docs (alias `doctor`, `--check` for CI). |
 | `okq lint` | Bundle hygiene beyond conformance: 16 coded rules (`--rule`/`--ignore`, `--check` for CI). Never affects conformance. |
 | `okq schema [<cmd>]` | JSON Schema for a command's `--json` output. |
+| `okq spec` | Print the OKF specification this build implements (v0.2, verbatim; `--section` for one heading). |
 | `okq init` | Scaffold a new bundle: `adrs/` + `features/`, a seed ADR, a README. |
 | `okq new <type> [title]` | Add one concept from a template (`adr` numbers itself, `feature` slugifies). |
 | `okq index` | Regenerate the `index.md` directory listings (`--check` for CI). |

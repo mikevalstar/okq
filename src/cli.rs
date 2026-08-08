@@ -134,6 +134,24 @@ Examples:
   # All schemas, as a committable contract artifact
   okq schema > schemas.json";
 
+const SPEC_EXAMPLES: &str = "\
+Examples:
+  # The exact OKF v0.2 specification text this okq build implements
+  okq spec
+
+  # Read it comfortably
+  okq spec | less
+
+  # Just one section, by heading text or slug
+  okq spec --section \"5.3 Trust tiers\"
+  okq spec --section 11-conformance
+
+  # Machine-readable, with version and provenance
+  okq spec --json | jq -r .okf_version
+
+The text is embedded in the binary — an exact, offline copy of the upstream
+spec (github.com/GoogleCloudPlatform/knowledge-catalog), Apache-2.0.";
+
 const INIT_EXAMPLES: &str = "\
 Examples:
   # Scaffold an OKF bundle in the current directory
@@ -307,6 +325,10 @@ pub enum Command {
     #[command(after_help = SCHEMA_EXAMPLES, after_long_help = SCHEMA_EXAMPLES)]
     Schema(SchemaArgs),
 
+    /// Print the OKF specification this build implements (v0.2, verbatim).
+    #[command(after_help = SPEC_EXAMPLES, after_long_help = SPEC_EXAMPLES)]
+    Spec(SpecArgs),
+
     /// Scaffold a new OKF bundle (adrs/ + features/, seed docs, README).
     #[command(after_help = INIT_EXAMPLES, after_long_help = INIT_EXAMPLES)]
     Init(InitArgs),
@@ -478,6 +500,14 @@ pub struct SchemaArgs {
     /// Command whose output schema to print; omit for all commands.
     #[arg(value_name = "COMMAND")]
     pub command: Option<String>,
+}
+
+/// Arguments for `okq spec`.
+#[derive(Args, Debug)]
+pub struct SpecArgs {
+    /// Print only the named section (matched by heading text or slug).
+    #[arg(long, value_name = "HEADING")]
+    pub section: Option<String>,
 }
 
 /// Arguments for `okq init`.

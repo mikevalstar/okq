@@ -164,7 +164,7 @@ pub fn seed_adr(date: &str) -> String {
     )
 }
 
-/// The root `index.md` — carries `okf_version` (OKF §11) and a short listing.
+/// The root `index.md` — carries `okf_version` (OKF §12) and a short listing.
 pub fn root_index(name: &str) -> String {
     format!(
         "---\n\
