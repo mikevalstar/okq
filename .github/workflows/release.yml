@@ -17,6 +17,9 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: taiki-e/create-gh-release-action@v1
+        with:
+          # Fill the release body with this version's CHANGELOG.md section.
+          changelog: CHANGELOG.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

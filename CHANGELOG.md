@@ -11,6 +11,14 @@ attaches prebuilt binaries to the GitHub Release.
 
 ## [Unreleased]
 
+### Changed
+
+- The release workflow now fills the GitHub Release body from this file's
+  section for the tagged version (`taiki-e/create-gh-release-action`'s
+  `changelog` input), instead of leaving it empty for hand-written notes.
+  One consequence: links in entries should be absolute URLs, not repo-relative
+  paths, so they resolve from the Releases page too.
+
 ## [0.8.0] — 2026-08-08
 
 ### Added
