@@ -16,12 +16,20 @@ OKF is a small, vendor-neutral convention: one concept per Markdown file, a hand
 cargo install okq
 ```
 
-Or with [mise](https://mise.jdx.dev) — build from crates.io, or install the
-prebuilt binary from GitHub releases:
+Or with [mise](https://mise.jdx.dev), either from the [aqua registry](https://github.com/aquaproj/aqua-registry)
+(prebuilt, checksum-verified — needs mise 2026.8.6 or newer), straight from the
+GitHub release, or compiled from crates.io:
 
 ```sh
-mise use -g cargo:okq                # compile via cargo
+mise use -g aqua:mikevalstar/okq     # prebuilt, checksum-verified
 mise use -g github:mikevalstar/okq   # prebuilt binary
+mise use -g cargo:okq                # compile via cargo
+```
+
+[aqua](https://aquaproj.github.io) itself works too:
+
+```sh
+aqua g -i mikevalstar/okq
 ```
 
 Prebuilt binaries for macOS, Linux, and Windows are also attached to each
@@ -172,6 +180,13 @@ Ignored files are treated as if they weren't in the bundle: they don't show up i
 | 3 | A `--check` run found issues (`orphans`/`deadlinks`). |
 | 4 | Concept not found. |
 | 5 | Section not found or ambiguous. |
+
+## Packaging
+
+okq is in the [aqua registry](https://github.com/aquaproj/aqua-registry/tree/main/pkgs/mikevalstar/okq),
+which is where the `aqua:` install above comes from. New releases are picked up
+automatically, and every download is checked against the `.sha256` published
+alongside it.
 
 ## License
 
