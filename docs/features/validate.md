@@ -3,11 +3,13 @@ type: feature
 title: okq validate (alias doctor)
 status: active # draft | accepted | active | deprecated
 created: 2026-06-27
-updated: 2026-08-02
+updated: 2026-09-05
 tags: [cli, health, conformance, validate, ci]
 milestone: null # milestones retired — see CHANGELOG.md
 command: okq validate
 related:
+  - ./lint.md
+  - ../adrs/0016-okf-workspace-split.md
   - ./stats.md
   - ./graph.md
   - ./find.md
@@ -37,10 +39,18 @@ today. `validate` surfaces it — and resolves the open question already recorde
 an open question").
 
 It's also cheap and honest to build: the upstream `okf` crate already ships
-`validate_bundle()`, which returns a `Report` of severity-tagged diagnostics
+`validate_bundle_at()`, which returns a `Report` of severity-tagged diagnostics
 (unparseable docs and missing `type` as errors; missing recommended fields, bad
-`timestamp`, malformed `index.md`/`log.md` as warnings; unresolved links as info).
+timestamps, malformed `index.md`/`log.md` as warnings; unresolved links as info).
 `okq validate` wraps that in okq's envelope, `--json`, and exit-code contract.
+
+okf 0.2.7 widened the report considerably: most of what [`lint`](./lint.md) used
+to report — missing recommended fields, legacy v0.1 keys, links to deprecated
+concepts, duplicate titles, a stale `index.md`, and staleness itself — is a
+`validate` warning now
+([ADR-0016](../adrs/0016-okf-workspace-split.md)). The two commands still divide
+the same way they always did: `validate` is the spec's judgment, `lint` is an
+opinion about authoring hygiene. okf just moved where the line falls.
 
 ## Scope
 
@@ -59,6 +69,9 @@ It's also cheap and honest to build: the upstream `okf` crate already ships
   ([ADR-0013](../adrs/0013-back-to-upstream-okf.md)); see
   [emoji-filenames.md](./emoji-filenames.md).
 - Severity filtering and a `--check` mode for CI.
+- `--today` for the staleness check (V12), so a run is reproducible: same bundle
+  plus same date gives the same answer. It moved here from `lint` when okf 0.2.7
+  rebalanced the two ([ADR-0016](../adrs/0016-okf-workspace-split.md)).
 - The `doctor` alias as a friendlier name for the same command.
 
 ### Out of scope
@@ -87,6 +100,7 @@ okq validate                    # full conformance report
 okq doctor                      # alias — identical behavior
 okq validate --check            # exit 3 if any error-severity issue (CI gate)
 okq validate --severity warning # show warnings and errors (filter the floor)
+okq validate --today 2026-09-05 # reproducible staleness (V12)
 okq --bundle docs validate --json
 ```
 
@@ -95,6 +109,9 @@ okq --bundle docs validate --json
   open questions.
 - `--severity <error|warning|info>` sets the minimum severity shown (default:
   show all, or at least warning+error — see open questions).
+- `--today <YYYY-MM-DD>` evaluates `stale_after` against a fixed date instead of
+  the system clock. Without it, staleness is checked against today; a malformed
+  value is a usage error (exit 2).
 - Honors `--bundle`, `--no-ignore`, `--json`. Ignored files are not validated
   unless `--no-ignore`.
 
@@ -122,13 +139,14 @@ Shared taxonomy ([ADR-0004](../adrs/0004-exit-code-taxonomy.md)):
 ## Acceptance criteria
 
 - [ ] `okq validate` lists each conformance issue with severity, path, and reason,
-      sourced from `okf::validate_bundle`.
+      sourced from `okf_validator::validate_bundle_at`.
 - [ ] `okq doctor` is accepted as an alias and behaves identically.
 - [ ] A doc with broken frontmatter (silently dropped from queries today) appears
       as an **error** in `validate`.
 - [ ] `--check` exits 3 on a non-conformant bundle, 0 on a conformant one, writing
       nothing.
 - [ ] `--severity` filters the minimum level shown.
+- [ ] `--today` makes the staleness check reproducible; a malformed date exits 2.
 - [ ] `--json` emits the documented `okq.validate/v1` envelope; a clean bundle
       reports `conformant: true` with empty diagnostics.
 - [ ] Respects `.okqignore` (and `--no-ignore`).
@@ -156,3 +174,5 @@ Shared taxonomy ([ADR-0004](../adrs/0004-exit-code-taxonomy.md)):
 - [emoji-filenames.md](./emoji-filenames.md) — the names that draw a portability warning
 - [ADR-0004](../adrs/0004-exit-code-taxonomy.md) — the exit-code contract (`--check` → 3)
 - [ADR-0013](../adrs/0013-back-to-upstream-okf.md) — upstream okf 0.2, which added the portability lint
+- [ADR-0016](../adrs/0016-okf-workspace-split.md) — the okf 0.2.7 rebalance that moved most lint rules here
+- [lint.md](./lint.md) — the hygiene half of the split, and where each rule went

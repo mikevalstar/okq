@@ -1,17 +1,27 @@
 //! Trust & lifecycle values, derived from OKF v0.2 frontmatter.
 //!
-//! okf owns the semantics (`§5.2`–`§5.5`): `Frontmatter::trust_tier()` derives
-//! the tier from the `verified` list, `status()` reads the lifecycle value, and
-//! `is_stale_on()` compares `stale_after` against a day. okq's job here is to
-//! turn those into the small, serializable shape the shared concept envelope
-//! carries, and to decide what counts as a default worth omitting.
+//! okf owns the semantics (`§5.2`–`§5.5`): `status()` reads the lifecycle
+//! value, and the `verified` / `stale_after` keys carry the rest. okq's job
+//! here is to turn those into the small, serializable shape the shared concept
+//! envelope carries, and to decide what counts as a default worth omitting.
+//!
+//! **Two predicates okq computes itself.** okf 0.2.7 tightened
+//! `Frontmatter::trust_tier()` and `is_stale_on()` to require a full ISO-8601
+//! timestamp with a time of day *and* an explicit UTC offset, so a bare
+//! `at: 2026-07-14` stops counting. okq reads bundles it did not write —
+//! including ones its own older releases scaffolded with bare dates — and
+//! silently reclassifying those as `unverified` is the wrong failure mode for a
+//! trust signal. So [`tier_of`] counts any named verifier and [`is_stale`]
+//! accepts a date *or* a datetime — which is what okf 0.2.1 did. `okq validate`
+//! still reports the imprecise value as a V6/V7/V11 warning, so an author is
+//! told to tighten it (ADR-0016).
 //!
 //! Every field is **omitted at its spec-defined default** (ADR-0014): absent
 //! `status` means `stable`, absent `trust` means `unverified`, absent `stale`
 //! means not stale. A concept with no trust frontmatter therefore serializes
 //! exactly as it did before this existed. See `docs/features/trust.md`.
 
-use okf::{Concept, Date, Frontmatter, Status, TrustTier};
+use okf::{Actor, Concept, Date, Frontmatter, Status, TrustTier};
 use schemars::JsonSchema;
 use serde::Serialize;
 
@@ -48,11 +58,11 @@ impl ConceptTrust {
     /// Same, from frontmatter alone — `get` already holds one.
     pub fn from_frontmatter(fm: &Frontmatter, today: Option<Date>) -> Self {
         let status = fm.status();
-        let tier = fm.trust_tier();
+        let tier = tier_of(fm);
         ConceptTrust {
             status: (status != Status::Stable).then(|| status.to_string()),
-            trust: (tier != TrustTier::Unverified).then(|| tier.to_string()),
-            stale: today.and_then(|d| fm.is_stale_on(d).then_some(true)),
+            trust: (tier != TrustTier::Unverified).then(|| tier_name(tier).to_string()),
+            stale: today.and_then(|d| is_stale(fm, d).then_some(true)),
         }
     }
 
@@ -77,6 +87,47 @@ impl ConceptTrust {
         }
         out
     }
+}
+
+/// The trust tier a concept's `verified` events derive to.
+///
+/// An event counts when it **names a verifier**. The tier answers *who* has
+/// reviewed this, not *when*, so a missing or imprecise `at` does not change
+/// the answer — which is also what okf 0.2.1 did. Any human verifier wins;
+/// non-human verifiers alone yield `machine-confirmed`; no named verifier is
+/// `unverified`. Ordering events by time is a separate question, and one that
+/// does need a parseable timestamp.
+///
+/// See the module docs for why okq derives this rather than calling
+/// `Frontmatter::trust_tier()`.
+pub fn tier_of(fm: &Frontmatter) -> TrustTier {
+    let mut usable = fm
+        .verified()
+        .into_iter()
+        .filter(|v| {
+            v.by.as_ref()
+                .is_some_and(|by| !by.as_str().trim().is_empty())
+        })
+        .peekable();
+    if usable.peek().is_none() {
+        TrustTier::Unverified
+    } else if usable.any(|v| v.by.as_ref().is_some_and(Actor::is_human)) {
+        TrustTier::HumanReviewed
+    } else {
+        TrustTier::MachineConfirmed
+    }
+}
+
+/// Whether `stale_after` has passed on `today`, accepting a bare date where okf
+/// 0.2.7 requires a full offset-bearing timestamp.
+///
+/// A datetime is compared on its date part, without shifting by any offset —
+/// matching the reference implementation's truncation. Missing or unparseable
+/// means never stale.
+pub fn is_stale(fm: &Frontmatter, today: Date) -> bool {
+    fm.stale_after()
+        .and_then(|f| f.datetime)
+        .is_some_and(|dt| today >= dt.date)
 }
 
 /// Canonical spelling of a trust tier, for filters and distributions.

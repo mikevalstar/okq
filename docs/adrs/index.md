@@ -29,5 +29,6 @@ Copy [`_template.md`](_template.md) to start a new one, or run
 | ADR-0013 — Back to upstream okf; retire the okf-permissive fork | [0013-back-to-upstream-okf.md](0013-back-to-upstream-okf.md) |
 | ADR-0014 — Surfacing OKF v0.2 semantics — derived trust in the envelope, lint beside validate | [0014-surfacing-okf-v02-semantics.md](0014-surfacing-okf-v02-semantics.md) |
 | Embed the OKF spec text in the binary | [0015-embed-the-okf-spec-text-in-the-binary.md](0015-embed-the-okf-spec-text-in-the-binary.md) |
+| ADR-0016 — Depend on okf-core and okf-validator, and absorb okf 0.2.7's validate/lint rebalance | [0016-okf-workspace-split.md](0016-okf-workspace-split.md) |
 | ADR-NNNN — Short title of the decision | [_template.md](_template.md) |
 <!-- okq:index:end -->

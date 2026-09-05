@@ -1,6 +1,6 @@
 [package]
 name = "okq"
-version = "0.8.0"
+version = "0.9.0"
 edition = "2024"
 rust-version = "1.85"
 description = "A fast, deterministic CLI for searching and navigating Open Knowledge Format (OKF) document bundles — for humans and AI agents."
@@ -39,10 +39,13 @@ anstyle = "1.0.14"
 clap = { version = "4.6.4", features = ["derive"] }
 dirs = "6.0.0"
 ignore = "0.4.30"
-# Upstream okf, back on the crates.io release: 0.2 accepts spaces, emoji, and
-# Unicode in concept file names, so our okf-permissive fork has nothing left to
-# carry. See docs/adrs/0013-back-to-upstream-okf.md.
-okf = "0.2.1"
+# Upstream okf, split into a workspace at 0.2.7: `okf` is now the CLI binary,
+# so okq takes the two libraries directly. The `package` rename keeps `okf::`
+# paths working for the data layer. okf-validator's default features pull four
+# language parsers (oxc, rustpython, syn, sqlparser) — 223 crates for
+# code-block syntax linting okq does not do. See docs/adrs/0016-okf-workspace-split.md.
+okf = { package = "okf-core", version = "0.2.7" }
+okf-validator = { version = "0.2.7", default-features = false }
 pulldown-cmark = "0.13.4"
 regex = "1.13.1"
 schemars = "1.2.1"

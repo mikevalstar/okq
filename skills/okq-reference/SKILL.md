@@ -32,8 +32,8 @@ when working in a Markdown-with-frontmatter knowledge base.
 | `orphans` | Concepts with no inbound links (stale-doc candidates). `--check`. |
 | `deadlinks` | Links pointing at missing/renamed concepts. `--check`. |
 | `stats` | Bundle overview: counts, distributions (type, tag, trust, status), link density, hubs. `--top N`. |
-| `validate` | OKF conformance: unparseable, untyped, or malformed docs. `--check`, `--severity`. |
-| `lint` | Bundle hygiene beyond conformance, 16 coded rules (L1–L16). `--check`, `--rule`, `--ignore`, `--today`. Never an error, never affects conformance. |
+| `validate` | OKF conformance: unparseable, untyped, or malformed docs, plus dead links, deprecated targets, duplicate titles, and staleness. `--check`, `--severity`, `--today`. |
+| `lint` | Authoring hygiene beyond conformance, 13 coded rules (L1–L13). `--check`, `--rule`, `--ignore`. Never an error, never affects conformance. |
 | `schema <command>` | JSON Schema for a command's `--json` output (the agent contract). |
 | `spec` | Print the OKF specification this build implements (v0.2, verbatim, embedded — works offline, no bundle needed). `--section <heading>`. |
 | `new <type> [title]` | Create one concept from a template (`adr` \| `feature`). `--list`. |

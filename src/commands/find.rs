@@ -175,13 +175,13 @@ impl<'a> Predicate<'a> {
             }
         }
 
-        if !self.tiers.is_empty() && !self.tiers.contains(&fm.trust_tier()) {
+        if !self.tiers.is_empty() && !self.tiers.contains(&crate::trust::tier_of(fm)) {
             return false;
         }
 
         if self.stale_only {
             match self.today {
-                Some(today) if fm.is_stale_on(today) => {}
+                Some(today) if crate::trust::is_stale(fm, today) => {}
                 _ => return false,
             }
         }

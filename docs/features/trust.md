@@ -3,11 +3,12 @@ type: feature
 title: Trust & lifecycle — status, trust tier, and staleness
 status: active # draft | accepted | active | deprecated
 created: 2026-08-02
-updated: 2026-08-02
+updated: 2026-09-05
 tags: [trust, lifecycle, status, staleness, okf, find, get, stats, agents]
 milestone: null
 command: null # cross-cutting: envelope fields plus filters on find
 related:
+  - "../adrs/0016-okf-workspace-split.md"
   - "../adrs/0014-surfacing-okf-v02-semantics.md"
   - "../adrs/0013-back-to-upstream-okf.md"
   - "find.md"
@@ -91,6 +92,27 @@ The tier is derived, not stored: **any** `verified` entry by a `human:<id>`
 actor makes it `human-reviewed`; entries by non-human actors only make it
 `machine-confirmed`; no entries at all is `unverified`.
 
+### Timestamps okq accepts
+
+OKF v0.2 wants `generated.at`, `verified[].at`, and `stale_after` written as
+full ISO-8601 timestamps with a time of day and an explicit UTC offset
+(`2026-09-05T00:00:00Z`), and okf 0.2.7 enforces that: an `at` without an offset
+does not count as a verification event, and a bare `stale_after` date never
+reports stale.
+
+**okq reads the looser forms anyway.** The tier counts any entry that names a
+verifier — it answers *who* reviewed this, not *when*, so a missing or imprecise
+`at` does not change the answer. Staleness accepts a `stale_after` written as
+either a date or a datetime, comparing on the date part.
+
+This is deliberate ([ADR-0016](../adrs/0016-okf-workspace-split.md)). okq reads
+bundles it did not write, including ones its own releases up to 0.8 scaffolded
+with bare dates, and silently reclassifying those as `unverified` is the wrong
+failure mode for a trust signal. The imprecision is still reported —
+[`okq validate`](validate.md) flags it as V6, V7, or V11 — and `okq new` writes
+the strict form. You are told to tighten the value; the answer does not change
+underneath you in the meantime.
+
 Actors follow the §7 convention: `human:<id>` for a person, `process:<id>` for
 an automated process, and `<producer>/<version>` for an agent or tool
 (`okq/0.7.0`). Only the `human:` prefix moves the tier. Anything else is kept
@@ -172,6 +194,7 @@ error. There is deliberately no `--check` here; gating on trust is
       block entirely when absent.
 - [ ] `stats` reports trust-tier and status distributions.
 - [ ] `okq schema find` documents each field's default.
+- [ ] A bare-date `at` or `stale_after` keeps its tier and staleness answer.
 - [ ] Malformed trust frontmatter (`verified: "yesterday"`, a scalar
       `generated`) degrades to the default without a panic.
 
@@ -198,10 +221,12 @@ error. There is deliberately no `--check` here; gating on trust is
   the envelope and is omitted at its default
 - [ADR-0013](../adrs/0013-back-to-upstream-okf.md) — the okf 0.2 move that
   brought the trust module
+- [ADR-0016](../adrs/0016-okf-workspace-split.md) — why okq derives the tier and
+  staleness itself rather than calling okf's stricter versions
+- [validate.md](validate.md) — where an imprecise timestamp is reported
 - [find.md](find.md) — the filters this extends
 - [get.md](get.md) — where the derivation's evidence is shown
 - [stats.md](stats.md) — the distributions
-- [lint.md](lint.md) — the gating counterpart (L4 unverified, L11 stale, L12
-  draft)
+- [lint.md](lint.md) — the gating counterpart (L11 unverified, L12 draft)
 - [design-overview.md](../guides/design-overview.md) — token-frugality, which
   drove the omit-at-default choice

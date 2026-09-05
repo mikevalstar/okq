@@ -59,8 +59,9 @@ Scaffolds into `--bundle <dir>` (default: cwd), creating only absent files:
 `init` finishes by generating the `index.md` listings (the same work `okq index`
 does), so what it leaves behind is a *complete* bundle rather than a nearly
 complete one. Seeding listing-less indexes used to leave a fresh bundle tripping
-okq's own [lint](lint.md) — L16 for the out-of-sync index, and L15 for the seeded
-concepts, which read as orphans while no index listed them.
+okq's own health checks — [`validate`](validate.md)'s V35 for the out-of-sync
+index, and [`lint`](lint.md)'s L9 for the seeded concepts, which read as orphans
+while no index listed them.
 
 Each piece earns its place:
 - **`adrs/` and `features/`** — the two folders, plus the README handling below.
@@ -156,7 +157,10 @@ creating only what's missing and refreshing the README block.
   markers without altering the rest; re-running is idempotent.
 - [ ] `okq init` never overwrites an existing concept.
 - [ ] `okq init` generates the `index.md` listings, so a freshly scaffolded
-  bundle passes `okq lint --check --rule L15 --rule L16`.
+  bundle passes `okq lint --check --rule L9` and draws no out-of-sync warning
+  from `okq validate`.
+- [ ] Scaffolded `generated.at` carries a time of day and an explicit UTC
+  offset, so okf does not flag it.
 - [ ] `okq init` reports each path once, even though a seeded `index.md` is
   written twice (template, then listing).
 - [ ] `okq new` leaves `index.md` untouched, keeps stdout to the path alone, and

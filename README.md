@@ -54,7 +54,7 @@ okq deadlinks
 okq orphans
 okq stats
 okq validate          # OKF conformance report (alias: okq doctor)
-okq lint              # hygiene beyond conformance: orphans, drift, staleness
+okq lint              # authoring hygiene: orphans, empty sections, heading drift
 
 # trust: what's still in progress, and what a human signed off on
 okq find --status draft
@@ -119,8 +119,8 @@ Then invoke one with `/okq-explore`, `/okq-write-okf`, or `/okq-maintain`; `okq-
 | `okq orphans` | Concepts with no inbound links (`--check` for CI). |
 | `okq deadlinks` | Broken links pointing at missing concepts (`--check` for CI; `--phantoms` also lists bare `[[wikilinks]]` to not-yet-created notes). |
 | `okq stats` | Counts by type, tag, trust tier and status; link density, edge types, hubs. |
-| `okq validate` | Check OKF conformance; report unparseable/untyped/malformed docs (alias `doctor`, `--check` for CI). |
-| `okq lint` | Bundle hygiene beyond conformance: 16 coded rules (`--rule`/`--ignore`, `--check` for CI). Never affects conformance. |
+| `okq validate` | Check OKF conformance; report unparseable/untyped/malformed docs, dead links, and staleness (alias `doctor`, `--check` for CI, `--today` for reproducible staleness). |
+| `okq lint` | Authoring hygiene beyond conformance: 13 coded rules (`--rule`/`--ignore`, `--check` for CI). Never affects conformance. |
 | `okq schema [<cmd>]` | JSON Schema for a command's `--json` output. |
 | `okq spec` | Print the OKF specification this build implements (v0.2, verbatim; `--section` for one heading). |
 | `okq init` | Scaffold a new bundle: `adrs/` + `features/`, a seed ADR, a README. |

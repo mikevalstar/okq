@@ -6,8 +6,12 @@
 //! adopters.
 //!
 //! The v0.1 `timestamp` key is deliberately **not** emitted: v0.2 supersedes it
-//! with `generated: { by, at }`, and okq's own lint flags it (L5). A scaffolded
-//! bundle should pass `okq lint` on the rules it can control. `generated.by`
+//! with `generated: { by, at }`, and `okq validate` flags it (V19). A
+//! scaffolded bundle should pass `okq lint` and `okq validate` on the rules it
+//! can control — which is why `generated.at` is a full offset-bearing
+//! timestamp rather than a bare date: okf 0.2.7 reports anything less as a V6
+//! warning (ADR-0016). okq still *reads* bare dates, so bundles scaffolded by
+//! older releases keep their trust tier; see `src/trust.rs`. `generated.by`
 //! records okq honestly — it did write this stub — in the §7 agent form
 //! `<producer>/<version>`; an author replaces it when the content becomes
 //! theirs. See `docs/features/scaffold.md` and `docs/features/trust.md`.
@@ -24,15 +28,21 @@ pub const INDEX_BEGIN: &str = "<!-- okq:index:begin -->";
 /// Closing marker for the generated `index.md` listing.
 pub const INDEX_END: &str = "<!-- okq:index:end -->";
 
-/// Today's date as ISO-8601 `YYYY-MM-DD` (UTC), for frontmatter `generated.at`.
-/// Authoring may read the clock — the determinism principle binds queries, not writes.
-pub fn today_iso() -> String {
+/// Now as an OKF v0.2 timestamp — ISO-8601 with a time of day and an explicit
+/// UTC offset (`2026-09-05T14:23:07Z`), for frontmatter `generated.at`.
+///
+/// okf 0.2.7 requires both parts: a bare `YYYY-MM-DD` is reported as a V6/V7
+/// warning and does not count as a verification event. Authoring may read the
+/// clock — the determinism principle binds queries, not writes.
+pub fn now_iso() -> String {
     let secs = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .map(|d| d.as_secs() as i64)
         .unwrap_or(0);
     let (y, m, d) = civil_from_days(secs.div_euclid(86_400));
-    format!("{y:04}-{m:02}-{d:02}")
+    let tod = secs.rem_euclid(86_400);
+    let (hh, mm, ss) = (tod / 3600, (tod % 3600) / 60, tod % 60);
+    format!("{y:04}-{m:02}-{d:02}T{hh:02}:{mm:02}:{ss:02}Z")
 }
 
 /// okq's own actor string in the §7 agent form, `<producer>/<version>` — the
@@ -267,11 +277,17 @@ mod tests {
     use super::*;
 
     #[test]
-    fn today_is_iso_shaped() {
-        let d = today_iso();
-        assert_eq!(d.len(), 10);
-        assert_eq!(d.as_bytes()[4], b'-');
-        assert_eq!(d.as_bytes()[7], b'-');
+    fn now_is_an_offset_bearing_iso_timestamp() {
+        // okf 0.2.7 only counts `generated`/`verified` timestamps that carry a
+        // time of day and an explicit UTC offset (ADR-0016).
+        let t = now_iso();
+        assert_eq!(t.len(), 20, "{t}");
+        assert_eq!(t.as_bytes()[4], b'-');
+        assert_eq!(t.as_bytes()[7], b'-');
+        assert_eq!(t.as_bytes()[10], b'T');
+        assert_eq!(t.as_bytes()[13], b':');
+        assert_eq!(t.as_bytes()[16], b':');
+        assert!(t.ends_with('Z'), "{t}");
     }
 
     #[test]

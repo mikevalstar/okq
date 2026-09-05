@@ -135,3 +135,64 @@ fn empty_bundle_does_not_panic() {
     let dir = TempDir::new().unwrap();
     okq(dir.path()).arg("validate").assert().success();
 }
+
+#[test]
+fn staleness_is_reproducible_against_today() {
+    // okf 0.2.7 moved the staleness rule out of lint and into validate (V12),
+    // so `--today` lives here now (ADR-0016).
+    let dir = TempDir::new().unwrap();
+    fs::write(
+        dir.path().join("a.md"),
+        "---\ntype: doc\ntitle: A\ndescription: d\nstale_after: 2026-01-01T00:00:00Z\n---\n\n# A\n\nBody.\n",
+    )
+    .unwrap();
+
+    let count_stale = |today: &str| {
+        let out = stdout(
+            okq(dir.path())
+                .args(["validate", "--severity", "info", "--today", today, "--json"])
+                .assert()
+                .success(),
+        );
+        let v: serde_json::Value = serde_json::from_str(&out).unwrap();
+        v["diagnostics"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|d| d["message"].as_str().unwrap().contains("stale"))
+            .count()
+    };
+
+    assert_eq!(count_stale("2026-08-02"), 1);
+    assert_eq!(count_stale("2025-12-31"), 0);
+}
+
+#[test]
+fn a_malformed_today_is_a_usage_error() {
+    let dir = mixed_bundle();
+    okq(dir.path())
+        .args(["validate", "--today", "whenever"])
+        .assert()
+        .failure()
+        .code(2);
+}
+
+#[test]
+fn a_bare_date_stale_after_still_reports_stale_in_the_envelope() {
+    // okq reads bundles its own older releases scaffolded: a `stale_after`
+    // without a UTC offset must not silently stop being stale (ADR-0016).
+    let dir = TempDir::new().unwrap();
+    fs::write(
+        dir.path().join("a.md"),
+        "---\ntype: doc\ntitle: A\ndescription: d\nstale_after: 2026-01-01\n---\n\n# A\n\nBody.\n",
+    )
+    .unwrap();
+    let out = stdout(
+        okq(dir.path())
+            .args(["find", "--today", "2026-08-02", "--json"])
+            .assert()
+            .success(),
+    );
+    let v: serde_json::Value = serde_json::from_str(&out).unwrap();
+    assert_eq!(v["results"][0]["stale"], true);
+}

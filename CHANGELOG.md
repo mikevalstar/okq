@@ -11,7 +11,56 @@ attaches prebuilt binaries to the GitHub Release.
 
 ## [Unreleased]
 
+## [0.9.0] — 2026-09-05
+
 ### Changed
+
+- **Moved to okf 0.2.7, which split into a workspace.** okq now depends on
+  [`okf-core`](https://crates.io/crates/okf-core) for the data layer and
+  [`okf-validator`](https://crates.io/crates/okf-validator) for `validate` and
+  `lint`, rather than the `okf` crate — which is now a CLI binary whose default
+  features would add 223 crates of language parsers okq does not use
+  ([ADR-0016](https://github.com/mikevalstar/okq/blob/main/docs/adrs/0016-okf-workspace-split.md)).
+
+- **okf rebalanced `validate` and `lint`, and okq follows it.** Most of what
+  `okq lint` used to report is an `okq validate` warning now: missing
+  `title`/`description`/`generated`, legacy v0.1 `timestamp` and `# Citations`
+  blocks, an empty body, a verification predating its `generated.at`, links to
+  deprecated concepts, duplicate titles, an out-of-sync `index.md`, and
+  staleness. `lint` keeps the authoring-hygiene half and gains rules for
+  frontmatter key order, heading hierarchy drift, empty sections, uncited
+  sources, non-standard actor identities, untagged `# Computation` blocks, and
+  whitespace.
+
+  Expect `okq lint` to get quieter and `okq validate` to get louder. Neither
+  changes what counts as *conformant*: every moved rule is a warning, and
+  `--check` still gates on errors.
+
+- **Lint rule codes were renumbered — pinned `--rule`/`--ignore` values need
+  updating.** The set is now L1–L13. L14, L15 and L16 no longer exist, and L1,
+  L9, L10 and L11 mean different things than they did in 0.8. Retired codes are
+  a usage error (exit 2) rather than a silent remap onto whatever now holds the
+  number, so a stale CI config fails loudly instead of gating on the wrong rule.
+  The full before/after table is in
+  [docs/features/lint.md](https://github.com/mikevalstar/okq/blob/main/docs/features/lint.md).
+
+- **`--today` moved from `okq lint` to `okq validate`,** following the staleness
+  rule it exists for. `okq lint --today` is now a usage error.
+
+- **`okq init` and `okq new` write full timestamps.** `generated.at` is now
+  `2026-09-05T14:23:07Z` rather than a bare date, because OKF v0.2 asks for a
+  time of day and an explicit UTC offset and okf 0.2.7 warns without them.
+
+### Fixed
+
+- **Bare-date `verified` and `stale_after` keep working.** okf 0.2.7 stopped
+  counting a timestamp that carries no UTC offset, which would have silently
+  dropped every concept scaffolded by okq 0.3–0.8 to `trust: unverified` and
+  made `stale_after: 2026-01-01` never fire. okq now derives the trust tier and
+  staleness itself: the tier counts any entry that names a verifier (it answers
+  *who* reviewed something, not *when*), and staleness accepts a date or a
+  datetime. `okq validate` still reports the imprecise value, so you are told to
+  tighten it — the answer just doesn't change underneath you first.
 
 - The release workflow now fills the GitHub Release body from this file's
   section for the tagged version (`taiki-e/create-gh-release-action`'s

@@ -30,16 +30,13 @@ Options:
           Disable colored output (also honors NO_COLOR)
 
       --rule <CODE>
-          Report only this rule (repeatable, e.g. L15); conflicts with --ignore
+          Report only this rule (repeatable, e.g. L9); conflicts with --ignore
 
       --ignore <CODE>
-          Suppress this rule (repeatable, e.g. L4); conflicts with --rule
+          Suppress this rule (repeatable, e.g. L11); conflicts with --rule
 
       --no-ignore
           Ignore all .okqignore files; query the full tree, nothing excluded
-
-      --today <YYYY-MM-DD>
-          Evaluate staleness (L11) against this ISO date instead of today
 
   -h, --help
           Print help (see a summary with '-h')
@@ -51,17 +48,18 @@ Examples:
   # Fail CI if anything is found
   okq lint --check
 
-  # Drop the info-level rules (unverified, draft, self-link)
+  # Drop the info-level rules (key order, self-link, unverified, draft)
   okq lint --severity warning
 
-  # Only the orphan and stale-index rules
-  okq lint --rule L15 --rule L16
+  # Only the orphan rule
+  okq lint --rule L9
 
   # Everything except "no verified events" and "status: draft"
-  okq lint --ignore L4 --ignore L12
+  okq lint --ignore L11 --ignore L12
 
-  # Reproducible staleness, as JSON
-  okq lint --today 2026-08-02 --json
+  # As JSON, for CI or an agent
+  okq lint --json
 
 Lint is an opinion, not conformance: it never reports an error and never
-changes what `okq validate` calls conformant.
+changes what `okq validate` calls conformant. Rule codes are okf's; okf 0.2.7
+renumbered them and moved the frontmatter and link rules into `okq validate`.

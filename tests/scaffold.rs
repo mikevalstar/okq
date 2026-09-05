@@ -204,15 +204,59 @@ fn new_list_shows_types() {
 
 #[test]
 fn init_leaves_a_bundle_that_passes_its_own_lint() {
-    // A scaffolded bundle used to trip L16 (index.md out of sync) and, downstream
-    // of it, L15 (the seeded concepts read as orphans because nothing links to
-    // them and no index listed them). `init` now generates the listings itself.
+    // A scaffolded bundle used to trip "index.md out of sync" and, downstream
+    // of it, the orphan rule (the seeded concepts read as orphans because
+    // nothing linked to them and no index listed them). `init` now generates
+    // the listings itself. okf 0.2.7 renumbered orphan to L9 and moved the
+    // out-of-sync check into `validate` as V35 (ADR-0016).
     let dir = tempfile::tempdir().unwrap();
     okq(dir.path()).arg("init").assert().success();
     okq(dir.path())
-        .args(["lint", "--check", "--rule", "L15", "--rule", "L16"])
+        .args(["lint", "--check", "--rule", "L9"])
         .assert()
         .success();
+
+    let report = stdout(
+        okq(dir.path())
+            .args(["validate", "--severity", "info", "--json"])
+            .assert()
+            .success(),
+    );
+    assert!(
+        !report.contains("out of sync"),
+        "seeded index.md should match its directory: {report}"
+    );
+}
+
+#[test]
+fn init_writes_timestamps_okf_accepts() {
+    // Templates emit `generated.at` with a time of day and an explicit UTC
+    // offset, because okf 0.2.7 warns on anything less and does not count it
+    // as a trust event (ADR-0016).
+    let dir = tempfile::tempdir().unwrap();
+    okq(dir.path()).arg("init").assert().success();
+
+    let seeded = fs::read_to_string(
+        dir.path()
+            .join("adrs/0001-record-architecture-decisions.md"),
+    )
+    .unwrap();
+    let at = seeded
+        .lines()
+        .find(|l| l.starts_with("generated:"))
+        .expect("seeded ADR carries `generated`");
+    assert!(at.contains('T') && at.contains('Z'), "{at}");
+
+    let report = stdout(
+        okq(dir.path())
+            .args(["validate", "--severity", "info", "--json"])
+            .assert()
+            .success(),
+    );
+    assert!(
+        !report.contains("ISO"),
+        "no timestamp should be flagged as invalid: {report}"
+    );
 }
 
 #[test]

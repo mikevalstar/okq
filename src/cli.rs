@@ -183,7 +183,10 @@ Examples:
   okq validate --check
 
   # Include info-level findings (e.g. unresolved links), as JSON
-  okq validate --severity info --json";
+  okq validate --severity info --json
+
+  # Reproducible staleness (V12) against a fixed date
+  okq validate --today 2026-09-05 --json";
 
 const LINT_EXAMPLES: &str = "\
 Examples:
@@ -193,20 +196,21 @@ Examples:
   # Fail CI if anything is found
   okq lint --check
 
-  # Drop the info-level rules (unverified, draft, self-link)
+  # Drop the info-level rules (key order, self-link, unverified, draft)
   okq lint --severity warning
 
-  # Only the orphan and stale-index rules
-  okq lint --rule L15 --rule L16
+  # Only the orphan rule
+  okq lint --rule L9
 
   # Everything except \"no verified events\" and \"status: draft\"
-  okq lint --ignore L4 --ignore L12
+  okq lint --ignore L11 --ignore L12
 
-  # Reproducible staleness, as JSON
-  okq lint --today 2026-08-02 --json
+  # As JSON, for CI or an agent
+  okq lint --json
 
 Lint is an opinion, not conformance: it never reports an error and never
-changes what `okq validate` calls conformant.";
+changes what `okq validate` calls conformant. Rule codes are okf's; okf 0.2.7
+renumbered them and moved the frontmatter and link rules into `okq validate`.";
 
 const INDEX_EXAMPLES: &str = "\
 Examples:
@@ -468,6 +472,10 @@ pub struct ValidateArgs {
     /// Minimum severity to display.
     #[arg(long, value_enum, default_value_t = SeverityArg::Warning, value_name = "LEVEL")]
     pub severity: SeverityArg,
+
+    /// Evaluate staleness (V12) against this ISO date instead of today.
+    #[arg(long, value_name = "YYYY-MM-DD")]
+    pub today: Option<String>,
 }
 
 /// Arguments for `okq lint`.
@@ -481,17 +489,13 @@ pub struct LintArgs {
     #[arg(long, value_enum, default_value_t = SeverityArg::Info, value_name = "LEVEL")]
     pub severity: SeverityArg,
 
-    /// Report only this rule (repeatable, e.g. L15); conflicts with --ignore.
+    /// Report only this rule (repeatable, e.g. L9); conflicts with --ignore.
     #[arg(long, value_name = "CODE")]
     pub rule: Vec<String>,
 
-    /// Suppress this rule (repeatable, e.g. L4); conflicts with --rule.
+    /// Suppress this rule (repeatable, e.g. L11); conflicts with --rule.
     #[arg(long, value_name = "CODE")]
     pub ignore: Vec<String>,
-
-    /// Evaluate staleness (L11) against this ISO date instead of today.
-    #[arg(long, value_name = "YYYY-MM-DD")]
-    pub today: Option<String>,
 }
 
 /// Arguments for `okq schema`.

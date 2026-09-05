@@ -6,9 +6,10 @@ use std::path::Path;
 use assert_cmd::Command;
 use tempfile::TempDir;
 
-/// A bundle that trips a spread of rules: a titled hub linking to a deprecated
-/// concept (L10), an untitled/empty doc (L1, L7, L8), a draft (L12), a
-/// self-linker (L13), and an orphan (L15).
+/// A bundle that trips a spread of okf 0.2.7 lint rules: empty sections (L4),
+/// orphans (L9), a self-linker (L10), concepts with no `verified` events (L11),
+/// and a draft (L12). The frontmatter and link rules this fixture also trips
+/// are `validate` warnings now, not lint findings (ADR-0016).
 fn fixture() -> TempDir {
     let dir = tempfile::tempdir().unwrap();
     let root = dir.path();
@@ -75,7 +76,7 @@ fn findings_carry_a_structured_rule_code_and_a_stripped_message() {
     assert_eq!(out["schema"], "okq.lint/v1");
 
     let found = rules(&out);
-    for expected in ["L1", "L10", "L12", "L13", "L15"] {
+    for expected in ["L4", "L9", "L10", "L11", "L12"] {
         assert!(
             found.iter().any(|r| r == expected),
             "missing {expected} in {found:?}"
@@ -122,12 +123,12 @@ fn lint_findings_do_not_change_conformance() {
 #[test]
 fn rule_filters_narrow_the_report() {
     let dir = fixture();
-    let only = json(dir.path(), &["lint", "--rule", "L15"]);
+    let only = json(dir.path(), &["lint", "--rule", "L9"]);
     assert!(only["findings"].as_u64().unwrap() > 0);
-    assert!(rules(&only).iter().all(|r| r == "L15"));
+    assert!(rules(&only).iter().all(|r| r == "L9"));
 
     // Case-insensitive.
-    let lower = json(dir.path(), &["lint", "--rule", "l15"]);
+    let lower = json(dir.path(), &["lint", "--rule", "l9"]);
     assert_eq!(lower["findings"], only["findings"]);
 }
 
@@ -199,50 +200,47 @@ fn check_respects_the_filters() {
     // Gate CI on the subset a team agreed to enforce.
     let dir = fixture();
     okq(dir.path())
-        .args(["lint", "--check", "--rule", "L13"])
+        .args(["lint", "--check", "--rule", "L10"])
         .assert()
         .failure()
         .code(3);
-    // L14 (duplicate titles) doesn't fire on this fixture, so gating on it passes.
+    // L13 (unquoted `okf_version`) needs a root index.md, which this fixture
+    // has none of, so gating on it passes.
     okq(dir.path())
-        .args(["lint", "--check", "--rule", "L14"])
+        .args(["lint", "--check", "--rule", "L13"])
         .assert()
         .success();
 }
 
 #[test]
-fn staleness_is_reproducible_against_today() {
-    let dir = tempfile::tempdir().unwrap();
-    write(
-        dir.path().join("a.md"),
-        "---\ntype: doc\ntitle: A\ndescription: d\nstale_after: 2026-01-01\n---\n\n# A\n\nBody.\n",
-    );
-    let stale = json(
-        dir.path(),
-        &["lint", "--today", "2026-08-02", "--rule", "L11"],
-    );
-    assert_eq!(stale["findings"], 1);
-
-    let fresh = json(
-        dir.path(),
-        &["lint", "--today", "2025-12-31", "--rule", "L11"],
-    );
-    assert_eq!(fresh["findings"], 0);
+fn codes_retired_in_okf_0_2_7_are_a_usage_error() {
+    // L14/L15/L16 are gone and several survivors were renumbered. A CI config
+    // pinning an old code must fail loudly rather than silently gate on a rule
+    // that now means something else (ADR-0016).
+    let dir = fixture();
+    for code in ["L14", "L15", "L16"] {
+        okq(dir.path())
+            .args(["lint", "--rule", code])
+            .assert()
+            .failure()
+            .code(2);
+    }
 }
 
 #[test]
-fn a_malformed_today_is_a_usage_error() {
+fn staleness_is_not_a_lint_concern() {
+    // okf 0.2.7 moved it to `validate --today` (V12); `lint` has no --today.
     let dir = fixture();
     okq(dir.path())
-        .args(["lint", "--today", "whenever"])
+        .args(["lint", "--today", "2026-08-02"])
         .assert()
         .failure()
         .code(2);
 }
 
 #[test]
-fn orphans_and_l15_differ_on_indexed_concepts() {
-    // L15 is narrower than `okq orphans`: a concept an index.md lists is not
+fn orphans_and_l9_differ_on_indexed_concepts() {
+    // L9 is narrower than `okq orphans`: a concept an index.md lists is not
     // reported, even with no inbound links (docs/features/lint.md).
     let dir = tempfile::tempdir().unwrap();
     write(
@@ -257,14 +255,14 @@ fn orphans_and_l15_differ_on_indexed_concepts() {
     let orphans = json(dir.path(), &["orphans"]);
     assert_eq!(orphans["count"], 1);
 
-    let lint = json(dir.path(), &["lint", "--rule", "L15"]);
+    let lint = json(dir.path(), &["lint", "--rule", "L9"]);
     assert_eq!(lint["findings"], 0);
 }
 
 #[test]
 fn empty_result_is_json_and_exits_zero() {
     let dir = fixture();
-    let out = json(dir.path(), &["lint", "--rule", "L14"]);
+    let out = json(dir.path(), &["lint", "--rule", "L13"]);
     assert_eq!(out["findings"], 0);
     assert!(out["diagnostics"].as_array().unwrap().is_empty());
 }

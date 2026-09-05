@@ -29,6 +29,9 @@ Options:
       --no-color
           Disable colored output (also honors NO_COLOR)
 
+      --today <YYYY-MM-DD>
+          Evaluate staleness (V12) against this ISO date instead of today
+
       --no-ignore
           Ignore all .okqignore files; query the full tree, nothing excluded
 
@@ -47,3 +50,6 @@ Examples:
 
   # Include info-level findings (e.g. unresolved links), as JSON
   okq validate --severity info --json
+
+  # Reproducible staleness (V12) against a fixed date
+  okq validate --today 2026-09-05 --json

@@ -1,7 +1,12 @@
 //! `okq validate` (alias `doctor`) — report OKF conformance diagnostics.
 //! See `docs/features/validate.md`. A thin presentation layer over
-//! `okf::validate_bundle`: okq adds the envelope, `--json`, severity filtering,
-//! and the exit-code contract. The rule set itself lives in okf.
+//! `okf_validator::validate_bundle_at`: okq adds the envelope, `--json`,
+//! severity filtering, and the exit-code contract. The rule set itself lives in
+//! okf.
+//!
+//! okf 0.2.7 moved most of what used to be lint into this report, staleness
+//! included, so `--today` lives here now rather than on `lint`
+//! (ADR-0016).
 
 use std::io::Write;
 use std::path::Path;
@@ -11,6 +16,7 @@ use serde::Serialize;
 
 use crate::cli::{SeverityArg, ValidateArgs};
 use crate::error::AppError;
+use crate::trust;
 use crate::view::Corpus;
 
 /// Schema tag stamped on every `validate` JSON document.
@@ -47,11 +53,11 @@ pub struct Diagnostic {
 }
 
 /// Severity rank, for the `--severity` floor and deterministic ordering.
-fn rank(severity: okf::Severity) -> u8 {
+fn rank(severity: okf_validator::Severity) -> u8 {
     match severity {
-        okf::Severity::Error => 2,
-        okf::Severity::Warning => 1,
-        okf::Severity::Info => 0,
+        okf_validator::Severity::Error => 2,
+        okf_validator::Severity::Warning => 1,
+        okf_validator::Severity::Info => 0,
     }
 }
 
@@ -64,11 +70,11 @@ fn rank_str(severity: &str) -> u8 {
     }
 }
 
-fn severity_str(severity: okf::Severity) -> &'static str {
+fn severity_str(severity: okf_validator::Severity) -> &'static str {
     match severity {
-        okf::Severity::Error => "error",
-        okf::Severity::Warning => "warning",
-        okf::Severity::Info => "info",
+        okf_validator::Severity::Error => "error",
+        okf_validator::Severity::Warning => "warning",
+        okf_validator::Severity::Info => "info",
     }
 }
 
@@ -79,11 +85,12 @@ pub fn run(
     no_ignore: bool,
 ) -> Result<ValidateOutput, AppError> {
     let corpus = Corpus::load(bundle_dir, no_ignore)?;
-    let report = okf::validate_bundle(corpus.bundle());
+    let today = trust::resolve_today(args.today.as_deref())?;
+    let report = okf_validator::validate_bundle_at(corpus.bundle(), today);
 
     // Drop findings for files excluded by .okqignore *first*, so counts and
     // conformance reflect the queryable bundle — not docs okq never loads.
-    let kept: Vec<&okf::Diagnostic> = report
+    let kept: Vec<&okf_validator::Diagnostic> = report
         .diagnostics
         .iter()
         .filter(|d| {
@@ -94,8 +101,8 @@ pub fn run(
         })
         .collect();
 
-    let count = |sev: okf::Severity| kept.iter().filter(|d| d.severity == sev).count();
-    let errors = count(okf::Severity::Error);
+    let count = |sev: okf_validator::Severity| kept.iter().filter(|d| d.severity == sev).count();
+    let errors = count(okf_validator::Severity::Error);
 
     let floor = match args.severity {
         SeverityArg::Error => 2,
@@ -131,8 +138,8 @@ pub fn run(
         schema: SCHEMA,
         conformant: errors == 0,
         errors,
-        warnings: count(okf::Severity::Warning),
-        infos: count(okf::Severity::Info),
+        warnings: count(okf_validator::Severity::Warning),
+        infos: count(okf_validator::Severity::Info),
         diagnostics,
     })
 }
@@ -178,10 +185,10 @@ mod tests {
 
     #[test]
     fn rank_orders_error_highest() {
-        assert!(rank(okf::Severity::Error) > rank(okf::Severity::Warning));
-        assert!(rank(okf::Severity::Warning) > rank(okf::Severity::Info));
-        assert_eq!(rank_str("error"), rank(okf::Severity::Error));
-        assert_eq!(rank_str("warning"), rank(okf::Severity::Warning));
-        assert_eq!(rank_str("info"), rank(okf::Severity::Info));
+        assert!(rank(okf_validator::Severity::Error) > rank(okf_validator::Severity::Warning));
+        assert!(rank(okf_validator::Severity::Warning) > rank(okf_validator::Severity::Info));
+        assert_eq!(rank_str("error"), rank(okf_validator::Severity::Error));
+        assert_eq!(rank_str("warning"), rank(okf_validator::Severity::Warning));
+        assert_eq!(rank_str("info"), rank(okf_validator::Severity::Info));
     }
 }

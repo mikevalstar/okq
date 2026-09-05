@@ -1,6 +1,6 @@
 //! `okq lint` — opinionated bundle hygiene, beside conformance.
 //!
-//! See `docs/features/lint.md`. A presentation layer over `okf::lint_bundle_at`,
+//! See `docs/features/lint.md`. A presentation layer over `okf_validator::lint_bundle`,
 //! shaped like [`validate`](super::validate) on purpose: same severity model,
 //! same `--check` gate, same `.okqignore` filtering. What differs is authority —
 //! lint is an *opinion* and never reports an error severity, so a bundle with
@@ -10,6 +10,11 @@
 //! `[L7] …`; okq lifts that into a structured `rule` field so agents and CI can
 //! pin a rule without regexing prose. A message that doesn't carry a
 //! recognizable prefix passes through unchanged with `rule: null`.
+//!
+//! okf 0.2.7 rebalanced the split: most of what lint used to report is now a
+//! `validate` warning, the surviving codes were renumbered, and staleness moved
+//! to `validate --today`. okq adopts the new numbering as-is rather than
+//! shimming the old codes (ADR-0016).
 
 use std::io::Write;
 use std::path::Path;
@@ -19,16 +24,19 @@ use serde::Serialize;
 
 use crate::cli::{LintArgs, SeverityArg};
 use crate::error::AppError;
-use crate::trust;
 use crate::view::Corpus;
 
 /// Schema tag stamped on every `lint` JSON document.
 pub const SCHEMA: &str = "okq.lint/v1";
 
-/// The rule codes okf 0.2 emits, for validating `--rule` / `--ignore`.
-pub const RULES: [&str; 16] = [
-    "L1", "L2", "L3", "L4", "L5", "L6", "L7", "L8", "L9", "L10", "L11", "L12", "L13", "L14", "L15",
-    "L16",
+/// The rule codes okf 0.2.7 emits, for validating `--rule` / `--ignore`.
+///
+/// L14–L16 existed in okf 0.2.1 and are gone; several surviving codes were
+/// renumbered. okq deliberately keeps no alias table — a code that silently
+/// changed meaning is worse for a pinned CI config than a usage error
+/// (ADR-0016).
+pub const RULES: [&str; 13] = [
+    "L1", "L2", "L3", "L4", "L5", "L6", "L7", "L8", "L9", "L10", "L11", "L12", "L13",
 ];
 
 /// The `okq.lint/v1` envelope.
@@ -52,7 +60,7 @@ pub struct LintOutput {
 pub struct Finding {
     /// `warning` | `info`. Lint never reports `error`.
     pub severity: String,
-    /// The okf rule code (`L1`–`L16`), or null if the message carried no
+    /// The okf rule code (`L1`–`L13`), or null if the message carried no
     /// recognizable code.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rule: Option<String>,
@@ -94,11 +102,11 @@ fn parse_rule(raw: &str) -> Result<String, AppError> {
     }
 }
 
-fn severity_str(severity: okf::Severity) -> &'static str {
+fn severity_str(severity: okf_validator::Severity) -> &'static str {
     match severity {
-        okf::Severity::Error => "error",
-        okf::Severity::Warning => "warning",
-        okf::Severity::Info => "info",
+        okf_validator::Severity::Error => "error",
+        okf_validator::Severity::Warning => "warning",
+        okf_validator::Severity::Info => "info",
     }
 }
 
@@ -137,8 +145,7 @@ pub fn run(bundle_dir: &Path, args: &LintArgs, no_ignore: bool) -> Result<LintOu
         .collect::<Result<_, _>>()?;
 
     let corpus = Corpus::load(bundle_dir, no_ignore)?;
-    let today = trust::resolve_today(args.today.as_deref())?;
-    let report = okf::lint_bundle_at(corpus.bundle(), today);
+    let report = okf_validator::lint_bundle(corpus.bundle());
 
     let floor = match args.severity {
         SeverityArg::Error => 2,
@@ -239,8 +246,8 @@ mod tests {
 
     #[test]
     fn splits_a_rule_prefix_off_the_message() {
-        let (rule, msg) = split_rule("[L15] no inbound links");
-        assert_eq!(rule.as_deref(), Some("L15"));
+        let (rule, msg) = split_rule("[L9] no inbound links");
+        assert_eq!(rule.as_deref(), Some("L9"));
         assert_eq!(msg, "no inbound links");
     }
 
@@ -262,16 +269,25 @@ mod tests {
 
     #[test]
     fn rules_are_parsed_case_insensitively_and_validated() {
-        assert_eq!(parse_rule("l15").unwrap(), "L15");
+        assert_eq!(parse_rule("l13").unwrap(), "L13");
         assert_eq!(parse_rule(" L4 ").unwrap(), "L4");
         assert!(parse_rule("L99").is_err());
         assert!(parse_rule("nonsense").is_err());
     }
 
     #[test]
+    fn codes_retired_in_okf_0_2_7_are_a_usage_error() {
+        // Not silently remapped: a CI config pinning one must fail loudly
+        // rather than gate on a rule that now means something else (ADR-0016).
+        for retired in ["L14", "L15", "L16"] {
+            assert!(parse_rule(retired).is_err(), "{retired}");
+        }
+    }
+
+    #[test]
     fn rule_ordering_is_numeric_not_lexical() {
         assert!(rule_key(Some("L2")) < rule_key(Some("L10")));
         // Codeless findings sort last.
-        assert!(rule_key(Some("L16")) < rule_key(None));
+        assert!(rule_key(Some("L13")) < rule_key(None));
     }
 }

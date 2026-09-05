@@ -834,14 +834,24 @@ dependencies = [
 ]
 
 [[package]]
-name = "okf"
-version = "0.2.1"
+name = "okf-core"
+version = "0.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "09252027b55db2ccb133b9bcf2aec57bf0a99c5a1cdee9e08722bce20d522314"
+checksum = "5fa8243d1e3b2bd983b972afbe328fea56155ccfb38264b44c19045e54f24be0"
+
+[[package]]
+name = "okf-validator"
+version = "0.2.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "483034084b028eb43a378a4c9b865a442f7a75ba6e6ec01b05dbd6acf20a4fcd"
+dependencies = [
+ "okf-core",
+ "serde_json",
+]
 
 [[package]]
 name = "okq"
-version = "0.8.0"
+version = "0.9.0"
 dependencies = [
  "anstream",
  "anstyle",
@@ -850,7 +860,8 @@ dependencies = [
  "dirs",
  "ignore",
  "insta",
- "okf",
+ "okf-core",
+ "okf-validator",
  "predicates",
  "pulldown-cmark",
  "regex",

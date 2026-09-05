@@ -100,7 +100,7 @@ pub fn run(bundle_dir: &Path, args: &StatsArgs, no_ignore: bool) -> Result<Stats
         // totals add up to `concepts` and a bundle that ignores trust
         // frontmatter reads as "all unverified, all stable" rather than empty.
         *trust
-            .entry(crate::trust::tier_name(fm.trust_tier()).to_string())
+            .entry(crate::trust::tier_name(crate::trust::tier_of(fm)).to_string())
             .or_insert(0) += 1;
         *statuses.entry(fm.status().to_string()).or_insert(0) += 1;
     }

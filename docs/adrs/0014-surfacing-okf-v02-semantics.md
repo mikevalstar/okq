@@ -19,6 +19,12 @@ related:
 
 # ADR-0014: Surfacing OKF v0.2 semantics — derived trust in the envelope, lint beside validate
 
+> **Amended by [ADR-0016](0016-okf-workspace-split.md).** The envelope shape and
+> the rule-code contract below still hold, but the rule table does not: okf
+> 0.2.7 renumbered the lint codes and moved most of them into `validate`, and
+> okq now derives the trust tier and staleness itself so bare-date frontmatter
+> keeps working. Read ADR-0016 for the current rule set.
+
 ## Context
 
 [ADR-0013](0013-back-to-upstream-okf.md) moved okq onto upstream `okf` 0.2,

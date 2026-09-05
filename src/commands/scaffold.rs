@@ -23,7 +23,7 @@ pub struct Action {
 
 /// `okq new`: create one concept from a template; returns the path written.
 pub fn new(bundle_dir: &Path, type_: &str, title: &str) -> Result<PathBuf, AppError> {
-    let date = templates::today_iso();
+    let date = templates::now_iso();
     let (folder, filename, content) = match type_ {
         "adr" => {
             let number = next_adr_number(&bundle_dir.join("adrs"));
@@ -61,13 +61,13 @@ pub fn new(bundle_dir: &Path, type_: &str, title: &str) -> Result<PathBuf, AppEr
 ///
 /// Finishes by generating the `index.md` listings, so the bundle it leaves
 /// behind is *complete* rather than nearly complete. Seeding a listing-less
-/// `index.md` used to leave a fresh bundle tripping okq's own lint — L16
-/// (index out of sync) and, downstream of it, L15 (the seeded concepts read as
-/// orphans, since nothing links to them and no index lists them). See
-/// `docs/features/scaffold.md`.
+/// `index.md` used to leave a fresh bundle tripping okq's own health checks —
+/// an out-of-sync index (`validate`'s V35) and, downstream of it, the orphan
+/// rule (`lint`'s L9), since nothing linked to the seeded concepts and no index
+/// listed them. See `docs/features/scaffold.md`.
 pub fn init(bundle_dir: &Path, no_ignore: bool) -> Result<Vec<Action>, AppError> {
     let name = bundle_name(bundle_dir);
-    let date = templates::today_iso();
+    let date = templates::now_iso();
     let mut report = Vec::new();
 
     ensure_file(
