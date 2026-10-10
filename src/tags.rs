@@ -40,12 +40,13 @@ fn scan_line(line: &str, out: &mut Vec<String>) {
     let mut i = 0;
     while i < chars.len() {
         // A `#` opens a tag only at line-start or right after whitespace.
-        if chars[i] == '#' && (i == 0 || chars[i - 1].is_whitespace()) {
-            if let Some((tag, next)) = take_tag(&chars, i + 1) {
-                out.push(tag);
-                i = next;
-                continue;
-            }
+        if chars[i] == '#'
+            && (i == 0 || chars[i - 1].is_whitespace())
+            && let Some((tag, next)) = take_tag(&chars, i + 1)
+        {
+            out.push(tag);
+            i = next;
+            continue;
         }
         i += 1;
     }

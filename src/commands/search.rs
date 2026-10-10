@@ -95,7 +95,10 @@ pub fn run(
         .map_err(|e| AppError::Index(e.to_string()))?;
     let searcher = reader.searcher();
     let top = searcher
-        .search(&query, &TopDocs::with_limit(args.limit.max(1)))
+        .search(
+            &query,
+            &TopDocs::with_limit(args.limit.max(1)).order_by_score(),
+        )
         .map_err(|e| AppError::Index(e.to_string()))?;
 
     let mut snippet_gen = SnippetGenerator::create(&searcher, &query, f.body)
