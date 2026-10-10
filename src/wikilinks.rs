@@ -97,14 +97,15 @@ fn scan_line(line: &str, out: &mut Vec<Wikilink>) {
     let chars: Vec<char> = line.chars().collect();
     let mut i = 0;
     while i + 1 < chars.len() {
-        if chars[i] == '[' && chars[i + 1] == '[' {
-            if let Some((inner, next)) = take_until_close(&chars, i + 2) {
-                if let Some(target) = note_target(&inner) {
-                    out.push(Wikilink { target });
-                }
-                i = next;
-                continue;
+        if chars[i] == '['
+            && chars[i + 1] == '['
+            && let Some((inner, next)) = take_until_close(&chars, i + 2)
+        {
+            if let Some(target) = note_target(&inner) {
+                out.push(Wikilink { target });
             }
+            i = next;
+            continue;
         }
         i += 1;
     }

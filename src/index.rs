@@ -101,14 +101,13 @@ pub fn open_or_build(
     let want = current_manifest(corpus);
 
     // Reuse a fresh, matching index if one exists.
-    if !reindex && index_dir.join("meta.json").exists() {
-        if let Ok(text) = fs::read_to_string(&manifest_path) {
-            if serde_json::from_str::<Manifest>(&text).ok().as_ref() == Some(&want) {
-                if let Ok(index) = Index::open_in_dir(&index_dir) {
-                    return Ok(SearchIndex { index, fields });
-                }
-            }
-        }
+    if !reindex
+        && index_dir.join("meta.json").exists()
+        && let Ok(text) = fs::read_to_string(&manifest_path)
+        && serde_json::from_str::<Manifest>(&text).ok().as_ref() == Some(&want)
+        && let Ok(index) = Index::open_in_dir(&index_dir)
+    {
+        return Ok(SearchIndex { index, fields });
     }
 
     // Otherwise (re)build. Fall back to RAM if the cache can't be written.

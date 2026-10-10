@@ -11,6 +11,19 @@ attaches prebuilt binaries to the GitHub Release.
 
 ## [Unreleased]
 
+## [0.9.1] — 2026-10-10
+
+### Changed
+
+- **Minimum supported Rust is now 1.89** (was 1.85). The old floor was holding
+  back tantivy, ignore, time and uuid, and nothing in CI checked it.
+- **Dependencies brought up to date**, including tantivy 0.26, dirs 7, ignore
+  0.4.33, clap 4.6.7, ureq 3.4.2 and rustls 0.23.45. The on-disk index format
+  is unchanged, so existing search caches keep working.
+- **`okq search '/…/'` is now a usage error (exit 2).** tantivy 0.26 reads a
+  query wrapped in slashes as a regex, which okq does not enable. Before, it
+  was searched as plain text. Slashes inside a query (`a/b`) still work.
+
 ## [0.9.0] — 2026-09-05
 
 ### Changed

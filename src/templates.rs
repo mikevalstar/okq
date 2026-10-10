@@ -245,17 +245,17 @@ pub fn base_readme(name: &str) -> String {
 /// Ensures a README's frontmatter has a `type` (adds `type: readme` if missing),
 /// so the README stays a conformant concept.
 pub fn ensure_type_readme(content: &str) -> String {
-    if let Some(rest) = content.strip_prefix("---\n") {
-        if let Some(end) = rest.find("\n---") {
-            let frontmatter = &rest[..end];
-            if frontmatter
-                .lines()
-                .any(|l| l.trim_start().starts_with("type:"))
-            {
-                return content.to_string();
-            }
-            return format!("---\ntype: readme\n{}", &content[4..]);
+    if let Some(rest) = content.strip_prefix("---\n")
+        && let Some(end) = rest.find("\n---")
+    {
+        let frontmatter = &rest[..end];
+        if frontmatter
+            .lines()
+            .any(|l| l.trim_start().starts_with("type:"))
+        {
+            return content.to_string();
         }
+        return format!("---\ntype: readme\n{}", &content[4..]);
     }
     format!("---\ntype: readme\n---\n\n{content}")
 }

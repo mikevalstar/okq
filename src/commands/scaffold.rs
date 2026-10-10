@@ -203,10 +203,10 @@ fn next_adr_number(adrs_dir: &Path) -> u32 {
     if let Ok(entries) = fs::read_dir(adrs_dir) {
         for entry in entries.flatten() {
             let name = entry.file_name().to_string_lossy().to_string();
-            if name.ends_with(".md") {
-                if let Some(number) = name.split('-').next().and_then(|p| p.parse::<u32>().ok()) {
-                    max = max.max(number);
-                }
+            if name.ends_with(".md")
+                && let Some(number) = name.split('-').next().and_then(|p| p.parse::<u32>().ok())
+            {
+                max = max.max(number);
             }
         }
     }
