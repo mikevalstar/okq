@@ -160,6 +160,19 @@ impl Graph {
             for link in bundle.links_from(&c.id) {
                 if link.exists && !hidden.contains(&link.target) {
                     push_edge(&mut out, &mut inn, &c.id, &link.target, LINK_KIND);
+                    // The file is there, but a `#fragment` naming no heading in
+                    // it is still a broken link — the same miss `validate` warns on.
+                    if let Some((_, anchor)) = link.raw.split_once('#')
+                        && let Some(target) = bundle.get(&link.target)
+                        && !anchor_matches(&target.document.body, anchor)
+                    {
+                        dead.push(DeadLink {
+                            source: c.id.clone(),
+                            raw: link.raw.clone(),
+                            kind: LINK_KIND.to_string(),
+                            class: DeadClass::Broken,
+                        });
+                    }
                 } else if resolve_relative(&c.id, &link.raw).is_some() {
                     dead.push(DeadLink {
                         source: c.id.clone(),
@@ -167,6 +180,21 @@ impl Graph {
                         kind: LINK_KIND.to_string(),
                         // An explicit CommonMark link to a missing file is broken,
                         // not a phantom (that concept is bare-name wikilinks only).
+                        class: DeadClass::Broken,
+                    });
+                }
+            }
+
+            // Same-document `#anchor` links aren't edges (okf drops them from
+            // `links_from`), but one that names no heading here is still broken.
+            for link in c.document.links() {
+                if link.kind == okf::LinkKind::Anchor
+                    && !anchor_matches(&c.document.body, link.target.trim_start_matches('#'))
+                {
+                    dead.push(DeadLink {
+                        source: c.id.clone(),
+                        raw: link.target.clone(),
+                        kind: LINK_KIND.to_string(),
                         class: DeadClass::Broken,
                     });
                 }
@@ -432,6 +460,32 @@ fn reconstruct(
             PathStep { id, edge }
         })
         .collect()
+}
+
+/// Whether a link `#fragment` names a heading in `body`. Mirrors okf-validator's
+/// anchor check (its helper is private) so `deadlinks` and `validate` agree: the
+/// fragment matches a heading's slug, its lowercased text, or its text with
+/// `-`/`_` read as spaces. An empty fragment (`page.md#`) matches.
+fn anchor_matches(body: &str, anchor: &str) -> bool {
+    if anchor.is_empty() {
+        return true;
+    }
+    let decoded = anchor.replace("%20", " ").replace('+', " ");
+    let wanted = [
+        okf::heading_slug(&decoded),
+        anchor.to_string(),
+        decoded.to_lowercase(),
+    ];
+    okf::extract_headings(body)
+        .iter()
+        .filter(|h| !h.text.is_empty())
+        .any(|h| {
+            let text = h.text.to_lowercase();
+            let spaced = h.text.replace(['-', '_'], " ").to_lowercase();
+            wanted
+                .iter()
+                .any(|w| *w == h.slug() || *w == text || *w == spaced)
+        })
 }
 
 /// The string values of a frontmatter relation key (scalar or sequence).

@@ -1,10 +1,12 @@
 ---
 type: feature
 title: Inline tags — Obsidian #tags in the body as first-class tags
+description: Treat Obsidian-style #tags in the body as tags, merged with the frontmatter tags list.
 status: active # draft | accepted | active | deprecated
 created: 2026-07-07
 updated: 2026-07-07
 tags: [tags, obsidian, find, stats, indexing]
+generated: { by: human:mikevalstar, at: 2026-07-07T20:01:27-04:00 }
 milestone: null
 command: null # not a command — a tag source consumed by find / stats / search / get
 related: ["wikilinks.md", "find.md", "stats.md", "../guides/design-overview.md"]

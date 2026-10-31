@@ -5,8 +5,8 @@ description: Print the OKF specification this build implements — the exact ups
 tags: [okf, spec, reference]
 status: active
 command: okq spec
-generated: { by: okq/0.7.1, at: 2026-08-08 }
-verified: { by: "human:mikevalstar", at: 2026-08-08 }
+generated: { by: human:mikevalstar, at: 2026-08-08T12:45:25-04:00 }
+verified: { by: human:mikevalstar, at: 2026-08-08T12:45:25-04:00 }
 related:
   - ../adrs/0015-embed-the-okf-spec-text-in-the-binary.md
 ---

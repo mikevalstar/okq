@@ -20,7 +20,7 @@ use crate::sections;
 use crate::view::Corpus;
 
 /// Bumped whenever the index schema or analysis changes, forcing a rebuild.
-const INDEX_SCHEMA_VERSION: u32 = 1;
+const INDEX_SCHEMA_VERSION: u32 = 2;
 
 /// Field handles into the Tantivy schema.
 #[derive(Clone, Copy)]

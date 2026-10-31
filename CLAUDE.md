@@ -35,7 +35,7 @@ the link graph. okq owns the **query layer**. Don't reimplement what okf provide
 
 ```sh
 cargo build
-cargo test                       # unit + integration; 95+ tests
+cargo test                       # unit + integration tests
 cargo clippy --all-targets       # must be warning-free
 cargo fmt                        # must be clean (cargo fmt --check)
 cargo run -- --bundle docs search "tantivy"   # dogfood against our own docs/

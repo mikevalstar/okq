@@ -1,10 +1,12 @@
 ---
 type: feature
 title: Agent skills (okq-* suite)
+description: The okq-* Agent Skills that teach an AI agent to explore, write and maintain OKF bundles with okq.
 status: active # draft | accepted | active | deprecated
 created: 2026-06-27
 updated: 2026-06-27
 tags: [skills, agents, distribution]
+generated: { by: human:mikevalstar, at: 2026-06-27T07:55:01-04:00 }
 milestone: M4.5 # roadmap milestone from PLAN.md §7
 command: null # skills are packaged assets, not a CLI command
 related:

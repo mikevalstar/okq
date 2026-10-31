@@ -4,8 +4,8 @@ title: Embed the OKF spec text in the binary
 description: okq spec prints a vendored, byte-exact copy of the upstream OKF v0.2 SPEC.md, embedded at compile time.
 tags: [okf, spec, vendoring]
 status: accepted
-generated: { by: okq/0.7.1, at: 2026-08-08 }
-verified: { by: "human:mikevalstar", at: 2026-08-08 }
+generated: { by: human:mikevalstar, at: 2026-08-08T12:45:25-04:00 }
+verified: { by: human:mikevalstar, at: 2026-08-08T12:45:25-04:00 }
 related:
   - ../features/okq-spec.md
 ---

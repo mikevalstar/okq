@@ -1,11 +1,12 @@
 ---
 type: adr
 title: ADR-0016 — Depend on okf-core and okf-validator, and absorb okf 0.2.7's validate/lint rebalance
+description: Depend on okf-core and okf-validator without its parser features, and follow okf 0.2.7's move of most lint rules into validate.
 status: accepted
 created: 2026-09-05
 updated: 2026-09-05
 tags: [okf, dependency, lint, validate, trust, compatibility, rule-codes]
-generated: { by: human:mike, at: 2026-09-05T00:00:00Z }
+generated: { by: human:mikevalstar, at: 2026-09-05T00:00:00Z }
 supersedes: null
 superseded-by: null
 related:

@@ -1,10 +1,12 @@
 ---
 type: adr
 title: ADR-0003 — The search index lives in the XDG cache, not the bundle
+description: The derived Tantivy index lives in a per-bundle XDG cache directory and is never written into the bundle.
 status: accepted
 created: 2026-06-26
 updated: 2026-06-26
 tags: [rust, search, tantivy, indexing, cache, xdg]
+generated: { by: human:mikevalstar, at: 2026-07-07T18:57:45-04:00 }
 supersedes: "0002-library-stack.md" # the index-location sub-decision only; see ADR-0002's amendment banner
 superseded-by: null
 related: ["0002-library-stack.md", "../features/search.md", "../guides/design-overview.md"]

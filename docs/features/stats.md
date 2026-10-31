@@ -1,10 +1,12 @@
 ---
 type: feature
 title: okq stats — bundle overview & health metrics
+description: One overview of a bundle: counts by type and tag, link density, hubs, and health counts.
 status: active # draft | accepted | active | deprecated
 created: 2026-06-26
 updated: 2026-06-26
 tags: [cli, stats, metrics, graph, health, json]
+generated: { by: human:mikevalstar, at: 2026-07-07T20:01:27-04:00 }
 milestone: M3
 command: "okq stats"
 related: ["graph.md", "find.md", "../adrs/0004-exit-code-taxonomy.md", "../guides/design-overview.md"]

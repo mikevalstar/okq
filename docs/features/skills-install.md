@@ -1,10 +1,12 @@
 ---
 type: feature
 title: okq skills (install / list)
+description: Install the okq agent skills from the binary, the repo, or skills.sh, and list what's installed.
 status: active # draft | accepted | active | deprecated
 created: 2026-06-27
 updated: 2026-06-27
 tags: [skills, install, agents, distribution]
+generated: { by: human:mikevalstar, at: 2026-06-27T07:55:01-04:00 }
 milestone: M4.5 # roadmap milestone from PLAN.md §7
 command: okq skills
 related:

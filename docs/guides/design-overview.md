@@ -1,10 +1,12 @@
 ---
 type: guide
 title: okq design overview
+description: What okq is, why it exists, its design principles and command surface, and where decisions are tracked.
 status: active # draft | active | deprecated
 created: 2026-06-27
 updated: 2026-06-27
 tags: [design, architecture, principles, overview]
+generated: { by: human:mikevalstar, at: 2026-07-07T12:12:59-04:00 }
 audience: both # dev | agent | both
 related:
   - ../adrs/0001-documentation-first-okf-shaped.md
@@ -98,8 +100,10 @@ The expensive agent loop — find one doc, then read outward to map an area —
 collapses into **`search → neighbors → get`**.
 
 Each command has its own spec under [features/](../features/):
-`search`, `find`, `get`, `neighbors`/`backlinks`/`path`/`orphans`/`deadlinks`
-([graph](../features/graph.md)), `stats`, `schema`, `init`/`new`
+[`search`](../features/search.md), [`find`](../features/find.md),
+[`get`](../features/get.md), `neighbors`/`backlinks`/`path`/`orphans`/`deadlinks`
+([graph](../features/graph.md)), [`stats`](../features/stats.md),
+[`schema`](../features/schema.md), `init`/`new`
 ([scaffold](../features/scaffold.md)), and `skills`
 ([skills-install](../features/skills-install.md)). Global flags: `--json`,
 `--bundle <dir>`, `--no-color`, `--no-ignore`.

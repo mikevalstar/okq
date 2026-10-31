@@ -1,10 +1,12 @@
 ---
 type: feature
 title: Optional frontmatter — infer title from filename
+description: A file with no frontmatter is still a concept, titled by its filename.
 status: active # draft | accepted | active | deprecated
 created: 2026-07-07
 updated: 2026-07-07
 tags: [frontmatter, title, okf, get, find, search, robustness]
+generated: { by: human:mikevalstar, at: 2026-08-08T12:45:25-04:00 }
 milestone: null
 command: null # cross-cutting behavior, not a single command
 related: ["get.md", "find.md", "search.md", "stats.md", "index-command.md", "../adrs/0001-documentation-first-okf-shaped.md", "../guides/design-overview.md"]

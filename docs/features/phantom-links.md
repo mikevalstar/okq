@@ -1,10 +1,12 @@
 ---
 type: feature
 title: Phantom vs broken links — deadlinks that understands Obsidian's unresolved notes
+description: deadlinks separates broken links from phantom [[wikilinks]] to notes that don't exist yet.
 status: active # draft | accepted | active | deprecated
 created: 2026-07-07
 updated: 2026-07-07
 tags: [deadlinks, obsidian, graph, wikilinks, health]
+generated: { by: human:mikevalstar, at: 2026-07-07T20:01:27-04:00 }
 milestone: null
 command: "okq deadlinks"
 related: ["graph.md", "wikilinks.md", "aliases.md", "validate.md", "../adrs/0004-exit-code-taxonomy.md"]

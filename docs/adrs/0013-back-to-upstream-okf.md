@@ -1,10 +1,12 @@
 ---
 type: adr
 title: ADR-0013 — Back to upstream okf; retire the okf-permissive fork
+description: Return to upstream okf 0.2 once it implemented OKF v0.2 and permissive file names, and retire the fork.
 status: accepted
 created: 2026-08-02
 updated: 2026-08-02
 tags: [okf, dependencies, fork, filenames, publishing, crates-io]
+generated: { by: human:mikevalstar, at: 2026-08-02T12:03:06-04:00 }
 supersedes: "0012-okf-permissive-crate.md"
 superseded-by: null
 related:

@@ -1,10 +1,12 @@
 ---
 type: feature
 title: okq validate (alias doctor)
+description: Report what breaks OKF conformance or stops okq from using a doc, with file, reason and severity.
 status: active # draft | accepted | active | deprecated
 created: 2026-06-27
 updated: 2026-09-05
 tags: [cli, health, conformance, validate, ci]
+generated: { by: human:mikevalstar, at: 2026-09-05T14:30:11-04:00 }
 milestone: null # milestones retired — see CHANGELOG.md
 command: okq validate
 related:

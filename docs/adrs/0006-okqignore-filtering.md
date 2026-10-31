@@ -1,10 +1,12 @@
 ---
 type: adr
 title: ADR-0006 — .okqignore for excluding files from a bundle
+description: A .okqignore file in gitignore syntax excludes markdown files from the bundle across every command.
 status: accepted
 created: 2026-06-27
 updated: 2026-06-27
 tags: [ignore, bundle, filtering, config]
+generated: { by: human:mikevalstar, at: 2026-06-27T06:55:55-04:00 }
 supersedes: null
 superseded-by: null
 related:

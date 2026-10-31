@@ -1,10 +1,12 @@
 ---
 type: adr
 title: ADR-0007 — Network is opt-in, scoped to skill install
+description: okq stays offline; the only network path is the explicit `skills install --from-repo`.
 status: accepted
 created: 2026-06-27
 updated: 2026-06-27
 tags: [network, skills, install, dependencies, local-first]
+generated: { by: human:mikevalstar, at: 2026-06-27T08:13:30-04:00 }
 supersedes: null
 superseded-by: null
 related:

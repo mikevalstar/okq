@@ -1,10 +1,12 @@
 ---
 type: feature
 title: okq search — ranked full-text retrieval
+description: Ranked full-text search over sections, backed by a cached Tantivy BM25 index.
 status: active # draft | accepted | active | deprecated
 created: 2026-06-26
 updated: 2026-06-26
 tags: [cli, search, tantivy, bm25, ranking, index, json]
+generated: { by: human:mikevalstar, at: 2026-06-27T08:13:30-04:00 }
 milestone: M1
 command: "okq search"
 related: ["find.md", "get.md", "../adrs/0002-library-stack.md", "../adrs/0003-search-index-in-xdg-cache.md", "../guides/design-overview.md"]

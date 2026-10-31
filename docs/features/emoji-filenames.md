@@ -1,10 +1,12 @@
 ---
 type: feature
 title: Emoji & Unicode in file names
+description: Concepts whose file names contain emoji, accented Latin or CJK load and link like any other.
 status: active # draft | accepted | active | deprecated
 created: 2026-07-07
 updated: 2026-08-02
 tags: [filenames, unicode, emoji, okf, concept-id, deadlinks, graph, robustness]
+generated: { by: human:mikevalstar, at: 2026-08-02T12:03:06-04:00 }
 milestone: null
 command: null # cross-cutting: a data-layer widening plus one graph fix
 related:

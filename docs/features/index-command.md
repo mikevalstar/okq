@@ -1,10 +1,12 @@
 ---
 type: feature
 title: okq index
+description: Regenerate a bundle's directory-listing index.md files from the concepts okq knows about.
 status: active # draft | accepted | active | deprecated
 created: 2026-06-27
 updated: 2026-06-27
 tags: [cli, authoring, scaffold, index]
+generated: { by: human:mikevalstar, at: 2026-06-27T09:27:06-04:00 }
 milestone: null # milestones retired — see CHANGELOG.md
 command: okq index
 related:

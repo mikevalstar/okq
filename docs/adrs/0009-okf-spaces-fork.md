@@ -1,10 +1,12 @@
 ---
 type: adr
 title: ADR-0009 — Track a fork of okf until it allows spaces in file names
+description: Superseded: track a fork of okf until upstream allows spaces in file names.
 status: superseded
 created: 2026-07-07
 updated: 2026-07-07
 tags: [okf, dependencies, fork, filenames, concept-id]
+generated: { by: human:mikevalstar, at: 2026-07-07T18:57:45-04:00 }
 supersedes: null
 superseded-by: "0010-okf-unicode-filenames-fork.md"
 related:

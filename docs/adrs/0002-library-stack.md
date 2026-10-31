@@ -1,10 +1,12 @@
 ---
 type: adr
 title: ADR-0002 — Library stack (stand on the shoulders of giants)
+description: Which capabilities okq takes from existing crates (okf, Tantivy, clap, pulldown-cmark, ignore) and which it builds itself.
 status: accepted
 created: 2026-06-26
 updated: 2026-06-26
 tags: [rust, dependencies, okf, ripgrep, search, graph, cli]
+generated: { by: human:mikevalstar, at: 2026-06-27T08:13:30-04:00 }
 supersedes: null
 superseded-by: null
 related: ["0001-documentation-first-okf-shaped.md", "0003-search-index-in-xdg-cache.md", "../guides/design-overview.md"]
@@ -16,7 +18,7 @@ related: ["0001-documentation-first-okf-shaped.md", "0003-search-index-in-xdg-ca
 
 ## Context
 
-`okq` is Rust ([PLAN.md](../guides/design-overview.md) §4) and its design principle is "fast & dependency-light: lean on the upstream `okf` crate … `okq` adds the *query* surface on top rather than reimplementing the parser." We need to decide, across the whole [command surface](../guides/design-overview.md#5-command-surface-draft) (`search`, `find`, `neighbors`, `backlinks`, `path`, `orphans`, `deadlinks`, `stats`, `get`, `init`, `new`), which capabilities we **reuse from mature crates** versus build ourselves.
+`okq` is Rust ([PLAN.md](../guides/design-overview.md) §4) and its design principle is "fast & dependency-light: lean on the upstream `okf` crate … `okq` adds the *query* surface on top rather than reimplementing the parser." We need to decide, across the whole [command surface](../guides/design-overview.md#command-surface) (`search`, `find`, `neighbors`, `backlinks`, `path`, `orphans`, `deadlinks`, `stats`, `get`, `init`, `new`), which capabilities we **reuse from mature crates** versus build ourselves.
 
 Two facts shape the decision:
 

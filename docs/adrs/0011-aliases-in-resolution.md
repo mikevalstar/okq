@@ -1,10 +1,12 @@
 ---
 type: adr
 title: ADR-0011 — Frontmatter aliases participate in concept resolution, below filename
+description: Frontmatter aliases resolve concepts and wikilinks, but a real filename always wins over an alias.
 status: accepted
 created: 2026-07-07
 updated: 2026-07-07
 tags: [aliases, obsidian, resolution, graph, concept-id]
+generated: { by: human:mikevalstar, at: 2026-07-07T20:01:27-04:00 }
 supersedes: null
 superseded-by: null
 related:

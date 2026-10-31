@@ -1,10 +1,12 @@
 ---
 type: feature
 title: okq graph navigation — neighbors / backlinks / path / orphans / deadlinks
+description: Navigate the typed link graph (neighbors, backlinks, path) and check its health (orphans, deadlinks).
 status: active # draft | accepted | active | deprecated
 created: 2026-06-26
-updated: 2026-06-26
+updated: 2026-10-31
 tags: [cli, graph, neighbors, backlinks, path, orphans, deadlinks, edges, json]
+generated: { by: human:mikevalstar, at: 2026-10-31T17:32:17Z }
 milestone: M2
 command: "okq neighbors | backlinks | path | orphans | deadlinks"
 related: ["search.md", "find.md", "get.md", "../adrs/0002-library-stack.md", "../adrs/0004-exit-code-taxonomy.md", "../guides/design-overview.md"]
@@ -148,6 +150,11 @@ should resolve but doesn't) or **phantom** (a bare `[[Note]]` to a note that
 doesn't exist yet — normal in an Obsidian vault); see
 [phantom-links](phantom-links.md).
 
+- **Anchors count.** A CommonMark link with a `#fragment` (`other.md#setup`, or
+  `#setup` within the same doc) is **broken** when the target exists but has no
+  heading matching the fragment. Matching follows `okq validate`, which reports
+  the same miss as a warning, so the two commands agree. `[[Note#Heading]]`
+  wikilink anchors are not checked.
 - **Broken only by default.** `--phantoms` also lists phantoms; `--phantoms-only`
   lists just them.
 - `--check` — exit **3** if any link in the listed set is found (broken by
@@ -179,6 +186,8 @@ doesn't exist yet — normal in an Obsidian vault); see
 - [ ] `orphans` lists concepts with zero inbound edges; `--check` → exit 3 when any.
 - [ ] `deadlinks` reports inline **and** frontmatter dead links with source
   `path:line`, raw target, and edge type; `--check` → exit 3 when any.
+- [ ] `deadlinks` reports a link whose `#anchor` matches no heading in an
+  existing target (and same-doc `#anchor` links), agreeing with `validate`.
 - [ ] Edges combine inline links + the default relation keys; `--edge` filters.
 - [ ] Missing concept → exit 4; all commands have `--json` (collection/path
   envelopes); output is locations-only (no bodies); deterministic ordering.

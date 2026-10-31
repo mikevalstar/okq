@@ -1,10 +1,12 @@
 ---
 type: adr
 title: ADR-0012 — Depend on the published okf-permissive crate, not a git fork
+description: Superseded: depend on the published okf-permissive crate by version instead of a git fork.
 status: superseded
 created: 2026-07-25
 updated: 2026-08-02
 tags: [okf, dependencies, fork, filenames, publishing, crates-io]
+generated: { by: human:mikevalstar, at: 2026-08-02T12:03:06-04:00 }
 supersedes: "0010-okf-unicode-filenames-fork.md"
 superseded-by: "0013-back-to-upstream-okf.md"
 related:

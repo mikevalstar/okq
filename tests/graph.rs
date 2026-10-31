@@ -190,6 +190,44 @@ fn deadlinks_check_exits_3() {
 }
 
 #[test]
+fn deadlinks_reports_anchors_that_match_no_heading() {
+    // The target file exists in every case; only the `#fragment` differs.
+    // Matching follows `validate`: slug, lowercased text, or `-`/`_` as spaces.
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path();
+    write(
+        root.join("target.md"),
+        "---\ntype: doc\n---\n\n# Target\n\n## Getting Started\n\nText.\n",
+    );
+    write(
+        root.join("src.md"),
+        "---\ntype: doc\n---\n\n# Src\n\n## Local Part\n\n\
+         [ok](target.md#getting-started) [ok2](target.md#Getting%20Started) \
+         [bad](target.md#gone) [self](#local-part) [selfbad](#missing)\n",
+    );
+
+    let v = json(root, &["deadlinks"]);
+    let raws: Vec<&str> = v["results"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|r| r["raw"].as_str().unwrap())
+        .collect();
+    assert_eq!(raws, ["#missing", "target.md#gone"]);
+    assert!(
+        v["results"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|r| { r["kind"] == "broken" && r["edge"] == "link" && r["source_id"] == "src" })
+    );
+
+    // The anchored link is still a real edge: the file exists.
+    let n = json(root, &["backlinks", "target"]);
+    assert_eq!(n["count"], 1);
+}
+
+#[test]
 fn encoded_links_to_an_emoji_concept_resolve_and_broken_ones_are_dead() {
     // A concept whose file name contains an emoji, plus a linker that references
     // it two ways: a working percent-encoded link and a typo'd one. The working

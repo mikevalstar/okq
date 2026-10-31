@@ -1,10 +1,12 @@
 ---
 type: feature
 title: okq lint — opinionated bundle hygiene beyond conformance
+description: Rule-coded authoring and hygiene findings beyond conformance, such as empty sections and uncited sources.
 status: active # draft | accepted | active | deprecated
 created: 2026-08-02
 updated: 2026-09-05
 tags: [cli, lint, health, hygiene, ci, okf, validate]
+generated: { by: human:mikevalstar, at: 2026-09-05T14:30:11-04:00 }
 milestone: null
 command: okq lint
 related:

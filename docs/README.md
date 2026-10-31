@@ -1,6 +1,8 @@
 ---
 type: readme
 title: okq documentation
+description: How this repo's documentation-first, OKF-shaped docs tree is organised, and the frontmatter and conventions every doc follows.
+generated: { by: human:mikevalstar, at: 2026-10-31T17:32:17Z }
 ---
 
 # Documentation
@@ -32,13 +34,15 @@ status: draft        # draft | accepted | active | superseded | deprecated
 created: 2026-06-26  # ISO date
 updated: 2026-06-26  # ISO date, bump when meaningfully edited
 tags: [cli, graph]   # lowercase, kebab-case
+description: One sentence on what this doc covers.
+generated: { by: human:mikevalstar, at: 2026-06-26T00:00:00Z }  # who wrote it, when it last meaningfully changed
 related: []          # paths to related docs — these become typed graph edges
 ---
 ```
 
 `type` is the one **OKF-required** key (a bundle is conformant when every concept has a non-empty `type`); the rest are well-known OKF keys or this repo's producer extensions, which consumers preserve. Doc types add fields on top (ADRs have `supersedes`/`superseded-by`, features have `milestone`, etc.) — see each `_template.md`. The reserved `index.md` (directory listing; the root carries `okf_version`) and `log.md` are **not** concepts and carry no `type`.
 
-The frontmatter here is kept compatible with [OKF v0.1](https://github.com/GoogleCloudPlatform/knowledge-catalog/tree/main/okf) so this tree stays a valid query target. Where OKF and this repo's needs diverge, the divergence is itself an ADR.
+The frontmatter here is kept compatible with [OKF v0.2](https://github.com/GoogleCloudPlatform/knowledge-catalog/tree/main/okf) so this tree stays a valid query target. Where OKF and this repo's needs diverge, the divergence is itself an ADR. The one divergence today is `status`: ours tracks the decision process, not OKF's draft/stable/deprecated lifecycle ([ADR-0017](adrs/0017-keep-process-status-values.md)), so `okq validate` warns on it by design.
 
 ## Conventions
 

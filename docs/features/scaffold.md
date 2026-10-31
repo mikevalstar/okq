@@ -1,10 +1,12 @@
 ---
 type: feature
 title: okq init & new — scaffold and author OKF bundles
+description: okq init creates a conformant bundle and okq new adds a concept from an embedded template.
 status: active # draft | accepted | active | deprecated
 created: 2026-06-26
 updated: 2026-06-26
 tags: [cli, init, new, scaffold, authoring, okf, templates]
+generated: { by: human:mikevalstar, at: 2026-09-05T14:30:11-04:00 }
 milestone: M3.5
 command: "okq init | okq new"
 related: ["get.md", "stats.md", "../adrs/0001-documentation-first-okf-shaped.md", "../adrs/0004-exit-code-taxonomy.md", "../guides/design-overview.md"]

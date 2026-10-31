@@ -1,10 +1,12 @@
 ---
 type: feature
 title: okq find — filter concepts by predicate
+description: Filter concepts by exact frontmatter and content predicates, unranked, as a locations-only list.
 status: active # draft | accepted | active | deprecated
 created: 2026-06-26
 updated: 2026-06-26
 tags: [cli, find, query, frontmatter, json, filter]
+generated: { by: human:mikevalstar, at: 2026-07-07T20:01:27-04:00 }
 milestone: M1
 command: "okq find"
 related: ["get.md", "../adrs/0002-library-stack.md", "../guides/design-overview.md"]

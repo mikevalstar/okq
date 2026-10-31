@@ -1,10 +1,12 @@
 ---
 type: adr
 title: ADR-0008 — Scope & non-goals (no MCP server; vector search not planned)
+description: What okq will not do: no MCP server, and vector search is not planned.
 status: accepted
 created: 2026-06-27
 updated: 2026-06-27
 tags: [scope, non-goals, mcp, vectors, roadmap]
+generated: { by: human:mikevalstar, at: 2026-06-27T08:13:30-04:00 }
 supersedes: null
 superseded-by: null
 related:

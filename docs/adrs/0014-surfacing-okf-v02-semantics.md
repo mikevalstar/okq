@@ -1,10 +1,12 @@
 ---
 type: adr
 title: ADR-0014 — Surfacing OKF v0.2 semantics — derived trust in the envelope, lint beside validate
+description: How okq exposes OKF v0.2 trust and lifecycle in the concept envelope, and adds lint beside validate.
 status: accepted
 created: 2026-08-02
 updated: 2026-08-02
 tags: [okf, trust, lint, envelope, json-contract, validate, exit-codes]
+generated: { by: human:mikevalstar, at: 2026-09-05T14:30:11-04:00 }
 supersedes: null
 superseded-by: null
 related:

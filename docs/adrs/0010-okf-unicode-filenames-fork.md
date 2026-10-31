@@ -1,10 +1,12 @@
 ---
 type: adr
 title: ADR-0010 — Widen the okf fork to allow emoji and Unicode in file names
+description: Superseded: widen the okf fork to allow emoji and arbitrary Unicode in file names.
 status: superseded
 created: 2026-07-07
 updated: 2026-07-25
 tags: [okf, dependencies, fork, filenames, concept-id, unicode, emoji]
+generated: { by: human:mikevalstar, at: 2026-07-25T09:17:30-04:00 }
 supersedes: "0009-okf-spaces-fork.md"
 superseded-by: "0012-okf-permissive-crate.md"
 related:

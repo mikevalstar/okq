@@ -1,10 +1,12 @@
 ---
 type: adr
 title: ADR-0004 — Exit-code taxonomy
+description: One exit-code scheme shared by every command, so scripts and agents can branch on $? without parsing output.
 status: accepted
 created: 2026-06-26
 updated: 2026-06-26
 tags: [cli, exit-codes, contract, agents, ci]
+generated: { by: human:mikevalstar, at: 2026-06-26T20:50:42-04:00 }
 supersedes: null
 superseded-by: null
 related: ["../features/get.md", "../features/find.md", "../features/search.md", "../../CLAUDE.md"]

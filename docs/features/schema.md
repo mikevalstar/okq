@@ -1,10 +1,12 @@
 ---
 type: feature
 title: okq schema — emit the JSON Schema for command output
+description: Print the JSON Schema for each command's --json output, generated from the code.
 status: active # draft | accepted | active | deprecated
 created: 2026-06-26
 updated: 2026-06-26
 tags: [cli, schema, json, contract, agents]
+generated: { by: human:mikevalstar, at: 2026-06-27T08:13:30-04:00 }
 milestone: M3
 command: "okq schema"
 related: ["stats.md", "../adrs/0004-exit-code-taxonomy.md", "../guides/design-overview.md"]

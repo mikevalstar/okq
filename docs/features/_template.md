@@ -1,16 +1,17 @@
 ---
 type: feature
 title: Feature name (often a command, e.g. "okq search")
+description: Template for a feature spec. Copy it to start a new one.
 status: draft # draft | accepted | active | deprecated
 created: 2026-06-26
 updated: 2026-06-26
 tags: []
+generated: { by: human:mikevalstar, at: 2026-09-05T14:30:11-04:00 }   # when copying: you (or an agent, e.g. okq/0.10.0) and now
 # Trust & lifecycle (OKF v0.2, §5.2–§5.5) — all optional; absence means
 # `status: stable`, trust tier `unverified`, never stale. Fill `verified` in when
 # a person has actually reviewed this; `okq find --trust human-reviewed` reads it.
-# generated: { by: human:<your-id>, at: 2026-06-26T00:00:00Z }   # or an agent: okq/0.9.0
 # verified: [{ by: human:<reviewer>, at: <YYYY-MM-DDThh:mm:ssZ> }]
-# stale_after: <YYYY-MM-DDThh:mm:ssZ>   # when this stops being safe to trust
+# stale_after: <YYYY-MM-DD>   # when this stops being safe to trust
 milestone: null # optional, historical; milestones are retired — releases live in CHANGELOG.md
 command: null # the CLI command this spec defines, e.g. "okq search", or null
 related: [] # paths to related docs

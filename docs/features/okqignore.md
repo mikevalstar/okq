@@ -1,10 +1,12 @@
 ---
 type: feature
 title: .okqignore — exclude files from a bundle
+description: Exclude files from a bundle with a .okqignore file; --no-ignore shows the full tree.
 status: active
 created: 2026-06-27
 updated: 2026-06-27
 tags: [ignore, bundle, filtering, config]
+generated: { by: human:mikevalstar, at: 2026-06-27T08:13:30-04:00 }
 milestone: M3
 command: null
 related:

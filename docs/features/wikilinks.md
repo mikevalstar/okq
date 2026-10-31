@@ -1,10 +1,12 @@
 ---
 type: feature
 title: Wikilinks — Obsidian-style [[links]] as graph edges
+description: Obsidian-style [[wikilinks]] in concept bodies become wikilink edges in the graph.
 status: active # draft | accepted | active | deprecated
 created: 2026-07-07
 updated: 2026-07-07
 tags: [graph, links, wikilinks, obsidian, edges]
+generated: { by: human:mikevalstar, at: 2026-07-07T20:01:27-04:00 }
 milestone: null
 command: null # not a command — an edge source consumed by the graph commands
 related: ["graph.md", "../guides/design-overview.md"]

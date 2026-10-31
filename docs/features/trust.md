@@ -1,10 +1,12 @@
 ---
 type: feature
 title: Trust & lifecycle — status, trust tier, and staleness
+description: Each concept's status, derived trust tier and staleness, with find filters for all three.
 status: active # draft | accepted | active | deprecated
 created: 2026-08-02
 updated: 2026-09-05
 tags: [trust, lifecycle, status, staleness, okf, find, get, stats, agents]
+generated: { by: human:mikevalstar, at: 2026-09-05T14:30:11-04:00 }
 milestone: null
 command: null # cross-cutting: envelope fields plus filters on find
 related:

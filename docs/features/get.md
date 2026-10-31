@@ -1,10 +1,12 @@
 ---
 type: feature
 title: okq get — expand one concept on demand
+description: Print one concept's frontmatter, body or a single section: the expand-on-demand step after search or find.
 status: active # draft | accepted | active | deprecated
 created: 2026-06-26
 updated: 2026-07-31
 tags: [cli, get, retrieval, json, sections, identity]
+generated: { by: human:mikevalstar, at: 2026-07-31T16:09:30-04:00 }
 milestone: M1
 command: "okq get"
 related: ["frontmatter-optional-title.md", "../adrs/0002-library-stack.md", "../adrs/0001-documentation-first-okf-shaped.md", "../guides/design-overview.md"]

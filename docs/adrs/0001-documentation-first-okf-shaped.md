@@ -1,10 +1,12 @@
 ---
 type: adr
 title: ADR-0001 — Documentation-first, in an OKF-shaped docs tree
+description: Write decisions and specs before code, in a docs tree shaped as an OKF bundle so okq can be run against it.
 status: accepted
 created: 2026-06-26
 updated: 2026-06-26
 tags: [process, documentation, okf, dogfooding]
+generated: { by: human:mikevalstar, at: 2026-06-27T08:13:30-04:00 }
 supersedes: null
 superseded-by: null
 related: ["../README.md", "../guides/design-overview.md"]

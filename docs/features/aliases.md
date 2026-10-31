@@ -1,10 +1,12 @@
 ---
 type: feature
 title: Aliases — resolve concepts by their frontmatter aliases
+description: Resolve a concept by any of its frontmatter aliases, after its filename and id.
 status: active # draft | accepted | active | deprecated
 created: 2026-07-07
 updated: 2026-07-07
 tags: [aliases, obsidian, resolution, graph, get]
+generated: { by: human:mikevalstar, at: 2026-07-07T20:01:27-04:00 }
 milestone: null
 command: null # not a command — resolution behavior consumed by get / graph / wikilinks
 related: ["wikilinks.md", "get.md", "graph.md", "../adrs/0011-aliases-in-resolution.md", "../guides/design-overview.md"]

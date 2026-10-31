@@ -11,6 +11,20 @@ attaches prebuilt binaries to the GitHub Release.
 
 ## [Unreleased]
 
+## [0.10.0] — 2026-10-31
+
+### Changed
+
+- **`okq deadlinks` now checks link anchors.** A link like `other.md#setup`
+  (or `#setup` within the same doc) is reported as broken when the file exists
+  but has no matching heading. `okq validate` already warned about these. If a
+  bundle has stale anchors, `deadlinks --check` now exits 3 where it used to
+  pass. `[[Note#Heading]]` wikilink anchors are not checked.
+- **Minimum supported Rust is now 1.90** (was 1.89), so ordered-float can move
+  to 5.5.
+- **tantivy 0.27.** The search index schema version is bumped, so existing
+  caches rebuild once on the next search.
+
 ## [0.9.1] — 2026-10-10
 
 ### Changed

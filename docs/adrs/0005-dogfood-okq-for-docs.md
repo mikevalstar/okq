@@ -1,10 +1,12 @@
 ---
 type: adr
 title: ADR-0005 — Dogfood okq for our own docs, specs, and features
+description: Use okq, not grep, to find and navigate this repo's own docs, and treat any gap as the next feature.
 status: accepted
 created: 2026-06-26
 updated: 2026-06-26
 tags: [process, dogfooding, documentation, testing]
+generated: { by: human:mikevalstar, at: 2026-06-26T20:50:42-04:00 }
 supersedes: null
 superseded-by: null
 related: ["0001-documentation-first-okf-shaped.md", "../features/graph.md", "../../CLAUDE.md"]
