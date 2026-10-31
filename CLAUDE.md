@@ -125,7 +125,8 @@ user asks.
 
 **Releasing.** Publishing is automated via `.github/workflows/release.yml`, which
 fires on a `v*` tag. To cut a release: bump `version` in Cargo.toml, run a build
-so `Cargo.lock` updates, commit, then `git tag vX.Y.Z && git push origin vX.Y.Z`.
+so `Cargo.lock` updates, commit, then `git tag -a vX.Y.Z -m vX.Y.Z && git push origin vX.Y.Z`
+(annotated: the maintainer's git config signs tags, so a bare `git tag` fails).
 CI publishes to crates.io via Trusted Publishing (OIDC — no stored token; the
 `release` environment must be allowed in the crate's crates.io settings) and
 attaches prebuilt binaries to the GitHub Release. The tag must match the

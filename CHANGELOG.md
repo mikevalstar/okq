@@ -484,7 +484,10 @@ dogfooded against this repo's own `docs/` bundle.
   taxonomy ([ADR-0004](docs/adrs/0004-exit-code-taxonomy.md)), and token-frugal
   `path:line` output.
 
-[Unreleased]: https://github.com/mikevalstar/okq/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/mikevalstar/okq/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/mikevalstar/okq/compare/v0.9.1...v0.10.0
+[0.9.1]: https://github.com/mikevalstar/okq/compare/v0.9.0...v0.9.1
+[0.9.0]: https://github.com/mikevalstar/okq/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/mikevalstar/okq/compare/v0.7.1...v0.8.0
 [0.7.1]: https://github.com/mikevalstar/okq/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/mikevalstar/okq/compare/v0.6.1...v0.7.0
